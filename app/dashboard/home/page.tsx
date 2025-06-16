@@ -1,5 +1,5 @@
 import React from "react";
-import { PageTitle } from "@/components/page-title";
+import { DashboardPageHeader } from "../_components/dashboard-page-header";
 import { Metadata } from "next";
 import { RandomToast } from "./_components/random-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,8 +25,12 @@ export const metadata: Metadata = {
 
 export default function HomeRoute() {
   return (
-    <section className="px-4 py-2 space-y-6">
-      <PageTitle selfLabel="Home" />
+    <>
+      <DashboardPageHeader 
+        title="Home" 
+        // description="Welcome to your dashboard overview"
+      />
+      <section className="px-4 py-2 space-y-6">
       
       {/* Welcome Section */}
       <div className="relative overflow-hidden rounded-lg border bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 p-6">
@@ -177,5 +181,6 @@ export default function HomeRoute() {
         </Card>
       </div>
     </section>
+    </>
   );
 }

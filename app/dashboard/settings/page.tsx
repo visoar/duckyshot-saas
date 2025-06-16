@@ -1,7 +1,7 @@
 import React from "react";
 import { auth } from "@/lib/auth/server";
 import { headers } from "next/headers";
-import { PageTitle } from "@/components/page-title";
+import { DashboardPageHeader } from "../_components/dashboard-page-header";
 import { Settings } from "./_components/settings";
 import { getUserSubscription, getUserPayments } from "@/lib/database/subscription";
 import { Metadata } from "next";
@@ -27,14 +27,19 @@ export default async function SettingsPage() {
   const activeSessions = activeSessionsRaw;
 
   return (
-    <section className="px-4 py-2 space-y-6">
-      <PageTitle selfLabel="Settings" />
-      <Settings
-        session={session}
-        activeSessions={activeSessions} // 传递已经解析好的数据
-        subscription={subscription}
-        payments={payments}
+    <>
+      <DashboardPageHeader 
+        title="Settings" 
+        description="Manage your account and subscription settings"
       />
-    </section>
+      <section className="px-4 py-2 space-y-6">
+        <Settings
+          session={session}
+          activeSessions={activeSessions} // 传递已经解析好的数据
+          subscription={subscription}
+          payments={payments}
+        />
+      </section>
+    </>
   );
 }

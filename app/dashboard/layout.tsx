@@ -1,8 +1,7 @@
-import { AppSidebar } from "./_components/app-sidebar";
 import { Suspense } from "react";
 import Loading from "@/app/loading";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-
+import { AppSidebar } from "./_components/app-sidebar";
 
 export default async function AppLayout({
   children,
@@ -13,7 +12,7 @@ export default async function AppLayout({
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <Suspense fallback={<Loading />}>{children} </Suspense>
+        <Suspense fallback={<Loading />}>{children}</Suspense>
       </SidebarInset>
     </SidebarProvider>
   );
