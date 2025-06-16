@@ -142,14 +142,6 @@ export default function HomeRoute() {
           </CardHeader>
           <CardContent className="space-y-3">
               <RandomToast />
-            <Button variant="outline" className="w-full justify-start gap-2">
-              <Users className="h-4 w-4" />
-              Manage Users
-            </Button>
-            <Button variant="outline" className="w-full justify-start gap-2">
-              <BarChart3 className="h-4 w-4" />
-              View Reports
-            </Button>
           </CardContent>
         </Card>
         

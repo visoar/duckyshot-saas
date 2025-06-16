@@ -14,6 +14,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupContent,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -26,6 +27,7 @@ import { useRouter } from "nextjs-toploader/app";
 import { UserButton } from "./user-btn";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
+import { Link } from "next-view-transitions";
 
 const navigation: {
   title: string;
@@ -34,7 +36,7 @@ const navigation: {
 }[] = [
   {
     title: "Home",
-    url: "/dashboard",
+    url: "/dashboard/home",
     icon: Home,
   },
   {
@@ -61,31 +63,41 @@ export function AppSidebar() {
           open ? "px-4" : "justify-center",
         )}
       >
-        <Logo className="m-0 size-5 p-1" />
-        {open && <>{APP_NAME}</>}
+        <Link href="/">
+          <Logo className="m-0 size-5 p-1" />
+        </Link>
+        {open && (
+          <>
+            <span className="text-base font-semibold">
+              {APP_NAME}
+            </span>
+          </>
+        )}
       </SidebarHeader>
       <SidebarContent className="">
         <SidebarGroup>
-          <SidebarMenu>
-            {navigation.map((item) => (
-              <SidebarMenuItem key={item.title}>
-                <div
-                  onClick={handleNavigation(item.url)}
-                  onDoubleClick={() => {
-                    handleNavigation(item.url)();
-                    toggleSidebar();
-                  }}
-                >
-                  <SidebarMenuButton isActive={item.url === pathname}>
-                    <div className="flex items-center gap-2">
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
-                    </div>
-                  </SidebarMenuButton>
-                </div>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+          <SidebarGroupContent className="flex flex-col gap-2">
+            <SidebarMenu>
+              {navigation.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <div
+                    onClick={handleNavigation(item.url)}
+                    onDoubleClick={() => {
+                      handleNavigation(item.url)();
+                      toggleSidebar();
+                    }}
+                  >
+                    <SidebarMenuButton isActive={item.url === pathname}>
+                      <div className="flex items-center gap-2">
+                        <item.icon className="size-4" />
+                        <span>{item.title}</span>
+                      </div>
+                    </SidebarMenuButton>
+                  </div>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="p-2 space-y-2">

@@ -1,6 +1,6 @@
 // Brand Configuration
 export const APP_NAME =
-  process.env.NODE_ENV === "development" ? "DEV - UllrAI SaaS Starter" : "UllrAI SaaS Starter";
+  process.env.NODE_ENV === "development" ? "DEV - SaaS Starter" : "SaaS Starter";
 export const APP_DESCRIPTION = "Complete UllrAI SaaS starter with authentication, payments, database, and deployment.";
 export const COMPANY_NAME = "UllrAI Lab";
 export const COMPANY_TAGLINE = "by UllrAI, for developers";
