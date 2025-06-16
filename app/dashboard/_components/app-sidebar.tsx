@@ -6,7 +6,6 @@ import {
   Settings,
   LucideIcon,
 } from "lucide-react";
-import { ModeToggle } from "@/components/mode-toggle";
 import { APP_NAME } from "@/constants";
 
 import {
@@ -100,20 +99,10 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="p-2 space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <UserButton />
-          </div>
-          {open && (
-            <ModeToggle variant="ghost" size="icon" className="shrink-0" />
-          )}
+      <SidebarFooter className="p-2">
+        <div className="flex items-center justify-center">
+          <UserButton />
         </div>
-        {!open && (
-          <div className="flex justify-center">
-            <ModeToggle variant="ghost" size="icon" />
-          </div>
-        )}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
