@@ -10,7 +10,7 @@
 
 本入门套件提供了一系列强大的功能，可帮助您快速构建功能齐全的 SaaS 应用：
 
-  * **身份验证 (Better-Auth + Resend):** 集成了 [Better-Auth](https://better-auth.com/)，提供安全的魔术链接登录和 GitHub OAuth 功能。使用 [Resend](https://resend.com/) 提供可靠的邮件发送服务。
+  * **身份验证 (Better-Auth + Resend):** 集成了 [Better-Auth](https://better-auth.com/)，提供安全的魔术链接登录和第三方 OAuth 功能。使用 [Resend](https://resend.com/) 提供可靠的邮件发送服务，还集成 Mailchecker 避免使用临时邮箱的恶意用户。
   * **现代 Web 框架 (Next.js 15 + TypeScript):** 基于最新的 [Next.js 15](https://nextjs.org/)，使用 App Router 和服务器组件。整个项目采用严格的 TypeScript 类型检查。
   * **数据库与 ORM (Drizzle + PostgreSQL):** 使用 [Drizzle ORM](https://orm.drizzle.team/) 进行类型安全的数据库操作，并与 PostgreSQL 深度集成。支持模式迁移、预编译语句和优化的查询构建。
   * **支付与订阅 (Creem):** 集成了 [Creem](https://creem.io/) 作为支付提供商，轻松处理订阅和一次性支付。

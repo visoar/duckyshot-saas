@@ -134,6 +134,9 @@ importers:
       lucide-react:
         specifier: ^0.515.0
         version: 0.515.0(react@19.1.0)
+      mailchecker:
+        specifier: ^6.0.17
+        version: 6.0.17
       next:
         specifier: ^15.3.3
         version: 15.3.3(@babel/core@7.27.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -4207,6 +4210,10 @@ packages:
 
   magic-string@0.30.17:
     resolution: {integrity: sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA==}
+
+  mailchecker@6.0.17:
+    resolution: {integrity: sha512-7wfgNChUp7mqzoh31l8aII2swlalW9Wfxqa6XrNVCyf2pardtSzNKatf4OWng4bQnXN5lvgk7Pd9kLrWbs/ylA==}
+    engines: {node: '>=0.10'}
 
   make-dir@4.0.0:
     resolution: {integrity: sha512-hXdUTZYIVOt1Ex//jAQi+wTZZpUpwBj/0QsOzqegb3rGMMeJiSEu5xLHnYfBrRV4RH2+OCSOO95Is/7x1WJ4bw==}
@@ -9690,6 +9697,8 @@ snapshots:
   magic-string@0.30.17:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  mailchecker@6.0.17: {}
 
   make-dir@4.0.0:
     dependencies:
