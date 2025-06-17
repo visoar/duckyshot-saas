@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'r2-saas.ullrai.com',
+      },
+      {
+        protocol: 'https',
         hostname: 'unsplash.com',
       },
     ],
