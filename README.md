@@ -16,6 +16,7 @@
   * **支付与订阅 (Creem):** 集成了 [Creem](https://creem.io/) 作为支付提供商，轻松处理订阅和一次性支付。
   * **UI 组件库 (shadcn/ui + Tailwind CSS):** 使用 [shadcn/ui](https://ui.shadcn.com/) 构建，它是一个基于 Radix UI 和 Tailwind CSS 的可访问、可组合的组件库，内置主题支持。
   * **表单处理 (Zod + React Hook Form):** 通过 [Zod](https://zod.dev/) 和 [React Hook Form](https://react-hook-form.com/) 实现强大的、类型安全的客户端和服务器端表单验证。
+  * **文件上传 (Cloudflare R2):** 基于 Cloudflare R2 的安全文件上传系统，支持多种文件类型和大小限制，内置图片压缩功能。
 
   * **代码质量:** 内置 ESLint 和 Prettier，确保代码风格统一和质量。
 
@@ -81,6 +82,11 @@ cp .env.example .env
 | `CREEM_ENVIRONMENT`                | **必需。** Creem 环境模式。                              | `test_mode` 或 `live_mode`                               |
 | `CREEM_WEBHOOK_SECRET`             | **必需。** Creem Webhook 密钥。                          | `whsec_your_webhook_secret`                              |
 | `NEXT_PUBLIC_APP_URL`              | **必需。** 您应用部署后的公开 URL。                       | `http://localhost:3000` 或 `https://yourdomain.com`       |
+| `R2_ACCOUNT_ID`                    | *可选。* Cloudflare 账户 ID。                           | `your_cloudflare_account_id`                             |
+| `R2_ACCESS_KEY_ID`                 | *可选。* R2 访问密钥 ID。                               | `your_r2_access_key_id`                                  |
+| `R2_SECRET_ACCESS_KEY`             | *可选。* R2 秘密访问密钥。                              | `your_r2_secret_access_key`                              |
+| `R2_BUCKET_NAME`                   | *可选。* R2 存储桶名称。                                | `your_r2_bucket_name`                                    |
+| `R2_PUBLIC_URL`                    | *可选。* R2 存储桶的公共访问 URL。                       | `https://your-bucket.your-account.r2.cloudflarestorage.com` |
 
 
 > **提示:** 您可以使用以下命令生成一个安全的密钥：
@@ -157,6 +163,165 @@ pnpm dev
 | `pnpm db:push`                                   | 直接推送模式变更到数据库（快速原型设计）。        | 开发     |
 | `pnpm db:migrate:dev`                            | 将迁移文件应用到开发数据库。                      | 开发     |
 | `pnpm db:migrate:prod`                           | 将迁移文件应用到生产数据库。**推荐用于生产环境。** | 生产     |
+
+## 📁 文件上传功能
+
+本项目集成了基于 Cloudflare R2 的安全文件上传系统，支持客户端直传和服务端上传两种方式。
+
+### 配置 Cloudflare R2
+
+1. **创建 R2 存储桶**：
+   - 登录 [Cloudflare Dashboard](https://dash.cloudflare.com)
+   - 导航到 R2 Object Storage
+   - 创建新的存储桶
+
+2. **获取 API 令牌**：
+   - 在 Cloudflare Dashboard 中，转到 "My Profile" > "API Tokens"
+   - 创建自定义令牌，权限包括 "Object Storage:Edit"
+
+3. **配置环境变量**：
+   ```bash
+   R2_ACCOUNT_ID="your_cloudflare_account_id"
+   R2_ACCESS_KEY_ID="your_r2_access_key_id"
+   R2_SECRET_ACCESS_KEY="your_r2_secret_access_key"
+   R2_BUCKET_NAME="your_r2_bucket_name"
+   R2_PUBLIC_URL="https://your-bucket.your-account.r2.cloudflarestorage.com"
+   ```
+
+### 使用 FileUploader 组件
+
+#### 基本用法
+
+```tsx
+import { FileUploader } from '@/components/ui/file-uploader'
+
+function MyComponent() {
+  const handleUploadComplete = (files) => {
+    console.log('上传完成:', files)
+    // 处理上传完成的文件
+  }
+
+  return (
+    <FileUploader
+      acceptedFileTypes={['image/png', 'image/jpeg', 'application/pdf']}
+      maxFileSize={5 * 1024 * 1024} // 5MB
+      maxFiles={3}
+      onUploadComplete={handleUploadComplete}
+    />
+  )
+}
+```
+
+#### 组件属性
+
+| 属性 | 类型 | 默认值 | 描述 |
+|------|------|--------|------|
+| `acceptedFileTypes` | `string[]` | `['image/*']` | 允许的文件 MIME 类型 |
+| `maxFileSize` | `number` | `10MB` | 最大文件大小（字节） |
+| `maxFiles` | `number` | `1` | 允许上传的文件数量 |
+| `onUploadComplete` | `function` | - | 上传完成回调函数 |
+| `className` | `string` | - | 自定义 CSS 类名 |
+
+#### 高级用法示例
+
+```tsx
+// 图片上传组件
+<FileUploader
+  acceptedFileTypes={['image/png', 'image/jpeg', 'image/webp']}
+  maxFileSize={2 * 1024 * 1024} // 2MB
+  maxFiles={5}
+  onUploadComplete={(files) => {
+    // 更新用户头像或图片库
+    setImages(prev => [...prev, ...files])
+  }}
+  className="border-dashed border-2 border-blue-300"
+/>
+
+// 文档上传组件
+<FileUploader
+  acceptedFileTypes={['application/pdf', 'application/msword', 'text/plain']}
+  maxFileSize={10 * 1024 * 1024} // 10MB
+  maxFiles={1}
+  onUploadComplete={(files) => {
+    // 处理文档上传
+    setDocument(files[0])
+  }}
+/>
+```
+
+### 服务端上传 API
+
+#### 从 URL 上传文件
+
+```typescript
+import { uploadFromUrl } from '@/lib/r2'
+
+const result = await uploadFromUrl(
+  'https://example.com/image.jpg',
+  'uploads/user-123/profile.jpg'
+)
+
+if (result.success) {
+  console.log('文件 URL:', result.url)
+}
+```
+
+#### 从 Buffer 上传文件
+
+```typescript
+import { uploadBuffer } from '@/lib/r2'
+
+const buffer = Buffer.from(fileData)
+const result = await uploadBuffer(
+  buffer,
+  'uploads/user-123/document.pdf',
+  'application/pdf'
+)
+
+if (result.success) {
+  console.log('文件 URL:', result.url)
+}
+```
+
+### 文件管理
+
+#### 删除文件
+
+```typescript
+import { deleteFile } from '@/lib/r2'
+
+const success = await deleteFile('uploads/user-123/old-file.jpg')
+if (success) {
+  console.log('文件删除成功')
+}
+```
+
+#### 生成下载链接
+
+```typescript
+import { getDownloadUrl } from '@/lib/r2'
+
+const downloadUrl = await getDownloadUrl(
+  'uploads/user-123/document.pdf',
+  3600 // 1小时有效期
+)
+console.log('下载链接:', downloadUrl)
+```
+
+### 数据库集成
+
+上传的文件信息会自动保存到 `uploads` 表中：
+
+```sql
+SELECT * FROM uploads WHERE "userId" = 'user-123' ORDER BY "createdAt" DESC;
+```
+
+### 安全考虑
+
+- 所有上传请求都需要用户认证
+- 文件类型和大小在服务端进行二次验证
+- 预签名 URL 具有时效性（默认 1 小时）
+- 支持自定义文件类型和大小限制
 
 ## 📊 包体积监控与优化
 
@@ -394,6 +559,116 @@ jobs:
 # 生成空的自定义迁移文件
 pnpm drizzle-kit generate --custom --name=seed-users
 ```
+
+## 📁 文件上传组件使用指南
+
+### 基本用法
+
+文件上传组件 `FileUploader` 提供了完整的文件上传功能，支持拖拽上传、进度显示和错误处理。
+
+```tsx
+import { FileUploader } from '@/components/ui/file-uploader';
+
+function MyComponent() {
+  const handleUploadComplete = (files) => {
+    console.log('上传完成:', files);
+  };
+
+  return (
+    <FileUploader
+      maxFiles={3}
+      maxFileSize={10 * 1024 * 1024} // 10MB
+      acceptedFileTypes={['image/jpeg', 'image/png', 'application/pdf']}
+      onUploadComplete={handleUploadComplete}
+      enableImageCompression={true}
+      imageCompressionQuality={0.8}
+    />
+  );
+}
+```
+
+### 配置选项
+
+| 属性 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `maxFiles` | `number` | `1` | 最大文件数量 |
+| `maxFileSize` | `number` | `10MB` | 最大文件大小（字节） |
+| `acceptedFileTypes` | `string[]` | - | 允许的文件类型 |
+| `onUploadComplete` | `function` | - | 上传完成回调 |
+| `enableImageCompression` | `boolean` | `false` | 启用图片压缩 |
+| `imageCompressionQuality` | `number` | `0.8` | 压缩质量 (0.1-1.0) |
+| `imageCompressionMaxWidth` | `number` | `1920` | 压缩后最大宽度 |
+| `imageCompressionMaxHeight` | `number` | `1080` | 压缩后最大高度 |
+| `disabled` | `boolean` | `false` | 禁用组件 |
+
+### 图片压缩功能
+
+组件内置了图片压缩功能，可以在上传前自动压缩图片文件：
+
+```tsx
+<FileUploader
+  enableImageCompression={true}
+  imageCompressionQuality={0.7}  // 压缩质量
+  imageCompressionMaxWidth={1200} // 最大宽度
+  imageCompressionMaxHeight={800}  // 最大高度
+/>
+```
+
+### Cloudflare R2 CORS 配置
+
+为了确保文件上传正常工作，需要在 Cloudflare R2 存储桶中配置 CORS 策略：
+
+1. **登录 Cloudflare 控制台**
+2. **进入 R2 Object Storage**
+3. **选择您的存储桶**
+4. **点击 Settings 标签**
+5. **在 CORS policy 部分添加以下配置：**
+
+```json
+[
+  {
+    "AllowedOrigins": [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "https://yourdomain.com"
+    ],
+    "AllowedMethods": [
+      "GET",
+      "PUT",
+      "POST",
+      "DELETE"
+    ],
+    "AllowedHeaders": [
+      "*"
+    ],
+    "ExposeHeaders": [
+      "ETag"
+    ],
+    "MaxAgeSeconds": 3000
+  }
+]
+```
+
+### 环境变量配置
+
+确保在 `.env` 文件中配置了以下 R2 相关的环境变量：
+
+```env
+R2_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=your-access-key
+R2_SECRET_ACCESS_KEY=your-secret-key
+R2_BUCKET_NAME=your-bucket-name
+R2_PUBLIC_URL=https://your-custom-domain.com
+```
+
+### 故障排除
+
+如果遇到上传问题，请参考 [文件上传故障排除指南](./docs/file-upload-troubleshooting.md)，其中包含了常见问题的解决方案。
+
+常见问题：
+- **"Failed to fetch" 错误**：通常是 CORS 配置问题
+- **"Invalid request data" 错误**：检查文件属性和验证逻辑
+- **网络连接问题**：组件会自动进行网络连接测试
 
 ## ☁️ 部署
 

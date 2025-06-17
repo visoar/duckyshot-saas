@@ -58,7 +58,7 @@ export function UserButton() {
       <SidebarMenu>
         <SidebarMenuItem>
           <div className={`flex items-center gap-2 p-2 ${!open ? 'justify-center' : ''}`}>
-            <Skeleton className="h-8 w-8 rounded-lg" />
+            <Skeleton className="h-8 w-8 rounded-full" />
             {open && (
               <div className="flex-1">
                 <Skeleton className="mb-1 h-4 w-24" />
@@ -112,7 +112,7 @@ export function UserButton() {
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
+                <Avatar className="h-8 w-8 rounded-full">
                   <AvatarImage
                     src={getUserAvatarUrl(session?.user?.image, session?.user?.email, session?.user?.name)}
                     alt={session?.user?.name}

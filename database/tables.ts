@@ -6,6 +6,7 @@ import {
   subscriptions,
   payments,
   webhookEvents,
+  uploads,
 } from "./schema";
 
 export {
@@ -16,4 +17,5 @@ export {
   subscriptions,
   payments,
   webhookEvents,
+  uploads,
 };

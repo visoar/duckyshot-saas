@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   Home,
   Settings,
+  Upload,
   LucideIcon,
 } from "lucide-react";
 import { APP_NAME } from "@/constants";
@@ -37,6 +38,11 @@ const navigation: {
     title: "Home",
     url: "/dashboard/home",
     icon: Home,
+  },
+  {
+    title: "Upload",
+    url: "/dashboard/upload",
+    icon: Upload,
   },
   {
     title: "Settings",

@@ -19,6 +19,13 @@ const env = createEnv({
     // API keys
     RESEND_API_KEY: z.string(),
 
+    // Cloudflare R2 Storage
+    R2_ENDPOINT: z.string(),
+    R2_ACCESS_KEY_ID: z.string(),
+    R2_SECRET_ACCESS_KEY: z.string(),
+    R2_BUCKET_NAME: z.string(),
+    R2_PUBLIC_URL: z.string(),
+
     // Payments
     CREEM_API_KEY: z.string(),
     CREEM_ENVIRONMENT: z.enum(["test_mode", "live_mode"]).default("test_mode"),
@@ -47,6 +54,13 @@ const env = createEnv({
 
     // API keys
     RESEND_API_KEY: process.env.RESEND_API_KEY,
+
+    // Cloudflare R2 Storage
+    R2_ENDPOINT: process.env.R2_ENDPOINT,
+    R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
+    R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
+    R2_BUCKET_NAME: process.env.R2_BUCKET_NAME,
+    R2_PUBLIC_URL: process.env.R2_PUBLIC_URL,
 
     // Application settings
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,

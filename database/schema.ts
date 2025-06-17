@@ -128,3 +128,22 @@ export const webhookEvents = pgTable("webhook_events", {
     providerIdx: index("webhook_events_provider_idx").on(table.provider),
   };
 });
+
+// File uploads table to store uploaded file metadata
+export const uploads = pgTable("uploads", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  fileKey: text("fileKey").notNull(), // Key in R2 storage
+  url: text("url").notNull(), // Public access URL
+  fileName: text("fileName").notNull(), // Original file name
+  fileSize: integer("fileSize").notNull(), // File size in bytes
+  contentType: text("contentType").notNull(), // MIME type
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+}, (table) => {
+  return {
+    userIdx: index("uploads_userId_idx").on(table.userId),
+    fileKeyIdx: index("uploads_fileKey_idx").on(table.fileKey),
+  };
+});
