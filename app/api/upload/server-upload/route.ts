@@ -1,18 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/server';
-import { createPresignedUrl } from '@/lib/r2';
-import { z } from 'zod';
-import { db } from '@/database';
-import { uploads } from '@/database/schema';
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth/server";
+import { createPresignedUrl } from "@/lib/r2";
+import { z } from "zod";
+import { db } from "@/database";
+import { uploads } from "@/database/schema";
 
 // Request body schema for server upload
 const serverUploadSchema = z.object({
-  files: z.array(z.object({
-    fileName: z.string().min(1).max(255),
-    contentType: z.string().min(1),
-    size: z.number().positive(),
-    base64Data: z.string().min(1), // Base64 encoded file data
-  })),
+  files: z.array(
+    z.object({
+      fileName: z.string().min(1).max(255),
+      contentType: z.string().min(1),
+      size: z.number().positive(),
+      base64Data: z.string().min(1), // Base64 encoded file data
+    }),
+  ),
 });
 
 export async function POST(request: NextRequest) {
@@ -20,23 +22,20 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Parse and validate request body
     const body = await request.json();
     const validation = serverUploadSchema.safeParse(body);
-    
+
     if (!validation.success) {
       return NextResponse.json(
-        { 
-          error: 'Invalid request data',
+        {
+          error: "Invalid request data",
           details: validation.error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -55,20 +54,20 @@ export async function POST(request: NextRequest) {
         });
 
         if (!result.success) {
-          throw new Error(result.error || 'Failed to create presigned URL');
+          throw new Error(result.error || "Failed to create presigned URL");
         }
 
         // Convert base64 to buffer
-        const base64Data = file.base64Data.replace(/^data:[^;]+;base64,/, '');
-        const buffer = Buffer.from(base64Data, 'base64');
+        const base64Data = file.base64Data.replace(/^data:[^;]+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
 
         // Upload file to R2 using presigned URL
         const uploadResponse = await fetch(result.presignedUrl!, {
-          method: 'PUT',
+          method: "PUT",
           body: buffer,
           headers: {
-            'Content-Type': file.contentType,
-            'Content-Length': buffer.length.toString(),
+            "Content-Type": file.contentType,
+            "Content-Length": buffer.length.toString(),
           },
         });
 
@@ -101,16 +100,16 @@ export async function POST(request: NextRequest) {
         uploadResults.push({
           fileName: file.fileName,
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         });
       }
     }
 
-    const successCount = uploadResults.filter(r => r.success).length;
+    const successCount = uploadResults.filter((r) => r.success).length;
     const failureCount = uploadResults.length - successCount;
 
     return NextResponse.json({
-      message: `Uploaded ${successCount} file(s) successfully${failureCount > 0 ? `, ${failureCount} failed` : ''}`,
+      message: `Uploaded ${successCount} file(s) successfully${failureCount > 0 ? `, ${failureCount} failed` : ""}`,
       results: uploadResults,
       summary: {
         total: uploadResults.length,
@@ -119,10 +118,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error in server upload:', error);
+    console.error("Error in server upload:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -132,10 +131,10 @@ export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'Access-Control-Max-Age': '86400',
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Max-Age": "86400",
     },
   });
 }

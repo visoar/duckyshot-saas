@@ -137,7 +137,7 @@ export function AppSidebar() {
                       toggleSidebar();
                     }}
                   >
-                    <SidebarMenuButton 
+                    <SidebarMenuButton
                       isActive={item.url === pathname}
                       tooltip={item.title}
                     >
@@ -170,7 +170,7 @@ export function AppSidebar() {
                         toggleSidebar();
                       }}
                     >
-                      <SidebarMenuButton 
+                      <SidebarMenuButton
                         isActive={item.url === pathname}
                         tooltip={item.title}
                       >

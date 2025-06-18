@@ -2,19 +2,22 @@ import { APP_NAME, OGIMAGE, TWITTERACCOUNT } from "@/constants";
 import env from "@/env";
 import type { Metadata } from "next/types";
 
-import { AbsoluteTemplateString, DefaultTemplateString } from "next/dist/lib/metadata/types/metadata-types";
+import {
+  AbsoluteTemplateString,
+  DefaultTemplateString,
+} from "next/dist/lib/metadata/types/metadata-types";
 
 export function createMetadata(override: Metadata): Metadata {
   let title = APP_NAME;
-  if (typeof override.title === 'string') {
+  if (typeof override.title === "string") {
     title = override.title;
-  } else if (override.title && 'absolute' in override.title) {
+  } else if (override.title && "absolute" in override.title) {
     title = (override.title as AbsoluteTemplateString).absolute;
-  } else if (override.title && 'default' in override.title) {
+  } else if (override.title && "default" in override.title) {
     title = (override.title as DefaultTemplateString).default;
   }
 
-  const description = override.description || '';
+  const description = override.description || "";
 
   return {
     ...override,
@@ -24,8 +27,8 @@ export function createMetadata(override: Metadata): Metadata {
       url: env.NEXT_PUBLIC_APP_URL,
       images: override.openGraph?.images ?? OGIMAGE,
       siteName: APP_NAME,
-      type: 'website',
-      locale: 'en_US', // Default locale, can be overridden
+      type: "website",
+      locale: "en_US", // Default locale, can be overridden
       ...override.openGraph,
     },
     twitter: {

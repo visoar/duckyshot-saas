@@ -5,7 +5,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardFooter
+  CardFooter,
 } from "@/components/ui/card";
 
 interface LinkSentCardProps {
@@ -14,10 +14,14 @@ interface LinkSentCardProps {
   retryHref: string;
 }
 
-export function LinkSentCard({ title, description, retryHref }: LinkSentCardProps) {
+export function LinkSentCard({
+  title,
+  description,
+  retryHref,
+}: LinkSentCardProps) {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-md bg-muted/30 backdrop-blur-sm">
+      <Card className="bg-muted/30 w-full max-w-md shadow-md backdrop-blur-sm">
         <CardHeader className="text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
             <CheckCircle className="h-8 w-8 text-green-500" />
@@ -28,21 +32,21 @@ export function LinkSentCard({ title, description, retryHref }: LinkSentCardProp
         </CardHeader>
 
         <CardContent className="px-6">
-          <div className="text-center text-sm leading-relaxed text-muted-foreground">
+          <div className="text-muted-foreground text-center text-sm leading-relaxed">
             {description}
           </div>
         </CardContent>
 
         <CardFooter className="flex-col space-y-0 border-t">
-          <p className="text-center text-xs leading-relaxed text-muted-foreground">
+          <p className="text-muted-foreground text-center text-xs leading-relaxed">
             Didn&apos;t receive?{" "}
             <Link
               href={retryHref}
-              className="font-medium hover:underline underline-offset-2"
+              className="font-medium underline-offset-2 hover:underline"
             >
               Send again
-            </Link>
-            {" "}or check your spam folder.
+            </Link>{" "}
+            or check your spam folder.
           </p>
         </CardFooter>
       </Card>

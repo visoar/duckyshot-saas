@@ -1,12 +1,21 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import env from '@/env';
-import { UPLOAD_CONFIG, isFileTypeAllowed, isFileSizeAllowed, getFileExtension } from './config/upload';
-import { randomUUID } from 'crypto';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import env from "@/env";
+import {
+  UPLOAD_CONFIG,
+  isFileTypeAllowed,
+  isFileSizeAllowed,
+  getFileExtension,
+} from "./config/upload";
+import { randomUUID } from "crypto";
 
 // Initialize S3 client for Cloudflare R2
 const r2Client = new S3Client({
-  region: 'auto',
+  region: "auto",
   endpoint: env.R2_ENDPOINT,
   credentials: {
     accessKeyId: env.R2_ACCESS_KEY_ID,
@@ -82,10 +91,10 @@ export async function createPresignedUrl({
       key,
     };
   } catch (error) {
-    console.error('Error creating presigned URL:', error);
+    console.error("Error creating presigned URL:", error);
     return {
       success: false,
-      error: 'Failed to create presigned URL',
+      error: "Failed to create presigned URL",
     };
   }
 }
@@ -103,7 +112,7 @@ interface UploadResult {
 export async function uploadFromUrl(
   url: string,
   key: string,
-  contentType?: string
+  contentType?: string,
 ): Promise<UploadResult> {
   try {
     // Fetch the file from URL
@@ -113,14 +122,18 @@ export async function uploadFromUrl(
     }
 
     const buffer = await response.arrayBuffer();
-    const detectedContentType = contentType || response.headers.get('content-type') || 'application/octet-stream';
+    const detectedContentType =
+      contentType ||
+      response.headers.get("content-type") ||
+      "application/octet-stream";
 
     return await uploadBuffer(Buffer.from(buffer), key, detectedContentType);
   } catch (error) {
-    console.error('Error uploading from URL:', error);
+    console.error("Error uploading from URL:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to upload from URL',
+      error:
+        error instanceof Error ? error.message : "Failed to upload from URL",
     };
   }
 }
@@ -131,7 +144,7 @@ export async function uploadFromUrl(
 export async function uploadBuffer(
   buffer: Buffer,
   key: string,
-  contentType: string
+  contentType: string,
 ): Promise<UploadResult> {
   try {
     // Validate file type
@@ -167,10 +180,10 @@ export async function uploadBuffer(
       key,
     };
   } catch (error) {
-    console.error('Error uploading buffer:', error);
+    console.error("Error uploading buffer:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to upload buffer',
+      error: error instanceof Error ? error.message : "Failed to upload buffer",
     };
   }
 }
@@ -178,7 +191,9 @@ export async function uploadBuffer(
 /**
  * Delete a file from R2
  */
-export async function deleteFile(key: string): Promise<{ success: boolean; error?: string }> {
+export async function deleteFile(
+  key: string,
+): Promise<{ success: boolean; error?: string }> {
   try {
     const command = new PutObjectCommand({
       Bucket: env.R2_BUCKET_NAME,
@@ -189,10 +204,10 @@ export async function deleteFile(key: string): Promise<{ success: boolean; error
 
     return { success: true };
   } catch (error) {
-    console.error('Error deleting file:', error);
+    console.error("Error deleting file:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to delete file',
+      error: error instanceof Error ? error.message : "Failed to delete file",
     };
   }
 }
@@ -200,7 +215,10 @@ export async function deleteFile(key: string): Promise<{ success: boolean; error
 /**
  * Get a presigned URL for downloading a file (optional, for private files)
  */
-export async function getDownloadUrl(key: string, expiresIn = 3600): Promise<string | null> {
+export async function getDownloadUrl(
+  key: string,
+  expiresIn = 3600,
+): Promise<string | null> {
   try {
     const command = new GetObjectCommand({
       Bucket: env.R2_BUCKET_NAME,
@@ -210,7 +228,7 @@ export async function getDownloadUrl(key: string, expiresIn = 3600): Promise<str
     const presignedUrl = await getSignedUrl(r2Client, command, { expiresIn });
     return presignedUrl;
   } catch (error) {
-    console.error('Error creating download URL:', error);
+    console.error("Error creating download URL:", error);
     return null;
   }
 }

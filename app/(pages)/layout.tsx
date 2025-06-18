@@ -1,7 +1,11 @@
 import { Header } from "@/components/homepage/header";
 import { Footer } from "@/components/homepage/footer";
 
-export default function PagesLayout({ children }: { children: React.ReactNode }) {
+export default function PagesLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />

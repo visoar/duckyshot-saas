@@ -86,7 +86,7 @@ describe("authSchema", () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toBe(
-          "Please enter a valid email address"
+          "Please enter a valid email address",
         );
       }
     });

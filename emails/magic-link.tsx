@@ -13,7 +13,6 @@ import { sendEmail } from "@/lib/email";
 import { APP_NAME } from "@/constants";
 import { UAParser } from "ua-parser-js";
 
-
 interface DeviceInfo {
   browser?: string;
   os?: string;
@@ -22,21 +21,21 @@ interface DeviceInfo {
   ip?: string;
 }
 
-const MagicLinkEmailBody = ({ 
-  email, 
-  url, 
-  deviceInfo 
-}: { 
-  email: string; 
-  url: string; 
+const MagicLinkEmailBody = ({
+  email,
+  url,
+  deviceInfo,
+}: {
+  email: string;
+  url: string;
   deviceInfo?: DeviceInfo;
 }) => {
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  const currentDate = new Date().toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
-  
+
   return (
     <Html>
       <Head>
@@ -118,13 +117,17 @@ const MagicLinkEmailBody = ({
           `}
         </style>
       </Head>
-      <Preview>Click the secure button below to complete your sign-in process. Your secure sign-in link for {APP_NAME}</Preview>
+      <Preview>
+        Click the secure button below to complete your sign-in process. Your
+        secure sign-in link for {APP_NAME}
+      </Preview>
       <Body
         style={{
           margin: 0,
           padding: 0,
           backgroundColor: "#f8fafc",
-          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          fontFamily:
+            "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         }}
       >
         <div className="email-wrapper">
@@ -134,7 +137,8 @@ const MagicLinkEmailBody = ({
               maxWidth: "600px",
               width: "100%",
               margin: "0 auto",
-              fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              fontFamily:
+                "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
             }}
           >
             {/* Header */}
@@ -178,7 +182,7 @@ const MagicLinkEmailBody = ({
               >
                 Hello,
               </Text>
-              
+
               <Text
                 style={{
                   fontSize: "16px",
@@ -188,7 +192,8 @@ const MagicLinkEmailBody = ({
                   textAlign: "left",
                 }}
               >
-                We received a request to sign in to your {APP_NAME} account. Click the secure button below to complete your sign-in process.
+                We received a request to sign in to your {APP_NAME} account.
+                Click the secure button below to complete your sign-in process.
               </Text>
 
               {/* CTA Button */}
@@ -244,7 +249,8 @@ const MagicLinkEmailBody = ({
                         margin: "0 0 4px 0",
                       }}
                     >
-                      <strong>Device:</strong> {deviceInfo.browser} on {deviceInfo.os}
+                      <strong>Device:</strong> {deviceInfo.browser} on{" "}
+                      {deviceInfo.os}
                     </Text>
                   )}
                   {deviceInfo.location && (
@@ -256,7 +262,8 @@ const MagicLinkEmailBody = ({
                         margin: "0 0 4px 0",
                       }}
                     >
-                      <strong>Location:</strong> {deviceInfo.location} (approximate)
+                      <strong>Location:</strong> {deviceInfo.location}{" "}
+                      (approximate)
                     </Text>
                   )}
                   {deviceInfo.location && deviceInfo.ip && (
@@ -287,8 +294,9 @@ const MagicLinkEmailBody = ({
                   border: "1px solid #e5e7eb",
                 }}
               >
-                <strong>Security Notice:</strong> This link will expire in 15 minutes for your security. 
-                If you didn't request this sign-in, please ignore this email.
+                <strong>Security Notice:</strong> This link will expire in 15
+                minutes for your security. If you didn't request this sign-in,
+                please ignore this email.
               </Text>
 
               <Text
@@ -300,9 +308,10 @@ const MagicLinkEmailBody = ({
                   textAlign: "left",
                 }}
               >
-                If the button doesn't work, you can copy and paste this link into your browser:
+                If the button doesn't work, you can copy and paste this link
+                into your browser:
               </Text>
-              
+
               <Text
                 style={{
                   fontSize: "12px",
@@ -343,7 +352,7 @@ const MagicLinkEmailBody = ({
                   {email}
                 </Link>
               </Text>
-              
+
               <Text
                 style={{
                   fontSize: "12px",
@@ -353,7 +362,8 @@ const MagicLinkEmailBody = ({
                   textAlign: "center",
                 }}
               >
-                © {new Date().getFullYear()} {APP_NAME}. All rights reserved. | {currentDate}
+                © {new Date().getFullYear()} {APP_NAME}. All rights reserved. |{" "}
+                {currentDate}
               </Text>
             </div>
           </Container>
@@ -366,7 +376,7 @@ const MagicLinkEmailBody = ({
 function parseDeviceInfo(request?: Request): DeviceInfo | undefined {
   if (!request) return undefined;
 
-  const userAgent = request.headers.get('user-agent');
+  const userAgent = request.headers.get("user-agent");
   if (!userAgent) return undefined;
 
   const ua = new UAParser(userAgent);
@@ -375,16 +385,17 @@ function parseDeviceInfo(request?: Request): DeviceInfo | undefined {
   const device = ua.getDevice();
 
   // Get IP address from various headers
-  const ip = request.headers.get('x-forwarded-for') ||
-            request.headers.get('x-real-ip') ||
-            request.headers.get('cf-connecting-ip') ||
-            undefined;
+  const ip =
+    request.headers.get("x-forwarded-for") ||
+    request.headers.get("x-real-ip") ||
+    request.headers.get("cf-connecting-ip") ||
+    undefined;
 
   // Extract location from Vercel's geo headers if available
-  const city = request.headers.get('x-vercel-ip-city');
-  const region = request.headers.get('x-vercel-ip-country-region');
-  const country = request.headers.get('x-vercel-ip-country');
-  
+  const city = request.headers.get("x-vercel-ip-city");
+  const region = request.headers.get("x-vercel-ip-country-region");
+  const country = request.headers.get("x-vercel-ip-country");
+
   let location: string | undefined;
   if (city && region && country) {
     location = `${decodeURIComponent(city)}, ${decodeURIComponent(region)}, ${decodeURIComponent(country)}`;
@@ -395,16 +406,25 @@ function parseDeviceInfo(request?: Request): DeviceInfo | undefined {
   return {
     browser: browser.name,
     os: os.name,
-    device: device.type === 'mobile' ? 'Mobile' : device.type === 'tablet' ? 'Tablet' : 'Desktop',
+    device:
+      device.type === "mobile"
+        ? "Mobile"
+        : device.type === "tablet"
+          ? "Tablet"
+          : "Desktop",
     location,
-    ip: ip?.split(',')[0]?.trim(), // Take first IP if multiple
+    ip: ip?.split(",")[0]?.trim(), // Take first IP if multiple
   };
 }
 
-export async function sendMagicLink(email: string, url: string, request?: Request) {
+export async function sendMagicLink(
+  email: string,
+  url: string,
+  request?: Request,
+) {
   try {
     const deviceInfo = parseDeviceInfo(request);
-    
+
     const res = await sendEmail(
       email,
       `Your secure sign-in link for ${APP_NAME}`,

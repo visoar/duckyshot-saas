@@ -67,9 +67,9 @@ export function ModeToggle({
   }
 
   return (
-    <Button 
-      variant={variant} 
-      size={size} 
+    <Button
+      variant={variant}
+      size={size}
       className={className}
       onClick={cycleTheme}
       title={`Current theme: ${getThemeLabel()}. Click to cycle themes.`}

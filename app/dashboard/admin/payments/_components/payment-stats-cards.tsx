@@ -106,7 +106,7 @@ export function PaymentStatsCards() {
           </div>
           <p className="text-muted-foreground text-xs">
             {loading ? (
-              <span className="bg-muted h-3 w-20 animate-pulse rounded inline-block" />
+              <span className="bg-muted inline-block h-3 w-20 animate-pulse rounded" />
             ) : (
               `${stats?.successfulPayments || 0} successful, ${stats?.failedPayments || 0} failed`
             )}
@@ -129,7 +129,7 @@ export function PaymentStatsCards() {
           </div>
           <p className="text-muted-foreground text-xs">
             {loading ? (
-              <span className="bg-muted h-3 w-16 animate-pulse rounded inline-block" />
+              <span className="bg-muted inline-block h-3 w-16 animate-pulse rounded" />
             ) : (
               `${formatPercentage(stats?.monthlyGrowth || 0)} from last month`
             )}

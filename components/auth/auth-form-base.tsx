@@ -72,33 +72,36 @@ export function AuthFormBase<T extends FieldValues>({
       await onSubmit(data);
     } catch {
       toast.error(
-        "Something went wrong. Contact support if the issue persists"
+        "Something went wrong. Contact support if the issue persists",
       );
       setLoading(false);
     }
   };
 
   return (
-    <Card className="max-w-md bg-background/80 backdrop-blur-sm shadow-xl">
+    <Card className="bg-background/80 max-w-md shadow-xl backdrop-blur-sm">
       <CardHeader className="space-y-4 pb-2">
         {/* Welcome Badge */}
         <div className="flex justify-center">
-          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+          <Badge
+            variant="secondary"
+            className="bg-primary/10 text-primary border-primary/20"
+          >
             <Sparkles className="mr-1 h-3 w-3" />
             {config.badgeText}
           </Badge>
         </div>
-        
-        <div className="text-center space-y-2">
-          <CardTitle className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+
+        <div className="space-y-2 text-center">
+          <CardTitle className="from-foreground to-foreground/70 bg-gradient-to-r bg-clip-text text-2xl font-bold text-transparent md:text-3xl">
             {config.title}
           </CardTitle>
-          <CardDescription className="text-sm md:text-base text-muted-foreground">
+          <CardDescription className="text-muted-foreground text-sm md:text-base">
             {config.description}
           </CardDescription>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         <Form {...form}>
           <form
@@ -114,21 +117,21 @@ export function AuthFormBase<T extends FieldValues>({
                   loading={loading}
                   onLoadingChange={setLoading}
                 />
-                
+
                 {/* Divider */}
                 <div className="relative my-6">
                   <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border" />
+                    <span className="border-border w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-3 text-muted-foreground font-medium">
+                    <span className="bg-background text-muted-foreground px-3 font-medium">
                       Or continue with magic link
                     </span>
                   </div>
                 </div>
               </>
             )}
-            
+
             {/* Dynamic Form Fields */}
             {fields.map((field) => {
               const IconComponent = field.icon;
@@ -139,18 +142,18 @@ export function AuthFormBase<T extends FieldValues>({
                   name={field.name}
                   render={({ field: formField }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="text-sm font-medium text-foreground">
+                      <FormLabel className="text-foreground text-sm font-medium">
                         {field.label}
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
-                          <IconComponent className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                          <IconComponent className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
                           <Input
                             placeholder={field.placeholder}
                             type={field.type || "text"}
                             {...formField}
                             disabled={loading}
-                            className="pl-10 h-12 border-2 focus:border-primary/50 transition-colors"
+                            className="focus:border-primary/50 h-12 border-2 pl-10 transition-colors"
                           />
                         </div>
                       </FormControl>
@@ -160,12 +163,12 @@ export function AuthFormBase<T extends FieldValues>({
                 />
               );
             })}
-            
+
             {/* Submit Button */}
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={loading}
-              className="w-full h-12 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground font-medium transition-all duration-200 shadow-lg hover:shadow-xl cursor-pointer"
+              className="from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground h-12 w-full cursor-pointer bg-gradient-to-r font-medium shadow-lg transition-all duration-200 hover:shadow-xl"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
@@ -173,39 +176,38 @@ export function AuthFormBase<T extends FieldValues>({
                   <span>{config.loadingText}</span>
                 </span>
               ) : (
-                  <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2">
                   <config.submitIcon className="h-4 w-4" />
                   <span>{config.submitButtonText}</span>
                   <ArrowRight className="h-4 w-4" />
                 </span>
               )}
             </Button>
-            
+
             {/* Alternative Action Link */}
             <div className="pt-4 text-center">
-              <p className="text-sm text-muted-foreground">
-                {config.alternativeActionText}{" "}
-                {config.alternativeActionLink}
+              <p className="text-muted-foreground text-sm">
+                {config.alternativeActionText} {config.alternativeActionLink}
               </p>
             </div>
           </form>
         </Form>
-        
+
         {/* Terms and Privacy */}
         {config.showTerms && (
-          <div className="pt-4 border-t border-border/50">
-            <p className="text-center text-xs text-muted-foreground/70 leading-relaxed">
+          <div className="border-border/50 border-t pt-4">
+            <p className="text-muted-foreground/70 text-center text-xs leading-relaxed">
               By creating an account, you agree to our{" "}
               <Link
                 href="/terms"
-                className="cursor-pointer font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline transition-colors"
+                className="text-primary hover:text-primary/80 cursor-pointer font-medium underline-offset-4 transition-colors hover:underline"
               >
                 Terms of Service
               </Link>{" "}
               and{" "}
               <Link
                 href="/privacy"
-                className="cursor-pointer font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline transition-colors"
+                className="text-primary hover:text-primary/80 cursor-pointer font-medium underline-offset-4 transition-colors hover:underline"
               >
                 Privacy Policy
               </Link>

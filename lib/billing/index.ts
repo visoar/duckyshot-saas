@@ -6,14 +6,14 @@ import creemProvider from "./creem/provider";
 let billingProvider: PaymentProvider;
 
 switch (PAYMENT_PROVIDER) {
-    case "creem":
-        billingProvider = creemProvider;
-        break;
-    // case "stripe":
-    //   billingProvider = stripeProvider;
-    //   break;
-    default:
-        throw new Error(`Unsupported payment provider: ${PAYMENT_PROVIDER}`);
+  case "creem":
+    billingProvider = creemProvider;
+    break;
+  // case "stripe":
+  //   billingProvider = stripeProvider;
+  //   break;
+  default:
+    throw new Error(`Unsupported payment provider: ${PAYMENT_PROVIDER}`);
 }
 
 export const billing = billingProvider;

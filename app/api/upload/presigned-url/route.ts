@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/server';
-import { createPresignedUrl } from '@/lib/r2';
-import { z } from 'zod';
-import { db } from '@/database';
-import { uploads } from '@/database/schema';
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth/server";
+import { createPresignedUrl } from "@/lib/r2";
+import { z } from "zod";
+import { db } from "@/database";
+import { uploads } from "@/database/schema";
 
 // Request body schema
 const presignedUrlSchema = z.object({
@@ -17,23 +17,20 @@ export async function POST(request: NextRequest) {
     // Check authentication
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Parse and validate request body
     const body = await request.json();
     const validation = presignedUrlSchema.safeParse(body);
-    
+
     if (!validation.success) {
       return NextResponse.json(
-        { 
-          error: 'Invalid request data',
+        {
+          error: "Invalid request data",
           details: validation.error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -48,10 +45,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      return NextResponse.json(
-        { error: result.error },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
     // Store upload record in database (pending status)
@@ -72,10 +66,10 @@ export async function POST(request: NextRequest) {
       key: result.key,
     });
   } catch (error) {
-    console.error('Error creating presigned URL:', error);
+    console.error("Error creating presigned URL:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

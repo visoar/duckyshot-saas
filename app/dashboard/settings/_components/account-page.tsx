@@ -3,12 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,18 +57,24 @@ export function AccountPage(props: {
             ) : (
               <Avatar className="h-14 w-14">
                 <AvatarImage
-                  src={getUserAvatarUrl(currentUserSession?.user.image, currentUserSession?.user.email, currentUserSession?.user.name)}
+                  src={getUserAvatarUrl(
+                    currentUserSession?.user.image,
+                    currentUserSession?.user.email,
+                    currentUserSession?.user.name,
+                  )}
                   alt={currentUserSession?.user.name || "User Avatar"}
                   className="object-cover"
                 />
                 <AvatarFallback className="text-lg uppercase">
-                  {currentUserSession?.user.name?.charAt(0) || 'U'}
+                  {currentUserSession?.user.name?.charAt(0) || "U"}
                 </AvatarFallback>
               </Avatar>
             )}
             <div>
-              <p className="text-base font-medium">{currentUserSession?.user.name}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base font-medium">
+                {currentUserSession?.user.name}
+              </p>
+              <p className="text-muted-foreground text-sm">
                 {currentUserSession?.user.email}
               </p>
             </div>
@@ -87,11 +88,12 @@ export function AccountPage(props: {
             {props.activeSessions
               .filter((session) => session.os || session.browser) // 过滤掉无法解析的
               .map((session) => {
-                const device = session.deviceType === 'mobile' ? (
-                  <PhoneIcon className="h-4 w-4" />
-                ) : (
-                  <Laptop className="h-4 w-4" />
-                );
+                const device =
+                  session.deviceType === "mobile" ? (
+                    <PhoneIcon className="h-4 w-4" />
+                  ) : (
+                    <Laptop className="h-4 w-4" />
+                  );
 
                 return (
                   <Card
@@ -101,9 +103,11 @@ export function AccountPage(props: {
                     <div className="flex items-center gap-3">
                       {device}
                       <div>
-                        <p className="text-sm font-medium">{session.os || 'Unknown OS'}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {session.browser || 'Unknown Browser'}
+                        <p className="text-sm font-medium">
+                          {session.os || "Unknown OS"}
+                        </p>
+                        <p className="text-muted-foreground text-xs">
+                          {session.browser || "Unknown Browser"}
                         </p>
                       </div>
                     </div>
@@ -143,7 +147,13 @@ export function AccountPage(props: {
   );
 }
 
-function EditUserDialog({ session, isPending }: { session: Session | null, isPending: boolean }) {
+function EditUserDialog({
+  session,
+  isPending,
+}: {
+  session: Session | null;
+  isPending: boolean;
+}) {
   const [name, setName] = useState<string>(session?.user.name || "");
   const router = useRouter();
   const [open, setOpen] = useState<boolean>(false);
@@ -182,15 +192,20 @@ function EditUserDialog({ session, isPending }: { session: Session | null, isPen
               ) : (
                 <Avatar className="h-16 w-16">
                   <AvatarImage
-                    src={getUserAvatarUrl(session?.user.image, session?.user.email, session?.user.name)}
+                    src={getUserAvatarUrl(
+                      session?.user.image,
+                      session?.user.email,
+                      session?.user.name,
+                    )}
                     alt={name || "User Avatar"}
                   />
-                  <AvatarFallback>{name?.charAt(0) || 'U'}</AvatarFallback>
+                  <AvatarFallback>{name?.charAt(0) || "U"}</AvatarFallback>
                 </Avatar>
               )}
               <div className="flex-1">
-                <p className="text-sm text-muted-foreground">
-                  Profile pictures are automatically generated using DiceBear avatars based on your email address.
+                <p className="text-muted-foreground text-sm">
+                  Profile pictures are automatically generated using DiceBear
+                  avatars based on your email address.
                 </p>
               </div>
             </div>

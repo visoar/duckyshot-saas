@@ -1,6 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { LucideIcon, Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -112,11 +118,11 @@ export function AppearancePage() {
           Customize the look and feel of your dashboard
         </p>
       </div>
-      
+
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Monitor className="h-5 w-5 text-primary" />
+            <Monitor className="text-primary h-5 w-5" />
             Theme Preferences
           </CardTitle>
           <CardDescription>
@@ -134,7 +140,11 @@ export function AppearancePage() {
                 <ThemeCard
                   title={themeOption.name}
                   icon={themeOption.icon}
-                  isSelected={mounted ? theme === themeOption.value : themeOption.value === "light"}
+                  isSelected={
+                    mounted
+                      ? theme === themeOption.value
+                      : themeOption.value === "light"
+                  }
                 />
               </div>
             ))}

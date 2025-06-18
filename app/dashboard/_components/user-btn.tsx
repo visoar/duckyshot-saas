@@ -57,7 +57,9 @@ export function UserButton() {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
-          <div className={`flex items-center gap-2 p-2 ${!open ? 'justify-center' : ''}`}>
+          <div
+            className={`flex items-center gap-2 p-2 ${!open ? "justify-center" : ""}`}
+          >
             <Skeleton className="h-8 w-8 rounded-full" />
             {open && (
               <div className="flex-1">
@@ -79,12 +81,18 @@ export function UserButton() {
             <SidebarMenuButton
               size={open ? "lg" : "default"}
               className={`data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground ${
-                !open ? 'h-8 w-8 p-0 justify-center' : ''
+                !open ? "h-8 w-8 justify-center p-0" : ""
               }`}
             >
-              <Avatar className={`rounded-full ${open ? 'h-8 w-8' : 'h-6 w-6'}`}>
+              <Avatar
+                className={`rounded-full ${open ? "h-8 w-8" : "h-6 w-6"}`}
+              >
                 <AvatarImage
-                  src={getUserAvatarUrl(session?.user?.image, session?.user?.email, session?.user?.name)}
+                  src={getUserAvatarUrl(
+                    session?.user?.image,
+                    session?.user?.email,
+                    session?.user?.name,
+                  )}
                   alt={session?.user?.name}
                 />
                 <AvatarFallback className="rounded-lg">
@@ -97,7 +105,9 @@ export function UserButton() {
                     <span className="truncate font-semibold">
                       {session?.user?.name}
                     </span>
-                    <span className="truncate text-xs">{session?.user?.email}</span>
+                    <span className="truncate text-xs">
+                      {session?.user?.email}
+                    </span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
                 </>
@@ -114,7 +124,11 @@ export function UserButton() {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-full">
                   <AvatarImage
-                    src={getUserAvatarUrl(session?.user?.image, session?.user?.email, session?.user?.name)}
+                    src={getUserAvatarUrl(
+                      session?.user?.image,
+                      session?.user?.email,
+                      session?.user?.name,
+                    )}
                     alt={session?.user?.name}
                   />
                   <AvatarFallback className="rounded-lg">

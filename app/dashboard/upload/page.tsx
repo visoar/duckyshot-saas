@@ -1,15 +1,30 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { FileUploader } from '@/components/ui/file-uploader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { ExternalLink, Copy, Upload, Image as ImageIcon, FileText, Settings, Server, Monitor } from 'lucide-react';
-import { toast } from 'sonner';
-import Image from 'next/image';
+import { useState } from "react";
+import { FileUploader } from "@/components/ui/file-uploader";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import {
+  ExternalLink,
+  Copy,
+  Upload,
+  Image as ImageIcon,
+  FileText,
+  Settings,
+  Server,
+  Monitor,
+} from "lucide-react";
+import { toast } from "sonner";
+import Image from "next/image";
 
 interface UploadedFile {
   url: string;
@@ -35,7 +50,7 @@ export default function UploadPage() {
   const [isServerUploading, setIsServerUploading] = useState(false);
 
   const handleUploadComplete = (files: UploadedFile[]) => {
-    setUploadedFiles(prev => [...prev, ...files]);
+    setUploadedFiles((prev) => [...prev, ...files]);
     toast.success(`Successfully uploaded ${files.length} file(s)`);
   };
 
@@ -50,8 +65,13 @@ export default function UploadPage() {
       // 将文件转换为base64格式
       const filePromises = Array.from(files).map(async (file, index) => {
         setServerUploadProgress((index / files.length) * 50); // 前50%用于文件读取
-        
-        return new Promise<{fileName: string; contentType: string; size: number; base64Data: string}>((resolve, reject) => {
+
+        return new Promise<{
+          fileName: string;
+          contentType: string;
+          size: number;
+          base64Data: string;
+        }>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => {
             resolve({
@@ -70,10 +90,10 @@ export default function UploadPage() {
       setServerUploadProgress(50); // 文件读取完成
 
       // 调用服务端上传API
-      const response = await fetch('/api/upload/server-upload', {
-        method: 'POST',
+      const response = await fetch("/api/upload/server-upload", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ files: fileData }),
       });
@@ -98,16 +118,20 @@ export default function UploadPage() {
           fileName: r.fileName,
         }));
 
-      setUploadedFiles(prev => [...prev, ...successfulUploads]);
-      
+      setUploadedFiles((prev) => [...prev, ...successfulUploads]);
+
       if (result.summary.failed > 0) {
-        toast.warning(`${result.summary.success} files uploaded, ${result.summary.failed} failed`);
+        toast.warning(
+          `${result.summary.success} files uploaded, ${result.summary.failed} failed`,
+        );
       } else {
-        toast.success(`Successfully uploaded ${result.summary.success} file(s) via server`);
+        toast.success(
+          `Successfully uploaded ${result.summary.success} file(s) via server`,
+        );
       }
     } catch (error) {
-      console.error('Server upload error:', error);
-      toast.error('Server upload failed');
+      console.error("Server upload error:", error);
+      toast.error("Server upload failed");
     } finally {
       setIsServerUploading(false);
       setServerUploadProgress(0);
@@ -117,28 +141,29 @@ export default function UploadPage() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast.success('Copied to clipboard');
+      toast.success("Copied to clipboard");
     } catch {
-      toast.error('Failed to copy to clipboard');
+      toast.error("Failed to copy to clipboard");
     }
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    
+    if (bytes === 0) return "0 Bytes";
+
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className="container mx-auto space-y-8 py-8">
       <div>
         <h1 className="text-3xl font-bold">File Upload Demo</h1>
         <p className="text-muted-foreground mt-2">
-          Comprehensive file upload examples with client-side and server-side upload methods.
+          Comprehensive file upload examples with client-side and server-side
+          upload methods.
         </p>
       </div>
 
@@ -168,17 +193,18 @@ export default function UploadPage() {
                 Image Upload with Compression
               </CardTitle>
               <CardDescription>
-                Upload images with automatic compression. Maximum 10MB per file, up to 3 files.
+                Upload images with automatic compression. Maximum 10MB per file,
+                up to 3 files.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <FileUploader
                 acceptedFileTypes={[
-                  'image/jpeg',
-                  'image/jpg', 
-                  'image/png',
-                  'image/gif',
-                  'image/webp',
+                  "image/jpeg",
+                  "image/jpg",
+                  "image/png",
+                  "image/gif",
+                  "image/webp",
                 ]}
                 maxFileSize={10 * 1024 * 1024} // 10MB
                 maxFiles={3}
@@ -199,17 +225,18 @@ export default function UploadPage() {
                 Document Upload
               </CardTitle>
               <CardDescription>
-                Upload documents and files. Maximum 10MB per file, single file upload.
+                Upload documents and files. Maximum 10MB per file, single file
+                upload.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <FileUploader
                 acceptedFileTypes={[
-                  'application/pdf',
-                  'application/msword',
-                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                  'text/plain',
-                  'text/csv'
+                  "application/pdf",
+                  "application/msword",
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                  "text/plain",
+                  "text/csv",
                 ]}
                 maxFileSize={10 * 1024 * 1024} // 10MB
                 maxFiles={1}
@@ -226,7 +253,8 @@ export default function UploadPage() {
                 Batch Upload
               </CardTitle>
               <CardDescription>
-                Upload multiple files at once. Any supported file type, up to 10 files.
+                Upload multiple files at once. Any supported file type, up to 10
+                files.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -251,7 +279,7 @@ export default function UploadPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+              <div className="rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
                 <input
                   type="file"
                   multiple
@@ -262,20 +290,22 @@ export default function UploadPage() {
                 />
                 <label
                   htmlFor="server-upload"
-                  className={`cursor-pointer flex flex-col items-center gap-2 ${
-                    isServerUploading ? 'opacity-50 cursor-not-allowed' : ''
+                  className={`flex cursor-pointer flex-col items-center gap-2 ${
+                    isServerUploading ? "cursor-not-allowed opacity-50" : ""
                   }`}
                 >
                   <Server className="h-12 w-12 text-gray-400" />
                   <p className="text-lg font-medium">
-                    {isServerUploading ? 'Uploading...' : 'Click to select files for server upload'}
+                    {isServerUploading
+                      ? "Uploading..."
+                      : "Click to select files for server upload"}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Files will be processed on the server side
                   </p>
                 </label>
               </div>
-              
+
               {isServerUploading && (
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
@@ -285,10 +315,12 @@ export default function UploadPage() {
                   <Progress value={serverUploadProgress} className="w-full" />
                 </div>
               )}
-              
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-medium text-blue-900 mb-2">Server Upload Features:</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
+
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <h4 className="mb-2 font-medium text-blue-900">
+                  Server Upload Features:
+                </h4>
+                <ul className="space-y-1 text-sm text-blue-800">
                   <li>• Files processed on server before storage</li>
                   <li>• Server-side validation and security checks</li>
                   <li>• Automatic file optimization and metadata extraction</li>
@@ -309,12 +341,13 @@ export default function UploadPage() {
                 Advanced Image Compression
               </CardTitle>
               <CardDescription>
-                Fine-tuned image compression with custom quality and size settings.
+                Fine-tuned image compression with custom quality and size
+                settings.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <FileUploader
-                acceptedFileTypes={['image/jpeg', 'image/png', 'image/webp']}
+                acceptedFileTypes={["image/jpeg", "image/png", "image/webp"]}
                 maxFileSize={20 * 1024 * 1024} // 20MB
                 maxFiles={5}
                 enableImageCompression={true}
@@ -323,9 +356,9 @@ export default function UploadPage() {
                 imageCompressionMaxHeight={720}
                 onUploadComplete={handleUploadComplete}
               />
-              <div className="mt-4 bg-gray-50 border rounded-lg p-4">
-                <h4 className="font-medium mb-2">Compression Settings:</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
+              <div className="mt-4 rounded-lg border bg-gray-50 p-4">
+                <h4 className="mb-2 font-medium">Compression Settings:</h4>
+                <ul className="space-y-1 text-sm text-gray-600">
                   <li>• Quality: 60%</li>
                   <li>• Max Width: 1280px</li>
                   <li>• Max Height: 720px</li>
@@ -349,10 +382,11 @@ export default function UploadPage() {
                 maxFiles={2}
                 onUploadComplete={handleUploadComplete}
               />
-              <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="mt-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
                 <p className="text-sm text-yellow-800">
-                  <strong>Note:</strong> Large files may take longer to upload and process.
-                  Ensure stable internet connection for best results.
+                  <strong>Note:</strong> Large files may take longer to upload
+                  and process. Ensure stable internet connection for best
+                  results.
                 </p>
               </div>
             </CardContent>
@@ -374,23 +408,23 @@ export default function UploadPage() {
               {uploadedFiles.map((file, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-4 border rounded-lg"
+                  className="flex items-center justify-between rounded-lg border p-4"
                 >
                   <div className="flex items-center space-x-4">
                     {/* File preview for images */}
-                    {file.contentType.startsWith('image/') && (
+                    {file.contentType.startsWith("image/") && (
                       <Image
                         src={file.url}
                         alt={file.fileName}
                         width={48}
                         height={48}
-                        className="h-12 w-12 object-cover rounded"
+                        className="h-12 w-12 rounded object-cover"
                       />
                     )}
-                    
+
                     <div>
                       <p className="font-medium">{file.fileName}</p>
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                      <div className="text-muted-foreground flex items-center space-x-2 text-sm">
                         <span>{formatFileSize(file.size)}</span>
                         <Badge variant="secondary" className="text-xs">
                           {file.contentType}
@@ -406,17 +440,17 @@ export default function UploadPage() {
                       size="sm"
                       onClick={() => copyToClipboard(file.url)}
                     >
-                      <Copy className="h-4 w-4 mr-1" />
+                      <Copy className="mr-1 h-4 w-4" />
                       Copy URL
                     </Button>
-                    
+
                     {/* Open file button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(file.url, '_blank')}
+                      onClick={() => window.open(file.url, "_blank")}
                     >
-                      <ExternalLink className="h-4 w-4 mr-1" />
+                      <ExternalLink className="mr-1 h-4 w-4" />
                       Open
                     </Button>
                   </div>

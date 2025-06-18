@@ -28,9 +28,9 @@ export const metadata = createMetadata({
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
   alternates: {
@@ -76,10 +76,7 @@ export default function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <NextTopLoader
-                color="hsl(var(--primary))"
-                showSpinner={false}
-              />
+              <NextTopLoader color="hsl(var(--primary))" showSpinner={false} />
               {children}
               <Toaster />
               <CookieConsent />

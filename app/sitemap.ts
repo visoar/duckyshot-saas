@@ -1,5 +1,5 @@
-import { MetadataRoute } from 'next';
-import env from '@/env';
+import { MetadataRoute } from "next";
+import env from "@/env";
 
 // TODO: Dynamically generate sitemap entries from your content sources (e.g., database, CMS)
 // For now, we'll add some static common pages.
@@ -15,37 +15,37 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: baseUrl,
       lastModified,
-      changeFrequency: 'daily', // Or 'weekly', 'monthly' depending on how often the homepage content changes
+      changeFrequency: "daily", // Or 'weekly', 'monthly' depending on how often the homepage content changes
       priority: 1.0, // Homepage usually has the highest priority
     },
     {
       url: `${baseUrl}/about`,
       lastModified,
-      changeFrequency: 'monthly',
+      changeFrequency: "monthly",
       priority: 0.8,
     },
     {
       url: `${baseUrl}/contact`,
       lastModified,
-      changeFrequency: 'yearly', // Contact page might not change often
+      changeFrequency: "yearly", // Contact page might not change often
       priority: 0.5,
     },
     {
       url: `${baseUrl}/pricing`,
       lastModified,
-      changeFrequency: 'monthly',
+      changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       url: `${baseUrl}/privacy`,
       lastModified,
-      changeFrequency: 'yearly',
+      changeFrequency: "yearly",
       priority: 0.3,
     },
     {
       url: `${baseUrl}/terms`,
       lastModified,
-      changeFrequency: 'yearly',
+      changeFrequency: "yearly",
       priority: 0.3,
     },
     // Add other static pages here

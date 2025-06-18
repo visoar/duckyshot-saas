@@ -112,7 +112,7 @@ export function SubscriptionStatsCards() {
           </div>
           <p className="text-muted-foreground text-xs">
             {loading ? (
-              <span className="bg-muted h-3 w-20 animate-pulse rounded inline-block" />
+              <span className="bg-muted inline-block h-3 w-20 animate-pulse rounded" />
             ) : (
               `${stats?.trialSubscriptions || 0} on trial`
             )}
@@ -154,7 +154,7 @@ export function SubscriptionStatsCards() {
           </div>
           <p className="text-muted-foreground text-xs">
             {loading ? (
-              <span className="bg-muted h-3 w-20 animate-pulse rounded inline-block" />
+              <span className="bg-muted inline-block h-3 w-20 animate-pulse rounded" />
             ) : (
               `${stats?.cancelledSubscriptions || 0} cancelled this month`
             )}

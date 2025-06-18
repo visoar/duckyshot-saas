@@ -25,10 +25,18 @@ interface PaymentRecord {
 }
 
 // 使用 dynamic 动态导入各个页面组件
-const AccountPage = dynamic(() => import("./account-page").then(mod => mod.AccountPage));
-const AppearancePage = dynamic(() => import("./appearance-page").then(mod => mod.AppearancePage));
-const NotificationPage = dynamic(() => import("./notifications-page").then(mod => mod.NotificationPage));
-const BillingPage = dynamic(() => import("./billing-page").then(mod => mod.BillingPage));
+const AccountPage = dynamic(() =>
+  import("./account-page").then((mod) => mod.AccountPage),
+);
+const AppearancePage = dynamic(() =>
+  import("./appearance-page").then((mod) => mod.AppearancePage),
+);
+const NotificationPage = dynamic(() =>
+  import("./notifications-page").then((mod) => mod.NotificationPage),
+);
+const BillingPage = dynamic(() =>
+  import("./billing-page").then((mod) => mod.BillingPage),
+);
 
 // Define Props for each page component
 interface AccountPageProps {
@@ -67,10 +75,30 @@ interface SettingsTabConfig {
 }
 
 const settingsTabsConfig: SettingsTabConfig[] = [
-  { name: "Account & Security", value: "account", icon: UserCircle, component: AccountPage as FC<SettingsPageProps> },
-  { name: "Billing & Plans", value: "billing", icon: CreditCard, component: BillingPage as FC<SettingsPageProps> },
-  { name: "Emails & Notifications", value: "notifications", icon: Bell, component: NotificationPage as FC<SettingsPageProps> },
-  { name: "Appearance", value: "appearance", icon: Palette, component: AppearancePage as FC<SettingsPageProps> },
+  {
+    name: "Account & Security",
+    value: "account",
+    icon: UserCircle,
+    component: AccountPage as FC<SettingsPageProps>,
+  },
+  {
+    name: "Billing & Plans",
+    value: "billing",
+    icon: CreditCard,
+    component: BillingPage as FC<SettingsPageProps>,
+  },
+  {
+    name: "Emails & Notifications",
+    value: "notifications",
+    icon: Bell,
+    component: NotificationPage as FC<SettingsPageProps>,
+  },
+  {
+    name: "Appearance",
+    value: "appearance",
+    icon: Palette,
+    component: AppearancePage as FC<SettingsPageProps>,
+  },
 ];
 
 interface PaymentRecord {
@@ -111,7 +139,7 @@ export function Settings({
   const [tab, setTab] = useQueryState("page", { defaultValue: "account" });
 
   // 找到当前活动的标签页配置
-  const activeTabConfig = settingsTabsConfig.find(t => t.value === tab);
+  const activeTabConfig = settingsTabsConfig.find((t) => t.value === tab);
   const ActiveComponent = activeTabConfig?.component;
 
   // 根据不同组件准备相应的props
@@ -132,13 +160,20 @@ export function Settings({
     <section className="grid grid-rows-[1fr] gap-6 lg:grid-cols-[280px_1fr]">
       <nav className="space-y-2">
         <div className="mb-4">
-          <h3 className="text-sm font-medium text-muted-foreground mb-3">Settings</h3>
+          <h3 className="text-muted-foreground mb-3 text-sm font-medium">
+            Settings
+          </h3>
         </div>
         {settingsTabsConfig.map((mappedTab) => (
           <Button
             key={mappedTab.value}
             variant="ghost"
-            className={cn("w-full justify-start h-10 px-3 rounded-lg transition-all", tab === mappedTab.value ? "bg-primary/10 text-primary hover:bg-primary/15 border border-primary/20" : "hover:bg-muted/50 text-muted-foreground hover:text-foreground")}
+            className={cn(
+              "h-10 w-full justify-start rounded-lg px-3 transition-all",
+              tab === mappedTab.value
+                ? "bg-primary/10 text-primary hover:bg-primary/15 border-primary/20 border"
+                : "hover:bg-muted/50 text-muted-foreground hover:text-foreground",
+            )}
             onClick={() => setTab(mappedTab.value)}
           >
             <mappedTab.icon className="mr-2 h-4 w-4" />

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -42,30 +42,30 @@ export function AuthForm({ mode, availableProviders }: AuthFormProps) {
       setLoading(false);
       return;
     }
-    
+
     // Navigate to the unified sent page with the email as a query param
     const params = new URLSearchParams({ email: data.email });
     router.push(`/auth/sent?${params.toString()}`);
   };
 
   const isLogin = mode === "login";
-  
+
   const config = {
     title: isLogin ? "Welcome back" : "Get started today",
-    description: isLogin 
+    description: isLogin
       ? "Enter your email to receive a secure magic link and access your dashboard"
       : "Create your account in seconds with just your email address",
     badgeText: isLogin ? "Welcome back" : "Get started",
     submitButtonText: isLogin ? "Send Magic Link" : "Create Account",
     loadingText: "Sending magic link...",
     submitIcon: Mail,
-    alternativeActionText: isLogin 
-      ? "New to our platform?" 
+    alternativeActionText: isLogin
+      ? "New to our platform?"
       : "Already have an account?",
     alternativeActionLink: (
       <Link
         href={isLogin ? "/signup" : "/login"}
-        className="cursor-pointer font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline transition-colors"
+        className="text-primary hover:text-primary/80 cursor-pointer font-medium underline-offset-4 transition-colors hover:underline"
       >
         {isLogin ? "Create an account" : "Sign in instead"}
       </Link>

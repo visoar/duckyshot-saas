@@ -8,10 +8,7 @@ import type { auth } from "./server";
 
 export const authClient = createAuthClient({
   baseURL: env.NEXT_PUBLIC_APP_URL,
-  plugins: [
-    magicLinkClient(),
-    inferAdditionalFields<typeof auth>(),
-  ],
+  plugins: [magicLinkClient(), inferAdditionalFields<typeof auth>()],
 });
 
 export const {

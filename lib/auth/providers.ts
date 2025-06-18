@@ -1,6 +1,6 @@
 import env from "env";
 
-export type SocialProvider = 'google' | 'github' | 'linkedin';
+export type SocialProvider = "google" | "github" | "linkedin";
 
 /**
  * Configuration for social providers with their environment variable keys
@@ -10,9 +10,21 @@ export const providerConfigs: {
   clientIdKey: keyof typeof env;
   clientSecretKey: keyof typeof env;
 }[] = [
-  { name: 'google', clientIdKey: 'GOOGLE_CLIENT_ID', clientSecretKey: 'GOOGLE_CLIENT_SECRET' },
-  { name: 'github', clientIdKey: 'GITHUB_CLIENT_ID', clientSecretKey: 'GITHUB_CLIENT_SECRET' },
-  { name: 'linkedin', clientIdKey: 'LINKEDIN_CLIENT_ID', clientSecretKey: 'LINKEDIN_CLIENT_SECRET' },
+  {
+    name: "google",
+    clientIdKey: "GOOGLE_CLIENT_ID",
+    clientSecretKey: "GOOGLE_CLIENT_SECRET",
+  },
+  {
+    name: "github",
+    clientIdKey: "GITHUB_CLIENT_ID",
+    clientSecretKey: "GITHUB_CLIENT_SECRET",
+  },
+  {
+    name: "linkedin",
+    clientIdKey: "LINKEDIN_CLIENT_ID",
+    clientSecretKey: "LINKEDIN_CLIENT_SECRET",
+  },
 ];
 
 /**
@@ -21,7 +33,10 @@ export const providerConfigs: {
  */
 export function getAvailableSocialProviders(): SocialProvider[] {
   return providerConfigs
-    .filter(({ clientIdKey, clientSecretKey }) => env[clientIdKey] && env[clientSecretKey])
+    .filter(
+      ({ clientIdKey, clientSecretKey }) =>
+        env[clientIdKey] && env[clientSecretKey],
+    )
     .map(({ name }) => name);
 }
 

@@ -1,7 +1,5 @@
 import type { PaymentProvider } from "../provider";
-import type {
-  CreateCheckoutOptions,
-} from "@/types/billing";
+import type { CreateCheckoutOptions } from "@/types/billing";
 import { z } from "zod";
 import { creemClient, creemApiKey, creemWebhookSecret } from "./client";
 import { getProductTierById } from "@/lib/config/products";
@@ -18,7 +16,7 @@ const CreemCustomerPortalResponseSchema = z.object({
 
 const creemProvider: PaymentProvider = {
   async createCheckoutSession(
-    options: CreateCheckoutOptions
+    options: CreateCheckoutOptions,
   ): Promise<{ checkoutUrl: string }> {
     try {
       const tier = getProductTierById(options.tierId);
@@ -38,7 +36,7 @@ const creemProvider: PaymentProvider = {
 
       if (!creemProductId) {
         throw new Error(
-          `Creem product ID not found for tier "${options.tierId}" with mode "${options.paymentMode}" and cycle "${options.billingCycle}".`
+          `Creem product ID not found for tier "${options.tierId}" with mode "${options.paymentMode}" and cycle "${options.billingCycle}".`,
         );
       }
 
@@ -67,21 +65,21 @@ const creemProvider: PaymentProvider = {
       if (!parsed.success) {
         console.error("Invalid Creem checkout response:", parsed.error);
         throw new Error(
-          `Failed to parse checkout response from Creem. API Response: ${JSON.stringify(response)}`
+          `Failed to parse checkout response from Creem. API Response: ${JSON.stringify(response)}`,
         );
       }
 
       return { checkoutUrl: parsed.data.checkoutUrl };
-
     } catch (error) {
       console.error("Error creating Creem checkout session:", error);
-      const message = error instanceof Error ? error.message : "An unknown error occurred.";
+      const message =
+        error instanceof Error ? error.message : "An unknown error occurred.";
       throw new Error(`Failed to create checkout session: ${message}`);
     }
   },
 
   async createCustomerPortalUrl(
-    customerId: string
+    customerId: string,
   ): Promise<{ portalUrl: string }> {
     try {
       const response = await creemClient.generateCustomerLinks({
@@ -96,21 +94,22 @@ const creemProvider: PaymentProvider = {
       if (!parsed.success) {
         console.error("Invalid Creem customer portal response:", parsed.error);
         throw new Error(
-          `Failed to parse customer portal response from Creem. API Response: ${JSON.stringify(response)}`
+          `Failed to parse customer portal response from Creem. API Response: ${JSON.stringify(response)}`,
         );
       }
 
       return { portalUrl: parsed.data.customerPortalLink };
     } catch (error) {
       console.error("Error creating Creem customer portal URL:", error);
-      const message = error instanceof Error ? error.message : "An unknown error occurred.";
+      const message =
+        error instanceof Error ? error.message : "An unknown error occurred.";
       throw new Error(`Failed to create customer portal session: ${message}`);
     }
   },
 
   async handleWebhook(
     payload: string,
-    signature: string
+    signature: string,
   ): Promise<{ received: boolean; message?: string }> {
     if (!creemWebhookSecret) {
       console.error("Creem webhook secret is not configured.");
@@ -120,7 +119,8 @@ const creemProvider: PaymentProvider = {
     try {
       return await handleCreemWebhook(payload, signature);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Webhook handling failed";
+      const message =
+        error instanceof Error ? error.message : "Webhook handling failed";
       console.error(`[Creem Webhook Provider Error]: ${message}`);
       return { received: false, message };
     }

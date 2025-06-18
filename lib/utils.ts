@@ -11,7 +11,10 @@ export function cn(...inputs: ClassValue[]) {
  * @param currency - Currency code (default: "USD")
  * @returns Formatted currency string
  */
-export function formatCurrency(amountInCents: number, currency: string = "USD"): string {
+export function formatCurrency(
+  amountInCents: number,
+  currency: string = "USD",
+): string {
   const amountInDollars = amountInCents / 100;
   return new Intl.NumberFormat("en-US", {
     style: "currency",

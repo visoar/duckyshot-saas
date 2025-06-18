@@ -11,7 +11,7 @@ const databaseUrl = env.DATABASE_URL;
 const connectionConfig = getConnectionConfig();
 
 // Validate and log configuration in development
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === "development") {
   validateDatabaseConfig();
 }
 

@@ -5,7 +5,12 @@ import type {
   CustomerLinksEntity as CreemCustomerPortalLink,
 } from "creem/models/components";
 
-export type { SubscriptionEntity, CustomerEntity, CheckoutEntity, CreemCustomerPortalLink };
+export type {
+  SubscriptionEntity,
+  CustomerEntity,
+  CheckoutEntity,
+  CreemCustomerPortalLink,
+};
 
 export type PaymentMode = "subscription" | "one_time";
 export type BillingCycle = "monthly" | "yearly";
@@ -71,7 +76,7 @@ export interface CreemPaymentObject extends CreemBaseObject {
   amount: number;
   amount_paid?: number;
   currency: string;
-  billing_reason?: 'subscription_cycle' | 'subscription_create';
+  billing_reason?: "subscription_cycle" | "subscription_create";
   lines?: {
     data?: Array<{
       period: {
@@ -80,9 +85,9 @@ export interface CreemPaymentObject extends CreemBaseObject {
       };
       price?: {
         product?: string;
-      }
-    }>
-  }
+      };
+    }>;
+  };
 }
 
 export interface CreemCheckoutObject extends CreemBaseObject {

@@ -1,14 +1,26 @@
-import { db } from '@/database';
-import * as schema from '@/database/schema';
-import { subscriptions, payments, users, webhookEvents } from '@/database/tables';
-import { eq, desc, and } from 'drizzle-orm'; // Added desc for descending order
-import type { PgTransaction } from 'drizzle-orm/pg-core';
-import type { PostgresJsQueryResultHKT } from 'drizzle-orm/postgres-js';
-import type { Subscription, SubscriptionStatus } from '@/types/billing';
-import { getProductTierByProductId, getProductTierById } from '@/lib/config/products';
-import { ExtractTablesWithRelations } from 'drizzle-orm';
+import { db } from "@/database";
+import * as schema from "@/database/schema";
+import {
+  subscriptions,
+  payments,
+  users,
+  webhookEvents,
+} from "@/database/tables";
+import { eq, desc, and } from "drizzle-orm"; // Added desc for descending order
+import type { PgTransaction } from "drizzle-orm/pg-core";
+import type { PostgresJsQueryResultHKT } from "drizzle-orm/postgres-js";
+import type { Subscription, SubscriptionStatus } from "@/types/billing";
+import {
+  getProductTierByProductId,
+  getProductTierById,
+} from "@/lib/config/products";
+import { ExtractTablesWithRelations } from "drizzle-orm";
 
-export type Tx = PgTransaction<PostgresJsQueryResultHKT, typeof schema, ExtractTablesWithRelations<typeof schema>>;
+export type Tx = PgTransaction<
+  PostgresJsQueryResultHKT,
+  typeof schema,
+  ExtractTablesWithRelations<typeof schema>
+>;
 
 interface UpsertSubscriptionData {
   userId: string;
@@ -35,7 +47,10 @@ interface UpsertPaymentData {
 
 const getDb = (tx?: Tx) => tx || db;
 
-export async function upsertSubscription(data: UpsertSubscriptionData, tx?: Tx) {
+export async function upsertSubscription(
+  data: UpsertSubscriptionData,
+  tx?: Tx,
+) {
   const dbase = getDb(tx);
   const now = new Date();
 
@@ -83,7 +98,9 @@ export async function findUserByCustomerId(customerId: string, tx?: Tx) {
   return result[0] ?? null;
 }
 
-export async function getUserSubscription(userId: string): Promise<Subscription | null> {
+export async function getUserSubscription(
+  userId: string,
+): Promise<Subscription | null> {
   const userSubscriptions = await db
     .select()
     .from(subscriptions)
@@ -93,23 +110,23 @@ export async function getUserSubscription(userId: string): Promise<Subscription 
   if (!userSubscriptions || userSubscriptions.length === 0) return null;
 
   // Filter active or trialing subscriptions
-  const activeSubscriptions = userSubscriptions.filter(sub => 
-    sub.status === 'active' || sub.status === 'trialing'
+  const activeSubscriptions = userSubscriptions.filter(
+    (sub) => sub.status === "active" || sub.status === "trialing",
   );
 
-  let subToReturn: typeof userSubscriptions[0] | undefined;
+  let subToReturn: (typeof userSubscriptions)[0] | undefined;
 
   if (activeSubscriptions.length > 0) {
     // If multiple active/trialing subscriptions exist, log warning and return the most recent one
     if (activeSubscriptions.length > 1) {
       console.warn(
         `User ${userId} has ${activeSubscriptions.length} active/trialing subscriptions. ` +
-        `This may indicate a data consistency issue. Returning the most recent one.`,
-        { 
-          userId, 
-          subscriptionIds: activeSubscriptions.map(s => s.subscriptionId),
-          statuses: activeSubscriptions.map(s => s.status)
-        }
+          `This may indicate a data consistency issue. Returning the most recent one.`,
+        {
+          userId,
+          subscriptionIds: activeSubscriptions.map((s) => s.subscriptionId),
+          statuses: activeSubscriptions.map((s) => s.status),
+        },
       );
     }
     // Return the most recently created active/trialing subscription
@@ -144,7 +161,7 @@ export async function getUserPayments(userId: string, limit: number = 10) {
     .orderBy(desc(payments.createdAt)) // Order by creation date descending (newest first)
     .limit(limit);
 
-  return userPayments.map(payment => {
+  return userPayments.map((payment) => {
     let tier = getProductTierByProductId(payment.productId);
     // If tier is not found by Creem's product ID, try to find it by our internal tier ID
     if (!tier) {
@@ -153,7 +170,7 @@ export async function getUserPayments(userId: string, limit: number = 10) {
     return {
       ...payment,
       tierId: tier?.id || payment.productId,
-      tierName: tier?.name || 'Unknown Product',
+      tierName: tier?.name || "Unknown Product",
       // Keep amount in cents (original database value)
     };
   });
@@ -168,8 +185,8 @@ export async function getUserPayments(userId: string, limit: number = 10) {
  */
 export async function isWebhookEventProcessed(
   eventId: string,
-  provider: string = 'creem', // provider is unused
-  tx?: Tx
+  provider: string = "creem", // provider is unused
+  tx?: Tx,
 ): Promise<boolean> {
   const dbase = getDb(tx);
   const result = await dbase
@@ -177,12 +194,12 @@ export async function isWebhookEventProcessed(
     .from(webhookEvents)
     .where(
       and(
-      eq(webhookEvents.eventId, eventId),
-      eq(webhookEvents.provider, provider)
+        eq(webhookEvents.eventId, eventId),
+        eq(webhookEvents.provider, provider),
+      ),
     )
-  )
     .limit(1);
-  
+
   return result.length > 0;
 }
 
@@ -197,9 +214,9 @@ export async function isWebhookEventProcessed(
 export async function recordWebhookEvent(
   eventId: string,
   eventType: string,
-  provider: string = 'creem',
+  provider: string = "creem",
   payload?: string,
-  tx?: Tx
+  tx?: Tx,
 ): Promise<void> {
   const dbase = getDb(tx);
   await dbase

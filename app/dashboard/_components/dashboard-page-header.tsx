@@ -28,7 +28,7 @@ export function DashboardPageHeader({
   showSidebarTrigger = true,
 }: DashboardPageHeaderProps) {
   return (
-    <header className="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 flex h-14 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear">
+    <header className="flex h-14 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
       <div className="flex w-full items-center justify-between gap-1 px-4 lg:gap-2 lg:px-6">
         <div className="flex items-center gap-1 lg:gap-2">
           {showSidebarTrigger && (
@@ -54,12 +54,14 @@ export function DashboardPageHeader({
                   </>
                 )}
                 <BreadcrumbItem>
-                  <BreadcrumbPage className="font-semibold">{title}</BreadcrumbPage>
+                  <BreadcrumbPage className="font-semibold">
+                    {title}
+                  </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
             {description && (
-              <p className="text-sm text-muted-foreground hidden sm:block">
+              <p className="text-muted-foreground hidden text-sm sm:block">
                 {description}
               </p>
             )}

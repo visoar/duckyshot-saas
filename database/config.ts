@@ -19,11 +19,11 @@ export default defineConfig({
 function isServerlessEnvironment(): boolean {
   return Boolean(
     process.env.VERCEL ||
-    process.env.AWS_LAMBDA_FUNCTION_NAME ||
-    process.env.NETLIFY ||
-    process.env.RAILWAY_ENVIRONMENT ||
-    process.env.FUNCTIONS_EMULATOR || // Google Cloud Functions
-    process.env.AZURE_FUNCTIONS_ENVIRONMENT // Azure Functions
+      process.env.AWS_LAMBDA_FUNCTION_NAME ||
+      process.env.NETLIFY ||
+      process.env.RAILWAY_ENVIRONMENT ||
+      process.env.FUNCTIONS_EMULATOR || // Google Cloud Functions
+      process.env.AZURE_FUNCTIONS_ENVIRONMENT, // Azure Functions
   );
 }
 
@@ -32,25 +32,25 @@ function isServerlessEnvironment(): boolean {
  */
 export function getConnectionConfig(): postgres.Options<{}> {
   const isServerless = isServerlessEnvironment();
-  
+
   if (isServerless) {
     // Serverless environment configuration
     return {
       // Maximum connections per instance (keep low for serverless)
       max: 1,
-      
+
       // Close idle connections after 20 seconds
       idle_timeout: 20,
-      
+
       // Maximum connection lifetime (30 minutes)
       max_lifetime: 60 * 30,
-      
+
       // Connection timeout (30 seconds)
       connect_timeout: 30,
-      
+
       // Enable prepared statements for performance
       prepare: true,
-      
+
       // Handle connection errors gracefully
       onnotice: () => {}, // Suppress notices in production
     };
@@ -59,41 +59,39 @@ export function getConnectionConfig(): postgres.Options<{}> {
   // Traditional server environment configuration
   return {
     // Higher connection pool for traditional servers
-    max: parseInt(process.env.DB_POOL_SIZE || '20'),
-    
+    max: parseInt(process.env.DB_POOL_SIZE || "20"),
+
     // Longer idle timeout for persistent applications
-    idle_timeout: parseInt(process.env.DB_IDLE_TIMEOUT || '300'), // 5 minutes
-    
+    idle_timeout: parseInt(process.env.DB_IDLE_TIMEOUT || "300"), // 5 minutes
+
     // Longer connection lifetime
-    max_lifetime: parseInt(process.env.DB_MAX_LIFETIME || '14400'), // 4 hours
-    
+    max_lifetime: parseInt(process.env.DB_MAX_LIFETIME || "14400"), // 4 hours
+
     // Connection timeout
-    connect_timeout: parseInt(process.env.DB_CONNECT_TIMEOUT || '30'),
-    
+    connect_timeout: parseInt(process.env.DB_CONNECT_TIMEOUT || "30"),
+
     // Enable prepared statements
     prepare: true,
-    
+
     // Transform settings (removed due to compatibility issues)
     // transform: {
     //   column: postgres.toCamel,
     //   value: postgres.fromCamel,
     // },
-    
+
     // Debug mode for development
-    debug: process.env.NODE_ENV === 'development',
-    
+    debug: process.env.NODE_ENV === "development",
+
     // Handle connection errors gracefully
-    onnotice: process.env.NODE_ENV === 'development' 
-      ? console.log 
-      : () => {}, // Log notices in development, suppress in production
+    onnotice: process.env.NODE_ENV === "development" ? console.log : () => {}, // Log notices in development, suppress in production
   };
 }
 
 /**
  * Gets the current environment type for logging and monitoring
  */
-export function getEnvironmentType(): 'serverless' | 'traditional' {
-  return isServerlessEnvironment() ? 'serverless' : 'traditional';
+export function getEnvironmentType(): "serverless" | "traditional" {
+  return isServerlessEnvironment() ? "serverless" : "traditional";
 }
 
 // Flag to ensure configuration is only logged once
@@ -107,25 +105,29 @@ export function validateDatabaseConfig(): void {
   if (configValidated) {
     return;
   }
-  
+
   const config = getConnectionConfig();
   const envType = getEnvironmentType();
-  
+
   console.log(`Database configuration loaded for ${envType} environment.`);
   // console.log(`- Max connections: ${config.max}`);
   // console.log(`- Idle timeout: ${config.idle_timeout}s`);
   // console.log(`- Max lifetime: ${config.max_lifetime}s`);
   // console.log(`- Connect timeout: ${config.connect_timeout}s`);
-  
+
   // Warn about potential issues
-  if (envType === 'serverless' && config.max && config.max > 2) {
-    console.warn('Warning: High connection pool size detected in serverless environment');
+  if (envType === "serverless" && config.max && config.max > 2) {
+    console.warn(
+      "Warning: High connection pool size detected in serverless environment",
+    );
   }
-  
-  if (envType === 'traditional' && config.max && config.max < 5) {
-    console.warn('Warning: Low connection pool size for traditional server environment');
+
+  if (envType === "traditional" && config.max && config.max < 5) {
+    console.warn(
+      "Warning: Low connection pool size for traditional server environment",
+    );
   }
-  
+
   // Mark as validated to prevent repeated logging
   configValidated = true;
 }

@@ -1,14 +1,14 @@
-import { MetadataRoute } from 'next';
-import env from '@/env';
+import { MetadataRoute } from "next";
+import env from "@/env";
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
-        userAgent: '*',
-        allow: '/',
+        userAgent: "*",
+        allow: "/",
         // Disallow specific paths if needed, e.g., admin panels, private user data
-        // disallow: ['/admin/', '/api/auth/session'], 
+        // disallow: ['/admin/', '/api/auth/session'],
       },
     ],
     sitemap: `${env.NEXT_PUBLIC_APP_URL}/sitemap.xml`,

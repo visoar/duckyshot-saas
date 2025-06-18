@@ -35,10 +35,5 @@ export default async function authMiddleware(request: NextRequest) {
 
 export const config = {
   // 中间件仅在以下匹配的路径上运行，以提高性能
-  matcher: [
-    "/dashboard/:path*",
-    "/login",
-    "/signup",
-    "/auth/sent",
-  ],
+  matcher: ["/dashboard/:path*", "/login", "/signup", "/auth/sent"],
 };

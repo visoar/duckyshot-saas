@@ -4,11 +4,11 @@
  * @param style - The DiceBear avatar style (default: 'initials')
  * @returns Avatar URL
  */
-import { AVATAR_STYLE } from '@/constants';
+import { AVATAR_STYLE } from "@/constants";
 
 export function generateAvatarUrl(
   seed: string,
-  style: string = AVATAR_STYLE
+  style: string = AVATAR_STYLE,
 ): string {
   const encodedSeed = encodeURIComponent(seed);
   return `https://api.dicebear.com/9.x/${style}/svg?seed=${encodedSeed}`;
@@ -26,12 +26,12 @@ export function getUserAvatarUrl(
   userImage?: string | null,
   email?: string | null,
   name?: string | null,
-  style: string = AVATAR_STYLE
+  style: string = AVATAR_STYLE,
 ): string {
   if (userImage) {
     return userImage;
   }
-  
-  const seed = email || name || 'User';
+
+  const seed = email || name || "User";
   return generateAvatarUrl(seed, style);
 }

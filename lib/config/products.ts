@@ -97,7 +97,8 @@ export const PRODUCT_TIERS: PricingTier[] = [
       yearly: 199.99,
     },
     currency: "USD",
-  }, {
+  },
+  {
     id: "team",
     name: "Team",
     description: "Best for growing teams and businesses",
@@ -144,7 +145,9 @@ export const getProductTierById = (id: string): PricingTier | undefined => {
  * @param productId - 支付提供商的产品 ID
  * @returns PricingTier | undefined
  */
-export const getProductTierByProductId = (productId: string): PricingTier | undefined => {
+export const getProductTierByProductId = (
+  productId: string,
+): PricingTier | undefined => {
   for (const tier of PRODUCT_TIERS) {
     if (Object.values(tier.pricing.creem).includes(productId)) {
       return tier;
