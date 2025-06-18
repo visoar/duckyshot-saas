@@ -36,10 +36,10 @@ export async function GET() {
       .from(subscriptions);
 
     // Get payment stats
-    const [paymentStats] = await db
+    const [paymentStatsData] = await db
       .select({
         total: count(),
-        totalRevenue: sum(payments.amount),
+        totalRevenue: sum(payments.amount).mapWith(Number),
         successful: count(
           sql`CASE WHEN ${payments.status} = 'succeeded' THEN 1 END`,
         ),
@@ -47,10 +47,10 @@ export async function GET() {
       .from(payments);
 
     // Get upload stats
-    const [uploadStats] = await db
+    const [uploadStatsData] = await db
       .select({
         total: count(),
-        totalSize: sum(uploads.fileSize),
+        totalSize: sum(uploads.fileSize).mapWith(Number),
       })
       .from(uploads);
 
@@ -66,10 +66,10 @@ export async function GET() {
       .orderBy(desc(sql`DATE(${users.createdAt})`));
 
     // Get revenue by month (last 12 months)
-    const monthlyRevenue = await db
+    const monthlyRevenueData = await db
       .select({
         month: sql<string>`TO_CHAR(${payments.createdAt}, 'YYYY-MM')`,
-        revenue: sum(payments.amount),
+        revenue: sum(payments.amount).mapWith(Number),
         count: count(),
       })
       .from(payments)
@@ -81,16 +81,17 @@ export async function GET() {
       users: userStats,
       subscriptions: subscriptionStats,
       payments: {
-        ...paymentStats,
-        totalRevenue: paymentStats.totalRevenue || 0,
+        total: paymentStatsData?.total || 0,
+        totalRevenue: paymentStatsData?.totalRevenue || 0,
+        successful: paymentStatsData?.successful || 0,
       },
       uploads: {
-        ...uploadStats,
-        totalSize: uploadStats.totalSize || 0,
+        total: uploadStatsData?.total || 0,
+        totalSize: uploadStatsData?.totalSize || 0,
       },
       charts: {
         recentUsers,
-        monthlyRevenue,
+        monthlyRevenue: monthlyRevenueData.map(item => ({ ...item, revenue: item.revenue || 0 })),
       },
     });
   } catch (error) {
