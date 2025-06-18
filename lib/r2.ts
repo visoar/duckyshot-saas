@@ -2,6 +2,7 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import env from "@/env";
@@ -195,7 +196,7 @@ export async function deleteFile(
   key: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const command = new PutObjectCommand({
+    const command = new DeleteObjectCommand({ // 使用 DeleteObjectCommand
       Bucket: env.R2_BUCKET_NAME,
       Key: key,
     });
