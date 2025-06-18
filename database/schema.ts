@@ -14,9 +14,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("emailVerified").notNull(),
   image: text("image"),
-  // User role for admin functionality
   role: text("role").notNull().default("user"), // "user" | "admin" | "super_admin"
-  // FIX: Added Creem Customer ID to link user with payment provider
   paymentProviderCustomerId: text("paymentProviderCustomerId").unique(),
   createdAt: timestamp("createdAt").notNull(),
   updatedAt: timestamp("updatedAt").notNull(),
