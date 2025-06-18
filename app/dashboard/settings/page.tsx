@@ -37,10 +37,7 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <DashboardPageHeader
-        title="Settings"
-        description="Manage your account and subscription settings"
-      />
+      <DashboardPageHeader title="Settings" />
       <section className="space-y-6 px-4 py-2">
         <Settings
           session={session}
