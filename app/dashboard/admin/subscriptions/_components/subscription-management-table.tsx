@@ -51,7 +51,7 @@ interface Subscription {
   currentPeriodStart: string;
   currentPeriodEnd: string;
   cancelAtPeriodEnd: boolean;
-  stripeSubscriptionId?: string;
+  creemSubscriptionId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -172,10 +172,11 @@ export function SubscriptionManagementTable() {
     });
   };
 
-  const openStripeSubscription = (subscriptionId: string) => {
-    // This would open the Stripe dashboard for the specific subscription
+  const openCreemSubscription = (subscriptionId: string) => {
+    // This would open the Creem dashboard for the specific subscription
+    // Replace with actual Creem dashboard URL when available
     window.open(
-      `https://dashboard.stripe.com/subscriptions/${subscriptionId}`,
+      `https://www.creem.io/dashboard/subscriptions/${subscriptionId}`,
       "_blank",
     );
   };
@@ -337,15 +338,16 @@ export function SubscriptionManagementTable() {
                   <TableCell>{formatDate(subscription.createdAt)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end space-x-2">
-                      {subscription.stripeSubscriptionId && (
+                      {subscription.creemSubscriptionId && (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() =>
-                            openStripeSubscription(
-                              subscription.stripeSubscriptionId!,
+                            openCreemSubscription(
+                              subscription.creemSubscriptionId!,
                             )
                           }
+                          title="View in Creem Dashboard"
                         >
                           <ExternalLink className="h-4 w-4" />
                         </Button>

@@ -30,7 +30,6 @@ export default async function UserManagementPage() {
         title="User Management"
         parentTitle="Admin Dashboard"
         parentUrl="/dashboard/admin"
-        description="Manage user accounts, roles, and permissions"
       />
       <section className="space-y-6 px-4 py-2">
         {/* User Stats */}

@@ -4,6 +4,7 @@ import { db } from "@/database";
 import { subscriptions, users } from "@/database/schema";
 import { eq, desc, asc, sql, count } from "drizzle-orm";
 import { z } from "zod";
+import { getProductTierByProductId, getProductTierById } from "@/lib/config/products";
 
 const getSubscriptionsSchema = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -67,10 +68,12 @@ export async function GET(request: NextRequest) {
         canceledAt: subscriptions.canceledAt,
         createdAt: subscriptions.createdAt,
         updatedAt: subscriptions.updatedAt,
+        userId: subscriptions.userId,
         user: {
           id: users.id,
           name: users.name,
           email: users.email,
+          image: users.image,
         },
       })
       .from(subscriptions)
@@ -80,7 +83,35 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .offset(offset);
 
-    const subscriptionsList = await subscriptionsQuery;
+    const rawSubscriptions = await subscriptionsQuery;
+
+    // Transform subscriptions to include plan info
+    const subscriptionsList = rawSubscriptions.map((sub) => {
+      // Try to get product tier by internal ID first, then by Creem product ID
+      let productTier = getProductTierById(sub.productId);
+      if (!productTier) {
+        productTier = getProductTierByProductId(sub.productId);
+      }
+      
+      return {
+        id: sub.id,
+        userId: sub.userId,
+        userName: sub.user?.name || 'Unknown User',
+        userEmail: sub.user?.email || 'Unknown Email',
+        userImage: sub.user?.image,
+        status: sub.status as "active" | "cancelled" | "past_due" | "trialing" | "incomplete",
+        planName: productTier?.name || 'Unknown Plan',
+        planPrice: productTier ? getSubscriptionPrice(productTier, sub.productId) : undefined,
+        currency: productTier?.currency || 'USD',
+        currentPeriodStart: sub.currentPeriodStart?.toISOString() || '',
+        currentPeriodEnd: sub.currentPeriodEnd?.toISOString() || '',
+        cancelAtPeriodEnd: !!sub.canceledAt,
+        // Use Creem subscription ID instead of Stripe
+        creemSubscriptionId: sub.subscriptionId,
+        createdAt: sub.createdAt.toISOString(),
+        updatedAt: sub.updatedAt.toISOString(),
+      };
+    });
 
     // Get total count
     const [{ total }] = await db
@@ -122,6 +153,29 @@ export async function GET(request: NextRequest) {
       },
       summary: summaryStats,
     });
+
+
+// Helper function to determine subscription price based on product ID
+function getSubscriptionPrice(productTier: any, productId: string): number {
+  const { pricing, prices } = productTier;
+  
+  // If productId is the internal tier ID, default to monthly price
+  if (productId === productTier.id) {
+    return Math.round(prices.monthly * 100); // Convert to cents
+  }
+  
+  // Check which billing cycle this product ID corresponds to
+  if (pricing.creem.monthly === productId) {
+    return Math.round(prices.monthly * 100); // Convert to cents
+  } else if (pricing.creem.yearly === productId) {
+    return Math.round(prices.yearly * 100); // Convert to cents
+  } else if (pricing.creem.oneTime === productId) {
+    return Math.round(prices.oneTime * 100); // Convert to cents
+  }
+  
+  // Default to monthly price if no match
+  return Math.round(prices.monthly * 100);
+}
   } catch (error) {
     console.error("Get subscriptions error:", error);
     return NextResponse.json(

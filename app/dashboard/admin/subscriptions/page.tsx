@@ -29,7 +29,6 @@ export default async function SubscriptionsPage() {
         title="Subscription Management"
         parentTitle="Admin Dashboard"
         parentUrl="/dashboard/admin"
-        description="Monitor and manage all user subscriptions"
       />
       <section className="space-y-6 px-4 py-2">
         {/* Subscription Stats */}

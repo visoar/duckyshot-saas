@@ -29,7 +29,6 @@ export default async function PaymentsPage() {
         title="Payment Management"
         parentTitle="Admin Dashboard"
         parentUrl="/dashboard/admin"
-        description="Monitor and manage all payment transactions"
       />
       <section className="space-y-6 px-4 py-2">
         {/* Payment Stats */}

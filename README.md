@@ -276,16 +276,8 @@ pnpm analyze:dev
     - 在 Vercel 项目的 "Settings" -> "Environment Variables" 中，添加您在 `.env` 文件中定义的所有环境变量。**请勿将 `.env` 文件提交到 Git 仓库中**。
 
 4.  **配置生产数据库迁移:**
-    **重要：** Vercel 会在构建应用后自动运行 `postbuild` 脚本。为了在每次部署时自动迁移生产数据库，请在 `package.json` 中配置 `postbuild` 脚本。
-
-    ```json
-    // package.json
-    "scripts": {
-      "build": "next build",
-      "postbuild": "pnpm db:migrate:prod"
-    }
-    ```
-    此配置会调用 `pnpm db:migrate:prod`，它使用 `database/config.prod.ts` 文件，是安全且推荐的生产实践。
+    在部署成功后，单独执行数据库迁移：`pnpm db:migrate:prod`
+    
 
 5.  **部署!**
     完成上述步骤后，Vercel 会在您每次推送到主分支时自动构建和部署您的应用。

@@ -31,7 +31,6 @@ export default async function AdminDashboardPage() {
     <>
       <DashboardPageHeader
         title="Admin Dashboard"
-        description="Manage users, monitor payments, and view system analytics"
       />
       <section className="space-y-6 px-4 py-2">
         {/* Stats Cards */}

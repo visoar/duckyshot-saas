@@ -40,9 +40,6 @@ yarn-error.log*
 # vercel
 .vercel
 
-# database
-/database/migrations
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts

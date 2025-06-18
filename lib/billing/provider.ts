@@ -7,7 +7,6 @@ export interface PaymentProvider {
   createCustomerPortalUrl(customerId: string): Promise<{ portalUrl: string }>;
 
   /**
-   * FIX: The payload should be the raw request body string for HMAC verification.
    * @param payload - The raw request body as a string.
    * @param signature - The signature from the 'creem-signature' header.
    */
