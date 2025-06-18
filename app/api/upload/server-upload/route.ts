@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
     const contentType = request.headers.get("content-type");
     if (!contentType || !contentType.includes("multipart/form-data")) {
       return NextResponse.json(
-        { 
+        {
           error: "Invalid content type. Expected multipart/form-data",
-          received: contentType || "none"
+          received: contentType || "none",
         },
         { status: 400 },
       );
@@ -48,10 +48,7 @@ export async function POST(request: NextRequest) {
     const files = formData.getAll("files") as File[];
 
     if (!files || files.length === 0) {
-      return NextResponse.json(
-        { error: "No files provided" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "No files provided" }, { status: 400 });
     }
 
     const uploadResults = [];

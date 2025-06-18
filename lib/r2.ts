@@ -196,7 +196,8 @@ export async function deleteFile(
   key: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const command = new DeleteObjectCommand({ // 使用 DeleteObjectCommand
+    const command = new DeleteObjectCommand({
+      // 使用 DeleteObjectCommand
       Bucket: env.R2_BUCKET_NAME,
       Key: key,
     });

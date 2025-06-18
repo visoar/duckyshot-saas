@@ -12,21 +12,24 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useEffect, useState } from "react";
 
-interface AdminStats {
+// This type is also used by lib/admin/stats.ts
+export interface AdminStats {
   users: {
     total: number;
-    verified: number;
-    admins: number;
+    verified: number; // count(sql`CASE WHEN ${users.emailVerified} = true THEN 1 END`)
+
+    admins: number; // count(sql`CASE WHEN ${users.role} IN ('admin', 'super_admin') THEN 1 END`)
   };
   subscriptions: {
     total: number;
-    active: number;
-    canceled: number;
+    active: number; // count(sql`CASE WHEN ${subscriptions.status} = 'active' THEN 1 END`)
+
+    canceled: number; // count(sql`CASE WHEN ${subscriptions.status} = 'canceled' THEN 1 END`)
   };
   payments: {
     total: number;
     totalRevenue: number;
-    successful: number;
+    successful: number; // count(sql`CASE WHEN ${payments.status} = 'succeeded' THEN 1 END`)
   };
   uploads: {
     total: number;
@@ -34,34 +37,46 @@ interface AdminStats {
   };
 }
 
-export function AdminStatsCards() {
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [loading, setLoading] = useState(true);
+interface AdminStatsCardsProps {
+  initialStats: AdminStats;
+}
+
+export function AdminStatsCards({ initialStats }: AdminStatsCardsProps) {
+  const [stats, setStats] = useState<AdminStats | null>(initialStats);
+  const [loading, setLoading] = useState(!initialStats); // Set loading based on initialStats
   const [error, setError] = useState<string | null>(null);
 
+  // useEffect to handle cases where initialStats might be null or undefined initially
+  // and then fetched, or if we want to allow re-fetching on some other trigger later.
+  // For now, if initialStats is provided, we don't fetch.
   useEffect(() => {
-    async function fetchAdminStats() {
-      try {
-        const response = await fetch("/api/admin/stats", {
-          cache: "no-store",
-        });
+    if (!initialStats) {
+      setLoading(true);
+      async function fetchAdminStats() {
+        try {
+          const response = await fetch("/api/admin/stats", {
+            cache: "no-store",
+          });
 
-        if (!response.ok) {
-          throw new Error(`Failed to fetch stats: ${response.status}`);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch stats: ${response.status}`);
+          }
+
+          const data = await response.json();
+          setStats(data);
+        } catch (err) {
+          console.error("Error fetching admin stats:", err);
+          setError(err instanceof Error ? err.message : "An error occurred");
+        } finally {
+          setLoading(false);
         }
-
-        const data = await response.json();
-        setStats(data);
-      } catch (err) {
-        console.error("Error fetching admin stats:", err);
-        setError(err instanceof Error ? err.message : "An error occurred");
-      } finally {
-        setLoading(false);
       }
+      fetchAdminStats();
+    } else {
+      setStats(initialStats);
+      setLoading(false);
     }
-
-    fetchAdminStats();
-  }, []);
+  }, [initialStats]);
 
   if (loading) {
     return (

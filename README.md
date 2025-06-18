@@ -1,6 +1,5 @@
 ### `README.md`
 
-```markdown
 # UllrAI SaaS Starter Kit
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ullrai/saas-starter)
@@ -38,12 +37,12 @@
 | **部署**   | [Vercel](https://vercel.com/)                                                                                                                         |
 | **包管理** | [pnpm](https://pnpm.io/)                                                                                                                              |
 
-
 ## 🚀 快速上手
 
 ### 1. 环境准备
 
 确保您的开发环境中已安装以下软件：
+
 - [Node.js](https://nodejs.org/en/) (推荐 v20.x 或更高版本)
 - [pnpm](https://pnpm.io/installation)
 
@@ -86,13 +85,12 @@ cp .env.example .env
 | `R2_SECRET_ACCESS_KEY`   | **必需 (若使用上传功能)。** R2 秘密访问密钥。         | `your_r2_secret_access_key`                         |
 | `R2_BUCKET_NAME`         | **必需 (若使用上传功能)。** R2 存储桶名称。           | `your_r2_bucket_name`                               |
 | `R2_PUBLIC_URL`          | **必需 (若使用上传功能)。** R2 存储桶的公共访问 URL。 | `https://your-bucket.your-account.r2.dev`           |
-| `GITHUB_CLIENT_ID`       | *可选。* 用于 GitHub OAuth 的 Client ID。             | `your_github_client_id`                             |
-| `GITHUB_CLIENT_SECRET`   | *可选。* 用于 GitHub OAuth 的 Client Secret。         | `your_github_client_secret`                         |
-| `GOOGLE_CLIENT_ID`       | *可选。* 用于 Google OAuth 的 Client ID。             | `your_google_client_id`                             |
-| `GOOGLE_CLIENT_SECRET`   | *可选。* 用于 Google OAuth 的 Client Secret。         | `your_google_client_secret`                         |
-| `LINKEDIN_CLIENT_ID`     | *可选。* 用于 LinkedIn OAuth 的 Client ID。           | `your_linkedin_client_id`                           |
-| `LINKEDIN_CLIENT_SECRET` | *可选。* 用于 LinkedIn OAuth 的 Client Secret。       | `your_linkedin_client_secret`                       |
-
+| `GITHUB_CLIENT_ID`       | _可选。_ 用于 GitHub OAuth 的 Client ID。             | `your_github_client_id`                             |
+| `GITHUB_CLIENT_SECRET`   | _可选。_ 用于 GitHub OAuth 的 Client Secret。         | `your_github_client_secret`                         |
+| `GOOGLE_CLIENT_ID`       | _可选。_ 用于 Google OAuth 的 Client ID。             | `your_google_client_id`                             |
+| `GOOGLE_CLIENT_SECRET`   | _可选。_ 用于 Google OAuth 的 Client Secret。         | `your_google_client_secret`                         |
+| `LINKEDIN_CLIENT_ID`     | _可选。_ 用于 LinkedIn OAuth 的 Client ID。           | `your_linkedin_client_id`                           |
+| `LINKEDIN_CLIENT_SECRET` | _可选。_ 用于 LinkedIn OAuth 的 Client Secret。       | `your_linkedin_client_secret`                       |
 
 > **提示:** 您可以使用以下命令生成一个安全的密钥：
 > `openssl rand -base64 32`
@@ -130,7 +128,9 @@ pnpm db:generate
 # 3. 在生产环境中（通常通过 CI/CD 流程），应用迁移
 pnpm db:migrate:prod
 ```
+
 > **安全提示：**
+>
 > - **切勿**在生产环境中使用 `pnpm db:push`。
 > - 生产环境迁移应通过 CI/CD 流程自动化执行。
 > - 在应用迁移前，务必备份生产数据库。
@@ -172,7 +172,6 @@ pnpm dev
 | `pnpm db:migrate:dev`  | 将迁移文件应用到开发数据库。                | 开发 |
 | `pnpm db:migrate:prod` | **用于生产。** 将迁移文件应用到生产数据库。 | 生产 |
 
-
 ## 📁 文件上传功能
 
 本项目集成了基于 Cloudflare R2 的安全文件上传系统。
@@ -187,10 +186,7 @@ pnpm dev
 ```json
 [
   {
-    "AllowedOrigins": [
-      "http://localhost:3000",
-      "https://yourdomain.com"
-    ],
+    "AllowedOrigins": ["http://localhost:3000", "https://yourdomain.com"],
     "AllowedMethods": ["PUT", "GET"],
     "AllowedHeaders": ["*"],
     "ExposeHeaders": ["ETag"],
@@ -231,7 +227,7 @@ function MyComponent() {
 
 ```tsx
 <FileUploader
-  acceptedFileTypes={['image/png', 'image/jpeg', 'image/webp']}
+  acceptedFileTypes={["image/png", "image/jpeg", "image/webp"]}
   enableImageCompression={true}
   imageCompressionQuality={0.7} // 压缩质量 (0.1-1.0)
   imageCompressionMaxWidth={1200} // 压缩后最大宽度
@@ -251,14 +247,15 @@ pnpm analyze
 # 在开发模式下进行分析
 pnpm analyze:dev
 ```
+
 执行后，会自动在浏览器中打开客户端和服务端的包体积分析报告。
 
 ### 优化策略
 
 - **动态导入**：对非首屏必需的大型组件或库使用 `next/dynamic` 进行代码分割。
 - **依赖优化**：
-    - **Tree Shaking**: 确保只从库中导入您需要的部分，例如 `import { debounce } from 'lodash-es';` 而不是 `import _ from 'lodash';`。
-    - **轻量替代**: 考虑使用更轻量的库，例如用 `date-fns` 替代 `moment.js`。
+  - **Tree Shaking**: 确保只从库中导入您需要的部分，例如 `import { debounce } from 'lodash-es';` 而不是 `import _ from 'lodash';`。
+  - **轻量替代**: 考虑使用更轻量的库，例如用 `date-fns` 替代 `moment.js`。
 - **图片优化**: 优先使用 Next.js 的 `<Image>` 组件，并启用 WebP 格式。
 
 ## ☁️ 部署
@@ -269,15 +266,16 @@ pnpm analyze:dev
     将您的代码推送到 GitHub、GitLab 或 Bitbucket 仓库。
 
 2.  **在 Vercel 中导入项目:**
+
     - 登录您的 Vercel 账户，点击 "Add New... > Project"，然后选择您的 Git 仓库。
     - Vercel 会自动检测到这是一个 Next.js 项目并配置好构建设置。
 
 3.  **配置环境变量:**
+
     - 在 Vercel 项目的 "Settings" -> "Environment Variables" 中，添加您在 `.env` 文件中定义的所有环境变量。**请勿将 `.env` 文件提交到 Git 仓库中**。
 
 4.  **配置生产数据库迁移:**
     在部署成功后，单独执行数据库迁移：`pnpm db:migrate:prod`
-    
 
 5.  **部署!**
     完成上述步骤后，Vercel 会在您每次推送到主分支时自动构建和部署您的应用。

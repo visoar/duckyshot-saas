@@ -64,12 +64,12 @@ export default function UploadPage() {
     try {
       // 创建FormData对象
       const formData = new FormData();
-      
+
       // 添加所有文件到FormData
       Array.from(files).forEach((file) => {
-        formData.append('files', file);
+        formData.append("files", file);
       });
-      
+
       setServerUploadProgress(25); // 文件准备完成
 
       // 调用服务端上传API
