@@ -156,7 +156,7 @@ export function FileUploader({
           'Content-Type': 'application/json',
         },
       });
-      console.log('Network test response:', response.status, await response.text());
+      // console.log('Network test response:', response.status, await response.text());
       return response.ok;
     } catch (error) {
       console.error('Network connectivity test failed:', error);
@@ -186,12 +186,12 @@ export function FileUploader({
       };
       
       // Debug log
-      console.log('Uploading file:', {
-        name: fileState.file.name,
-        type: fileState.file.type,
-        size: fileState.file.size,
-        requestData,
-      });
+      // console.log('Uploading file:', {
+      //   name: fileState.file.name,
+      //   type: fileState.file.type,
+      //   size: fileState.file.size,
+      //   requestData,
+      // });
       
       // Validate request data before sending
       if (!requestData.fileName || !requestData.contentType || !requestData.size) {
@@ -209,7 +209,7 @@ export function FileUploader({
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Failed to get upload URL. Server response:", errorData);
+        // console.error("Failed to get upload URL. Server response:", errorData);
         let errorMessage = errorData.error || 'Failed to get upload URL';
         if (errorData.details) {
           errorMessage += ` Details: ${JSON.stringify(errorData.details)}`;
@@ -220,7 +220,7 @@ export function FileUploader({
       const { presignedUrl, publicUrl, key } = await response.json();
 
       // Upload file to R2
-      console.log('Uploading to presigned URL:', presignedUrl);
+      // console.log('Uploading to presigned URL:', presignedUrl);
       
       let uploadResponse;
       try {
@@ -232,15 +232,15 @@ export function FileUploader({
           },
         });
       } catch (fetchError) {
-        console.error('Network error during upload:', fetchError);
+        // console.error('Network error during upload:', fetchError);
         throw new Error(`Network error: ${fetchError instanceof Error ? fetchError.message : 'Unknown error'}`);
       }
 
-      console.log('Upload response status:', uploadResponse.status);
+      // console.log('Upload response status:', uploadResponse.status);
       
       if (!uploadResponse.ok) {
         const errorText = await uploadResponse.text().catch(() => 'Unable to read error response');
-        console.error('Upload failed with status:', uploadResponse.status, 'Response:', errorText);
+        // console.error('Upload failed with status:', uploadResponse.status, 'Response:', errorText);
         throw new Error(`Upload failed with status ${uploadResponse.status}: ${errorText}`);
       }
 
