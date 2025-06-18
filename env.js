@@ -7,6 +7,12 @@ const env = createEnv({
     // Database URL
     DATABASE_URL: z.string(),
 
+    // Database connection pool settings
+    DB_POOL_SIZE: z.coerce.number().default(20),
+    DB_IDLE_TIMEOUT: z.coerce.number().default(300),
+    DB_MAX_LIFETIME: z.coerce.number().default(14400),
+    DB_CONNECT_TIMEOUT: z.coerce.number().default(30),
+
     // Authentication credentials
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
@@ -42,6 +48,12 @@ const env = createEnv({
   runtimeEnv: {
     // Database URL
     DATABASE_URL: process.env.DATABASE_URL,
+
+    // Database connection pool settings
+    DB_POOL_SIZE: process.env.DB_POOL_SIZE,
+    DB_IDLE_TIMEOUT: process.env.DB_IDLE_TIMEOUT,
+    DB_MAX_LIFETIME: process.env.DB_MAX_LIFETIME,
+    DB_CONNECT_TIMEOUT: process.env.DB_CONNECT_TIMEOUT,
 
     // Authentication credentials
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,

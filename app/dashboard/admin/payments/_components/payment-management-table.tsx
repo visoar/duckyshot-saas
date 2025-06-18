@@ -137,7 +137,7 @@ export function PaymentManagementTable() {
     // This would open the Stripe dashboard for the specific payment
     // In a real implementation, you'd construct the proper Stripe dashboard URL
     window.open(
-      `https://dashboard.stripe.com/payments/${paymentIntentId}`,
+      `https://www.creem.io/dashboard/payments/${paymentIntentId}`,
       "_blank",
     );
   };

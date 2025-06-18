@@ -2,9 +2,25 @@
 import { AdminStats } from "@/app/dashboard/admin/_components/admin-stats-cards";
 import { db } from "@/database";
 import { users, subscriptions, payments, uploads } from "@/database/schema";
-import { count, sum } from "drizzle-orm"; // Removed unused imports: and, eq, or, gte, lte, desc
+import { count, sum, desc } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
-import { sql } from "drizzle-orm"; // Added sql import
+// Extended interface for chart data
+export interface ChartData {
+  recentUsers: Array<{
+    date: string;
+    count: number;
+  }>;
+  monthlyRevenue: Array<{
+    month: string;
+    revenue: number;
+    count: number;
+  }>;
+}
+
+export interface AdminStatsWithCharts extends AdminStats {
+  charts: ChartData;
+}
 
 export async function getAdminStats(): Promise<AdminStats> {
   try {
@@ -87,8 +103,63 @@ export async function getAdminStats(): Promise<AdminStats> {
   }
 }
 
-// Note: The AdminStats type in admin-stats-cards.tsx might need to be adjusted
-// if the structure returned by this function differs from its current definition.
-// Specifically, the API route also returns 'charts' data which is not included here
-// as AdminStatsCards doesn't seem to use it. If other components need chart data,
-// this function or another server-side function would need to provide it.
+// New function to get all admin data including charts
+export async function getAdminStatsWithCharts(): Promise<AdminStatsWithCharts> {
+  try {
+    // Use Promise.all to fetch all data in parallel
+    const [basicStats, recentUsersData, monthlyRevenueData] = await Promise.all(
+      [
+        getAdminStats(),
+        // Get recent users (last 30 days)
+        db
+          .select({
+            date: sql<string>`DATE(${users.createdAt})`,
+            count: count(),
+          })
+          .from(users)
+          .where(sql`${users.createdAt} >= NOW() - INTERVAL '30 days'`)
+          .groupBy(sql`DATE(${users.createdAt})`)
+          .orderBy(desc(sql`DATE(${users.createdAt})`)),
+        // Get revenue by month (last 12 months)
+        db
+          .select({
+            month: sql<string>`TO_CHAR(${payments.createdAt}, 'YYYY-MM')`,
+            revenue: sum(payments.amount).mapWith(Number),
+            count: count(),
+          })
+          .from(payments)
+          .where(sql`${payments.createdAt} >= NOW() - INTERVAL '12 month'`)
+          .groupBy(sql`TO_CHAR(${payments.createdAt}, 'YYYY-MM')`)
+          .orderBy(desc(sql`TO_CHAR(${payments.createdAt}, 'YYYY-MM')`)),
+      ],
+    );
+
+    return {
+      ...basicStats,
+      charts: {
+        recentUsers: recentUsersData.map((item) => ({
+          date: item.date,
+          count: item.count,
+        })),
+        monthlyRevenue: monthlyRevenueData.map((item) => ({
+          month: item.month,
+          revenue: item.revenue || 0,
+          count: item.count,
+        })),
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching admin stats with charts:", error);
+    // Return default data structure
+    const defaultStats = await getAdminStats();
+    return {
+      ...defaultStats,
+      charts: {
+        recentUsers: [],
+        monthlyRevenue: [],
+      },
+    };
+  }
+}
+
+// Chart data types are already exported above with the interface declarations

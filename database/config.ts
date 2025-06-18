@@ -59,16 +59,16 @@ export function getConnectionConfig(): postgres.Options<{}> {
   // Traditional server environment configuration
   return {
     // Higher connection pool for traditional servers
-    max: parseInt(process.env.DB_POOL_SIZE || "20"),
+    max: env.DB_POOL_SIZE,
 
     // Longer idle timeout for persistent applications
-    idle_timeout: parseInt(process.env.DB_IDLE_TIMEOUT || "300"), // 5 minutes
+    idle_timeout: env.DB_IDLE_TIMEOUT, // 5 minutes
 
     // Longer connection lifetime
-    max_lifetime: parseInt(process.env.DB_MAX_LIFETIME || "14400"), // 4 hours
+    max_lifetime: env.DB_MAX_LIFETIME, // 4 hours
 
     // Connection timeout
-    connect_timeout: parseInt(process.env.DB_CONNECT_TIMEOUT || "30"),
+    connect_timeout: env.DB_CONNECT_TIMEOUT,
 
     // Enable prepared statements
     prepare: true,

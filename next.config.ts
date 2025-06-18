@@ -2,9 +2,19 @@ import type { NextConfig } from "next";
 import nextBundleAnalyzer from "@next/bundle-analyzer";
 import env from "@/env";
 
-const r2Hostname = env.R2_PUBLIC_URL
-  ? new URL(env.R2_PUBLIC_URL).hostname
-  : undefined;
+// Safely parse the R2 hostname
+let r2Hostname: string | undefined;
+try {
+  if (env.R2_PUBLIC_URL) {
+    r2Hostname = new URL(env.R2_PUBLIC_URL).hostname;
+  }
+} catch (error) {
+  console.error(
+    "\x1b[33m%s\x1b[0m", // Yellow color for warning
+    `Warning: Invalid R2_PUBLIC_URL found in environment variables. Skipping R2 remote pattern.`,
+  );
+  r2Hostname = undefined;
+}
 
 const remotePatterns = [
   {

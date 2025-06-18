@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -17,52 +16,28 @@ interface ChartData {
   count: number;
 }
 
-export function RecentUsersChart() {
-  const [data, setData] = useState<ChartData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface RecentUsersChartProps {
+  chartData: ChartData[];
+}
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch("/api/admin/stats");
-        if (!response.ok) {
-          throw new Error("Failed to fetch chart data");
-        }
-        const result = await response.json();
+export function RecentUsersChart({ chartData }: RecentUsersChartProps) {
+  // Transform the data for the chart
+  const transformedData = chartData
+    .map((item) => ({
+      date: new Date(item.date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      }),
+      count: item.count,
+    }))
+    .reverse(); // Reverse to show oldest to newest
 
-        // Transform the data for the chart
-        const chartData = result.charts.recentUsers
-          .map((item: { date: string; count: number }) => ({
-            date: new Date(item.date).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            }),
-            count: item.count,
-          }))
-          .reverse(); // Reverse to show oldest to newest
-
-        setData(chartData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
-
-  if (loading) {
-    return <div className="bg-muted h-[300px] animate-pulse rounded" />;
-  }
-
-  if (error) {
+  if (!chartData || chartData.length === 0) {
     return (
       <div className="flex h-[300px] items-center justify-center">
-        <div className="text-destructive flex items-center space-x-2">
+        <div className="text-muted-foreground flex items-center space-x-2">
           <AlertTriangle className="h-4 w-4" />
-          <span>Failed to load chart: {error}</span>
+          <span>No user data available</span>
         </div>
       </div>
     );
@@ -70,7 +45,7 @@ export function RecentUsersChart() {
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data}>
+      <LineChart data={transformedData}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="date" fontSize={12} tickLine={false} axisLine={false} />
         <YAxis

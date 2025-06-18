@@ -71,26 +71,26 @@ cp .env.example .env
 
 #### 环境变量说明
 
-| 变量名                   | 描述                                                  | 示例                                                |
-| :----------------------- | :---------------------------------------------------- | :-------------------------------------------------- |
-| `DATABASE_URL`           | **必需。** PostgreSQL 连接字符串。                    | `postgresql://user:password@localhost:5432/db_name` |
-| `NEXT_PUBLIC_APP_URL`    | **必需。** 您应用部署后的公开 URL。                   | `http://localhost:3000` 或 `https://yourdomain.com` |
-| `BETTER_AUTH_SECRET`     | **必需。** 用于加密会话的密钥，必须是32个字符。       | `a_very_secure_random_32_char_string`               |
-| `RESEND_API_KEY`         | **必需。** 用于发送邮件的 Resend API Key。            | `re_xxxxxxxxxxxxxxxx`                               |
-| `CREEM_API_KEY`          | **必需。** Creem 的 API Key。                         | `your_creem_api_key`                                |
-| `CREEM_ENVIRONMENT`      | **必需。** Creem 环境模式。                           | `test_mode` 或 `live_mode`                          |
-| `CREEM_WEBHOOK_SECRET`   | **必需。** Creem Webhook 密钥。                       | `whsec_your_webhook_secret`                         |
-| `R2_ENDPOINT`            | **必需 (若使用上传功能)。** Cloudflare R2 API 端点。  | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`     |
-| `R2_ACCESS_KEY_ID`       | **必需 (若使用上传功能)。** R2 访问密钥 ID。          | `your_r2_access_key_id`                             |
-| `R2_SECRET_ACCESS_KEY`   | **必需 (若使用上传功能)。** R2 秘密访问密钥。         | `your_r2_secret_access_key`                         |
-| `R2_BUCKET_NAME`         | **必需 (若使用上传功能)。** R2 存储桶名称。           | `your_r2_bucket_name`                               |
-| `R2_PUBLIC_URL`          | **必需 (若使用上传功能)。** R2 存储桶的公共访问 URL。 | `https://your-bucket.your-account.r2.dev`           |
-| `GITHUB_CLIENT_ID`       | _可选。_ 用于 GitHub OAuth 的 Client ID。             | `your_github_client_id`                             |
-| `GITHUB_CLIENT_SECRET`   | _可选。_ 用于 GitHub OAuth 的 Client Secret。         | `your_github_client_secret`                         |
-| `GOOGLE_CLIENT_ID`       | _可选。_ 用于 Google OAuth 的 Client ID。             | `your_google_client_id`                             |
-| `GOOGLE_CLIENT_SECRET`   | _可选。_ 用于 Google OAuth 的 Client Secret。         | `your_google_client_secret`                         |
-| `LINKEDIN_CLIENT_ID`     | _可选。_ 用于 LinkedIn OAuth 的 Client ID。           | `your_linkedin_client_id`                           |
-| `LINKEDIN_CLIENT_SECRET` | _可选。_ 用于 LinkedIn OAuth 的 Client Secret。       | `your_linkedin_client_secret`                       |
+| 变量名                   | 描述                                            | 示例                                                |
+| :----------------------- | :---------------------------------------------- | :-------------------------------------------------- |
+| `DATABASE_URL`           | **必需。** PostgreSQL 连接字符串。              | `postgresql://user:password@localhost:5432/db_name` |
+| `NEXT_PUBLIC_APP_URL`    | **必需。** 您应用部署后的公开 URL。             | `http://localhost:3000` 或 `https://yourdomain.com` |
+| `BETTER_AUTH_SECRET`     | **必需。** 用于加密会话的密钥，必须是32个字符。 | `a_very_secure_random_32_char_string`               |
+| `RESEND_API_KEY`         | **必需。** 用于发送邮件的 Resend API Key。      | `re_xxxxxxxxxxxxxxxx`                               |
+| `CREEM_API_KEY`          | **必需。** Creem 的 API Key。                   | `your_creem_api_key`                                |
+| `CREEM_ENVIRONMENT`      | **必需。** Creem 环境模式。                     | `test_mode` 或 `live_mode`                          |
+| `CREEM_WEBHOOK_SECRET`   | **必需。** Creem Webhook 密钥。                 | `whsec_your_webhook_secret`                         |
+| `R2_ENDPOINT`            | **必需。** Cloudflare R2 API 端点。             | `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`     |
+| `R2_ACCESS_KEY_ID`       | **必需。** R2 访问密钥 ID。                     | `your_r2_access_key_id`                             |
+| `R2_SECRET_ACCESS_KEY`   | **必需。** R2 秘密访问密钥。                    | `your_r2_secret_access_key`                         |
+| `R2_BUCKET_NAME`         | **必需。** R2 存储桶名称。                      | `your_r2_bucket_name`                               |
+| `R2_PUBLIC_URL`          | **必需。** R2 存储桶的公共访问 URL。            | `https://your-bucket.your-account.r2.dev`           |
+| `GITHUB_CLIENT_ID`       | _可选。_ 用于 GitHub OAuth 的 Client ID。       | `your_github_client_id`                             |
+| `GITHUB_CLIENT_SECRET`   | _可选。_ 用于 GitHub OAuth 的 Client Secret。   | `your_github_client_secret`                         |
+| `GOOGLE_CLIENT_ID`       | _可选。_ 用于 Google OAuth 的 Client ID。       | `your_google_client_id`                             |
+| `GOOGLE_CLIENT_SECRET`   | _可选。_ 用于 Google OAuth 的 Client Secret。   | `your_google_client_secret`                         |
+| `LINKEDIN_CLIENT_ID`     | _可选。_ 用于 LinkedIn OAuth 的 Client ID。     | `your_linkedin_client_id`                           |
+| `LINKEDIN_CLIENT_SECRET` | _可选。_ 用于 LinkedIn OAuth 的 Client Secret。 | `your_linkedin_client_secret`                       |
 
 > **提示:** 您可以使用以下命令生成一个安全的密钥：
 > `openssl rand -base64 32`
