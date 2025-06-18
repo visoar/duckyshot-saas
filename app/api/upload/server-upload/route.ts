@@ -1,20 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/server";
-import { createPresignedUrl } from "@/lib/r2";
-import { z } from "zod";
+import { S3Client } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 import { db } from "@/database";
 import { uploads } from "@/database/schema";
+import { randomUUID } from "crypto";
+import env from "@/env";
+import {
+  UPLOAD_CONFIG,
+  isFileTypeAllowed,
+  isFileSizeAllowed,
+  getFileExtension,
+} from "@/lib/config/upload";
 
-// Request body schema for server upload
-const serverUploadSchema = z.object({
-  files: z.array(
-    z.object({
-      fileName: z.string().min(1).max(255),
-      contentType: z.string().min(1),
-      size: z.number().positive(),
-      base64Data: z.string().min(1), // Base64 encoded file data
-    }),
-  ),
+// Initialize S3 client for Cloudflare R2
+const r2Client = new S3Client({
+  region: "auto",
+  endpoint: env.R2_ENDPOINT,
+  credentials: {
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+  },
 });
 
 export async function POST(request: NextRequest) {
@@ -25,80 +31,95 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Parse and validate request body
-    const body = await request.json();
-    const validation = serverUploadSchema.safeParse(body);
-
-    if (!validation.success) {
+    // Check if request is multipart/form-data
+    const contentType = request.headers.get("content-type");
+    if (!contentType || !contentType.includes("multipart/form-data")) {
       return NextResponse.json(
-        {
-          error: "Invalid request data",
-          details: validation.error.errors,
+        { 
+          error: "Invalid content type. Expected multipart/form-data",
+          received: contentType || "none"
         },
         { status: 400 },
       );
     }
 
-    const { files } = validation.data;
+    // Parse multipart/form-data
+    const formData = await request.formData();
+    const files = formData.getAll("files") as File[];
+
+    if (!files || files.length === 0) {
+      return NextResponse.json(
+        { error: "No files provided" },
+        { status: 400 },
+      );
+    }
+
     const uploadResults = [];
 
     // Process each file
     for (const file of files) {
       try {
-        // Create presigned URL for the file
-        const result = await createPresignedUrl({
-          userId: session.user.id,
-          fileName: file.fileName,
-          contentType: file.contentType,
-          size: file.size,
-        });
-
-        if (!result.success) {
-          throw new Error(result.error || "Failed to create presigned URL");
+        // Validate file type
+        if (!isFileTypeAllowed(file.type)) {
+          throw new Error(`File type ${file.type} is not allowed`);
         }
 
-        // Convert base64 to buffer
-        const base64Data = file.base64Data.replace(/^data:[^;]+;base64,/, "");
-        const buffer = Buffer.from(base64Data, "base64");
+        // Validate file size
+        if (!isFileSizeAllowed(file.size)) {
+          throw new Error(
+            `File size ${file.size} bytes exceeds maximum allowed size of ${UPLOAD_CONFIG.MAX_FILE_SIZE} bytes`,
+          );
+        }
 
-        // Upload file to R2 using presigned URL
-        const uploadResponse = await fetch(result.presignedUrl!, {
-          method: "PUT",
-          body: buffer,
-          headers: {
-            "Content-Type": file.contentType,
-            "Content-Length": buffer.length.toString(),
+        // Generate unique key for the file
+        const fileExtension = getFileExtension(file.type);
+        const timestamp = Date.now();
+        const uuid = randomUUID();
+        const key = `uploads/${session.user.id}/${timestamp}-${uuid}.${fileExtension}`;
+
+        // Create file stream from the uploaded file
+        const fileStream = file.stream();
+
+        // Use AWS SDK Upload class for streaming upload
+        const upload = new Upload({
+          client: r2Client,
+          params: {
+            Bucket: env.R2_BUCKET_NAME,
+            Key: key,
+            Body: fileStream,
+            ContentType: file.type,
+            ContentLength: file.size,
           },
         });
 
-        if (!uploadResponse.ok) {
-          throw new Error(`Upload failed: ${uploadResponse.statusText}`);
-        }
+        // Execute the upload
+        await upload.done();
+
+        // Generate public URL
+        const publicUrl = `${env.R2_PUBLIC_URL}/${key}`;
 
         // Store upload record in database
-        if (result.key && result.publicUrl) {
-          await db.insert(uploads).values({
-            userId: session.user.id,
-            fileKey: result.key,
-            url: result.publicUrl,
-            fileName: file.fileName,
-            fileSize: file.size,
-            contentType: file.contentType,
-          });
-        }
+        await db.insert(uploads).values({
+          userId: session.user.id,
+          fileKey: key,
+          url: publicUrl,
+          fileName: file.name,
+          fileSize: file.size,
+          contentType: file.type,
+        });
 
         uploadResults.push({
-          fileName: file.fileName,
-          url: result.publicUrl,
-          key: result.key,
+          fileName: file.name,
+          url: publicUrl,
+          key: key,
           size: file.size,
-          contentType: file.contentType,
+          contentType: file.type,
           success: true,
         });
       } catch (error) {
-        console.error(`Error uploading file ${file.fileName}:`, error);
+        console.error(`Error uploading file ${file.name}:`, error);
         uploadResults.push({
-          fileName: file.fileName,
+          fileName: file.name,
           success: false,
           error: error instanceof Error ? error.message : "Unknown error",
         });

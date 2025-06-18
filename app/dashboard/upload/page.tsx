@@ -62,40 +62,20 @@ export default function UploadPage() {
     setServerUploadProgress(0);
 
     try {
-      // 将文件转换为base64格式
-      const filePromises = Array.from(files).map(async (file, index) => {
-        setServerUploadProgress((index / files.length) * 50); // 前50%用于文件读取
-
-        return new Promise<{
-          fileName: string;
-          contentType: string;
-          size: number;
-          base64Data: string;
-        }>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            resolve({
-              fileName: file.name,
-              contentType: file.type,
-              size: file.size,
-              base64Data: reader.result as string,
-            });
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
+      // 创建FormData对象
+      const formData = new FormData();
+      
+      // 添加所有文件到FormData
+      Array.from(files).forEach((file) => {
+        formData.append('files', file);
       });
-
-      const fileData = await Promise.all(filePromises);
-      setServerUploadProgress(50); // 文件读取完成
+      
+      setServerUploadProgress(25); // 文件准备完成
 
       // 调用服务端上传API
       const response = await fetch("/api/upload/server-upload", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ files: fileData }),
+        body: formData, // 不设置Content-Type，让浏览器自动设置multipart/form-data
       });
 
       setServerUploadProgress(80);
