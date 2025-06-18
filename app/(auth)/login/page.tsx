@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "Sign in to your account with magic link",
 };
 
-export default async function LoginPage() {
+export default function LoginPage() {
   const availableProviders = getAvailableSocialProviders();
   return <AuthForm mode="login" availableProviders={availableProviders} />;
 }
