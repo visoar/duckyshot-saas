@@ -1,18 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -30,15 +21,10 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import {
-  Search,
-  Edit,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  AlertTriangle,
-} from "lucide-react";
+import { Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
+import { AdminTableBase } from "@/components/admin/admin-table-base";
+import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
 
 interface User {
   id: string;
@@ -71,6 +57,7 @@ export function UserManagementTable() {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
@@ -93,6 +80,7 @@ export function UserManagementTable() {
       setUsers(data.users);
       setCurrentPage(data.pagination.page);
       setTotalPages(data.pagination.totalPages);
+      setTotalUsers(data.pagination.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -112,6 +100,11 @@ export function UserManagementTable() {
   const handleRoleFilter = (value: string) => {
     setRoleFilter(value);
     setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchUsers(page, searchTerm, roleFilter);
   };
 
   const handleEditUser = (user: User) => {
@@ -194,198 +187,117 @@ export function UserManagementTable() {
     });
   };
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-destructive flex items-center space-x-2">
-          <AlertTriangle className="h-4 w-4" />
-          <span>Failed to load users: {error}</span>
+  const columns: Array<{
+    key: keyof User | string;
+    label: string;
+    render?: (item: User) => ReactNode;
+  }> = [
+    {
+      key: "user",
+      label: "User",
+      render: (user: User) => (
+        <UserAvatarCell
+          name={user.name}
+          email={user.email}
+          image={user.image}
+        />
+      ),
+    },
+    {
+      key: "role",
+      label: "Role",
+      render: (user: User) => (
+        <Badge variant={getRoleBadgeVariant(user.role)}>
+          {user.role.replace("_", " ").toUpperCase()}
+        </Badge>
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (user: User) => (
+        <Badge variant={user.emailVerified ? "outline" : "secondary"}>
+          {user.emailVerified ? "Verified" : "Unverified"}
+        </Badge>
+      ),
+    },
+    {
+      key: "subscription",
+      label: "Subscription",
+      render: (user: User) =>
+        user.subscriptionStatus ? (
+          <Badge
+            variant={
+              user.subscriptionStatus === "active" ? "default" : "secondary"
+            }
+          >
+            {user.subscriptionStatus.toUpperCase()}
+          </Badge>
+        ) : (
+          <span className="text-muted-foreground text-sm">None</span>
+        ),
+    },
+    {
+      key: "createdAt",
+      label: "Joined",
+      render: (user: User) => (
+        <span className="text-sm">{formatDate(user.createdAt)}</span>
+      ),
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (user: User) => (
+        <div className="flex items-center justify-end space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleEditUser(user)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleDeleteUser(user.id, user.name)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
         </div>
-      </div>
-    );
-  }
+      ),
+    },
+  ];
+
+  const roleFilterOptions = [
+    { value: "all", label: "All Roles" },
+    { value: "user", label: "User" },
+    { value: "admin", label: "Admin" },
+    { value: "super_admin", label: "Super Admin" },
+  ];
 
   return (
-    <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex items-center space-x-2">
-        <div className="relative flex-1">
-          <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
-          <Input
-            placeholder="Search users by name or email..."
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-        <Select value={roleFilter} onValueChange={handleRoleFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by role" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Roles</SelectItem>
-            <SelectItem value="user">User</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="super_admin">Super Admin</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Subscription</TableHead>
-              <TableHead>Joined</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell>
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-muted h-8 w-8 animate-pulse rounded-full" />
-                      <div className="space-y-1">
-                        <div className="bg-muted h-4 w-32 animate-pulse rounded" />
-                        <div className="bg-muted h-3 w-48 animate-pulse rounded" />
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-16 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-20 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-24 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-20 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-16 animate-pulse rounded" />
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : users.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center">
-                  No users found
-                </TableCell>
-              </TableRow>
-            ) : (
-              users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.image} />
-                        <AvatarFallback>
-                          {user.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{user.name}</div>
-                        <div className="text-muted-foreground text-sm">
-                          {user.email}
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getRoleBadgeVariant(user.role)}>
-                      {user.role.replace("_", " ").toUpperCase()}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={user.emailVerified ? "default" : "secondary"}
-                    >
-                      {user.emailVerified ? "Verified" : "Unverified"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {user.subscriptionStatus ? (
-                      <Badge
-                        variant={
-                          user.subscriptionStatus === "active"
-                            ? "default"
-                            : "secondary"
-                        }
-                      >
-                        {user.subscriptionStatus}
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground">None</span>
-                    )}
-                  </TableCell>
-                  <TableCell>{formatDate(user.createdAt)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditUser(user)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteUser(user.id, user.name)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-muted-foreground text-sm">
-            Page {currentPage} of {totalPages}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
-
+    <>
+      <AdminTableBase<User>
+        columns={columns}
+        data={users}
+        loading={loading}
+        error={error}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearch}
+        filterValue={roleFilter}
+        onFilterChange={handleRoleFilter}
+        filterOptions={roleFilterOptions}
+        filterPlaceholder="Filter by role"
+        pagination={{
+          page: currentPage,
+          limit: 20, // Assuming a default limit, adjust if necessary
+          total: totalUsers,
+          totalPages: totalPages,
+        }}
+        onPageChange={handlePageChange}
+        searchPlaceholder="Search users by name or email..."
+        emptyMessage="No users found"
+      />
       {/* Edit User Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
@@ -452,6 +364,6 @@ export function UserManagementTable() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

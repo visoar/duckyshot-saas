@@ -1,25 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -28,15 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  AlertTriangle,
-  ExternalLink,
-  Ban,
-} from "lucide-react";
+import { Calendar, X } from "lucide-react";
 import { toast } from "sonner";
+import { AdminTableBase } from "@/components/admin/admin-table-base";
+import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
 
 interface Subscription {
   id: string;
@@ -74,6 +52,7 @@ export function SubscriptionManagementTable() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalSubscriptions, setTotalSubscriptions] = useState(0);
   const [cancellingSubscription, setCancellingSubscription] =
     useState<Subscription | null>(null);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
@@ -97,6 +76,7 @@ export function SubscriptionManagementTable() {
       setSubscriptions(data.subscriptions);
       setCurrentPage(data.pagination.page);
       setTotalPages(data.pagination.totalPages);
+      setTotalSubscriptions(data.pagination.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -116,6 +96,11 @@ export function SubscriptionManagementTable() {
   const handleStatusFilter = (value: string) => {
     setStatusFilter(value);
     setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchSubscriptions(page, searchTerm, statusFilter);
   };
 
   const handleCancelSubscription = (subscription: Subscription) => {
@@ -172,236 +157,118 @@ export function SubscriptionManagementTable() {
     });
   };
 
-  const openCreemSubscription = (subscriptionId: string) => {
-    // This would open the Creem dashboard for the specific subscription
-    // Replace with actual Creem dashboard URL when available
-    window.open(
-      `https://www.creem.io/dashboard/subscriptions/${subscriptionId}`,
-      "_blank",
-    );
-  };
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-destructive flex items-center space-x-2">
-          <AlertTriangle className="h-4 w-4" />
-          <span>Failed to load subscriptions: {error}</span>
+  const columns: Array<{
+    key: keyof Subscription | string;
+    label: string;
+    render?: (item: Subscription) => ReactNode;
+  }> = [
+    {
+      key: "user",
+      label: "User",
+      render: (subscription: Subscription) => (
+        <UserAvatarCell
+          name={subscription.userName}
+          email={subscription.userEmail}
+          image={subscription.userImage}
+        />
+      ),
+    },
+    {
+      key: "plan",
+      label: "Plan",
+      render: (subscription: Subscription) => (
+        <div>
+          <div className="font-medium">{subscription.planName}</div>
+          <div className="text-muted-foreground text-sm">
+            {subscription.planPrice
+              ? formatCurrency(subscription.planPrice, subscription.currency)
+              : "N/A"}
+          </div>
         </div>
-      </div>
-    );
-  }
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (subscription: Subscription) => (
+        <Badge
+          variant={getStatusBadgeVariant(subscription.status)}
+          className="capitalize"
+        >
+          {subscription.status}
+        </Badge>
+      ),
+    },
+    {
+      key: "period",
+      label: "Period",
+      render: (subscription: Subscription) => (
+        <div className="text-sm">
+          <div className="flex items-center gap-1">
+            <Calendar className="h-3 w-3" />
+            {formatDate(subscription.currentPeriodStart)}
+          </div>
+          <div className="text-muted-foreground">
+            to {formatDate(subscription.currentPeriodEnd)}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "created",
+      label: "Created",
+      render: (subscription: Subscription) =>
+        formatDate(subscription.createdAt),
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (subscription: Subscription) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleCancelSubscription(subscription)}
+          disabled={subscription.status === "cancelled"}
+        >
+          <X className="mr-1 h-4 w-4" />
+          Cancel
+        </Button>
+      ),
+    },
+  ];
+
+  const statusFilterOptions = [
+    { value: "all", label: "All Statuses" },
+    { value: "active", label: "Active" },
+    { value: "trialing", label: "Trialing" },
+    { value: "cancelled", label: "Cancelled" },
+    { value: "past_due", label: "Past Due" },
+    { value: "incomplete", label: "Incomplete" },
+  ];
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex items-center space-x-2">
-        <div className="relative flex-1">
-          <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
-          <Input
-            placeholder="Search by user name, email, or subscription ID..."
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={handleStatusFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="trialing">Trialing</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-            <SelectItem value="past_due">Past Due</SelectItem>
-            <SelectItem value="incomplete">Incomplete</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Plan</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Current Period</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell>
-                    <div className="flex items-center space-x-3">
-                      <div className="bg-muted h-8 w-8 animate-pulse rounded-full" />
-                      <div className="space-y-1">
-                        <div className="bg-muted h-4 w-32 animate-pulse rounded" />
-                        <div className="bg-muted h-3 w-48 animate-pulse rounded" />
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-20 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-16 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-32 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-20 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-24 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-16 animate-pulse rounded" />
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : subscriptions.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center">
-                  No subscriptions found
-                </TableCell>
-              </TableRow>
-            ) : (
-              subscriptions.map((subscription) => (
-                <TableRow key={subscription.id}>
-                  <TableCell>
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={subscription.userImage} />
-                        <AvatarFallback>
-                          {subscription.userName
-                            ?.split(" ")
-                            ?.map((n) => n[0])
-                            ?.join("")
-                            ?.toUpperCase() || "U"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">
-                          {subscription.userName}
-                        </div>
-                        <div className="text-muted-foreground text-sm">
-                          {subscription.userEmail}
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium">
-                      {subscription.planName || "Unknown Plan"}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <Badge
-                        variant={getStatusBadgeVariant(subscription.status)}
-                      >
-                        {subscription.status.toUpperCase()}
-                      </Badge>
-                      {subscription.cancelAtPeriodEnd && (
-                        <div className="text-muted-foreground text-xs">
-                          Cancels at period end
-                        </div>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div>{formatDate(subscription.currentPeriodStart)}</div>
-                      <div className="text-muted-foreground">
-                        to {formatDate(subscription.currentPeriodEnd)}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium">
-                      {subscription.planPrice
-                        ? formatCurrency(
-                            subscription.planPrice,
-                            subscription.currency,
-                          )
-                        : "N/A"}
-                    </div>
-                  </TableCell>
-                  <TableCell>{formatDate(subscription.createdAt)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      {subscription.creemSubscriptionId && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            openCreemSubscription(
-                              subscription.creemSubscriptionId!,
-                            )
-                          }
-                          title="View in Creem Dashboard"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {subscription.status === "active" &&
-                        !subscription.cancelAtPeriodEnd && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              handleCancelSubscription(subscription)
-                            }
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Ban className="h-4 w-4" />
-                          </Button>
-                        )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-muted-foreground text-sm">
-            Page {currentPage} of {totalPages}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      <AdminTableBase<Subscription>
+        data={subscriptions}
+        columns={columns}
+        loading={loading}
+        error={error}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearch}
+        searchPlaceholder="Search by user name, email, or subscription ID..."
+        filterValue={statusFilter}
+        onFilterChange={handleStatusFilter}
+        filterOptions={statusFilterOptions}
+        filterPlaceholder="Filter by status"
+        pagination={{
+          page: currentPage,
+          limit: 20, // Assuming a default limit, adjust if necessary
+          total: totalSubscriptions,
+          totalPages: totalPages,
+        }}
+        onPageChange={handlePageChange}
+        emptyMessage="No subscriptions found"
+      />
 
       {/* Cancel Subscription Dialog */}
       <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>

@@ -1,31 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useEffect, useState, ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  AlertTriangle,
-  ExternalLink,
-} from "lucide-react";
+import { ExternalLink } from "lucide-react";
+import { AdminTableBase } from "@/components/admin/admin-table-base";
+import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
 
 interface Payment {
   id: string;
@@ -60,6 +39,7 @@ export function PaymentManagementTable() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalPayments, setTotalPayments] = useState(0);
 
   const fetchPayments = async (page = 1, search = "", status = "all") => {
     try {
@@ -80,6 +60,7 @@ export function PaymentManagementTable() {
       setPayments(data.payments);
       setCurrentPage(data.pagination.page);
       setTotalPages(data.pagination.totalPages);
+      setTotalPayments(data.pagination.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -101,10 +82,15 @@ export function PaymentManagementTable() {
     setCurrentPage(1);
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    fetchPayments(page, searchTerm, statusFilter);
+  };
+
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
       case "completed":
-        return "default";
+        return "secondary";
       case "pending":
         return "secondary";
       case "failed":
@@ -142,174 +128,98 @@ export function PaymentManagementTable() {
     );
   };
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="text-destructive flex items-center space-x-2">
-          <AlertTriangle className="h-4 w-4" />
-          <span>Failed to load payments: {error}</span>
+  const columns: Array<{
+    key: keyof Payment | string;
+    label: string;
+    render?: (item: Payment) => ReactNode;
+  }> = [
+    {
+      key: "user",
+      label: "User",
+      render: (payment: Payment) => (
+        <UserAvatarCell name={payment.userName} email={payment.userEmail} />
+      ),
+    },
+    {
+      key: "amount",
+      label: "Amount",
+      render: (payment: Payment) => (
+        <div className="font-medium">
+          {formatCurrency(payment.amount, payment.currency)}
         </div>
-      </div>
-    );
-  }
+      ),
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (payment: Payment) => (
+        <Badge
+          variant={getStatusBadgeVariant(payment.status)}
+          className="capitalize"
+        >
+          {payment.status}
+        </Badge>
+      ),
+    },
+    {
+      key: "method",
+      label: "Method",
+      render: (payment: Payment) => (
+        <div className="text-sm">{payment.paymentMethod || "N/A"}</div>
+      ),
+    },
+    {
+      key: "created",
+      label: "Created",
+      render: (payment: Payment) => formatDate(payment.createdAt),
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (payment: Payment) =>
+        payment.stripePaymentIntentId && (
+          <button
+            onClick={() => openStripePayment(payment.stripePaymentIntentId!)}
+            className="text-blue-600 hover:text-blue-800"
+            title="View in Stripe Dashboard"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </button>
+        ),
+    },
+  ];
+
+  const statusFilterOptions = [
+    { value: "all", label: "All Statuses" },
+    { value: "completed", label: "Completed" },
+    { value: "pending", label: "Pending" },
+    { value: "failed", label: "Failed" },
+    { value: "cancelled", label: "Cancelled" },
+  ];
 
   return (
     <div className="space-y-4">
-      {/* Filters */}
-      <div className="flex items-center space-x-2">
-        <div className="relative flex-1">
-          <Search className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
-          <Input
-            placeholder="Search by user name, email, or payment ID..."
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={handleStatusFilter}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="failed">Failed</SelectItem>
-            <SelectItem value="cancelled">Cancelled</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Payment ID</TableHead>
-              <TableHead>User</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Method</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-24 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="bg-muted h-4 w-32 animate-pulse rounded" />
-                      <div className="bg-muted h-3 w-48 animate-pulse rounded" />
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-20 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-16 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-20 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-24 animate-pulse rounded" />
-                  </TableCell>
-                  <TableCell>
-                    <div className="bg-muted h-4 w-16 animate-pulse rounded" />
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : payments.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center">
-                  No payments found
-                </TableCell>
-              </TableRow>
-            ) : (
-              payments.map((payment) => (
-                <TableRow key={payment.id}>
-                  <TableCell>
-                    <div className="font-mono text-sm">
-                      {payment.id.slice(0, 8)}...
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{payment.userName}</div>
-                      <div className="text-muted-foreground text-sm">
-                        {payment.userEmail}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium">
-                      {formatCurrency(payment.amount, payment.currency)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusBadgeVariant(payment.status)}>
-                      {payment.status.toUpperCase()}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <span className="capitalize">
-                      {payment.paymentMethod || "Unknown"}
-                    </span>
-                  </TableCell>
-                  <TableCell>{formatDate(payment.createdAt)}</TableCell>
-                  <TableCell className="text-right">
-                    {payment.stripePaymentIntentId && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          openStripePayment(payment.stripePaymentIntentId!)
-                        }
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-muted-foreground text-sm">
-            Page {currentPage} of {totalPages}
-          </div>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      <AdminTableBase<Payment>
+        data={payments}
+        columns={columns}
+        loading={loading}
+        error={error}
+        searchTerm={searchTerm}
+        onSearchChange={handleSearch}
+        searchPlaceholder="Search by user name, email, or payment ID..."
+        filterValue={statusFilter}
+        onFilterChange={handleStatusFilter}
+        filterOptions={statusFilterOptions}
+        filterPlaceholder="Filter by status"
+        pagination={{
+          page: currentPage,
+          limit: 20, // Assuming a default limit, adjust if necessary
+          total: totalPayments,
+          totalPages: totalPages,
+        }}
+        onPageChange={handlePageChange}
+        emptyMessage="No payments found"
+      />
     </div>
   );
 }
