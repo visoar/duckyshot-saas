@@ -5,6 +5,10 @@ import {
   Home,
   Settings,
   Upload,
+  Shield,
+  Users,
+  CreditCard,
+  BarChart3,
   LucideIcon,
 } from "lucide-react";
 import { APP_NAME } from "@/constants";
@@ -28,6 +32,7 @@ import { UserButton } from "./user-btn";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import { Link } from "next-view-transitions";
+import { useSession } from "@/lib/auth/client";
 
 const navigation: {
   title: string;
@@ -51,10 +56,52 @@ const navigation: {
   },
 ];
 
+const adminNavigation: {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+}[] = [
+  {
+    title: "Admin Dashboard",
+    url: "/dashboard/admin",
+    icon: BarChart3,
+  },
+  {
+    title: "User Management",
+    url: "/dashboard/admin/users",
+    icon: Users,
+  },
+  {
+    title: "Payments",
+    url: "/dashboard/admin/payments",
+    icon: CreditCard,
+  },
+  {
+    title: "Subscriptions",
+    url: "/dashboard/admin/subscriptions",
+    icon: Shield,
+  },
+];
+
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { open, toggleSidebar } = useSidebar();
+  const { data: session } = useSession();
+
+  // Check if user has admin role
+  const hasAdminRole = (userRole: string) => {
+    const roleHierarchy: Record<string, number> = {
+      user: 1,
+      admin: 2,
+      super_admin: 3,
+    };
+    return roleHierarchy[userRole] >= roleHierarchy["admin"];
+  };
+
+  const isAdmin =
+    session?.user &&
+    hasAdminRole((session.user as { role?: string }).role || "user");
 
   const handleNavigation = (url: string) => () => {
     router.replace(url);
@@ -73,9 +120,7 @@ export function AppSidebar() {
         </Link>
         {open && (
           <>
-            <span className="text-base font-semibold">
-              {APP_NAME}
-            </span>
+            <span className="text-base font-semibold">{APP_NAME}</span>
           </>
         )}
       </SidebarHeader>
@@ -92,11 +137,12 @@ export function AppSidebar() {
                       toggleSidebar();
                     }}
                   >
-                    <SidebarMenuButton isActive={item.url === pathname}>
-                      <div className="flex items-center gap-2">
-                        <item.icon className="size-4" />
-                        <span>{item.title}</span>
-                      </div>
+                    <SidebarMenuButton 
+                      isActive={item.url === pathname}
+                      tooltip={item.title}
+                    >
+                      <item.icon className="size-4" />
+                      <span>{item.title}</span>
                     </SidebarMenuButton>
                   </div>
                 </SidebarMenuItem>
@@ -104,6 +150,40 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Admin Navigation */}
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupContent className="flex flex-col gap-2">
+              {open && (
+                <div className="text-muted-foreground px-2 py-1 text-xs font-semibold">
+                  Admin
+                </div>
+              )}
+              <SidebarMenu>
+                {adminNavigation.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <div
+                      onClick={handleNavigation(item.url)}
+                      onDoubleClick={() => {
+                        handleNavigation(item.url)();
+                        toggleSidebar();
+                      }}
+                    >
+                      <SidebarMenuButton 
+                        isActive={item.url === pathname}
+                        tooltip={item.title}
+                      >
+                        <item.icon className="size-4" />
+                        <span>{item.title}</span>
+                      </SidebarMenuButton>
+                    </div>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter className="p-2">
         <div className="flex items-center justify-center">

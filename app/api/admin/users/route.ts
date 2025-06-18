@@ -1,0 +1,95 @@
+import { NextRequest, NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/auth/permissions";
+import { db } from "@/database";
+import { users, subscriptions } from "@/database/schema";
+import { eq, desc, asc, sql, count } from "drizzle-orm";
+import { z } from "zod";
+
+const getUsersSchema = z.object({
+  page: z.coerce.number().min(1).default(1),
+  limit: z.coerce.number().min(1).max(100).default(20),
+  search: z.string().optional(),
+  role: z.enum(["user", "admin", "super_admin"]).optional(),
+  sortBy: z.enum(["createdAt", "name", "email"]).default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
+
+export async function GET(request: NextRequest) {
+  try {
+    // Require admin authentication
+    await requireAdmin();
+
+    const { searchParams } = new URL(request.url);
+    const params = getUsersSchema.parse(Object.fromEntries(searchParams));
+
+    const { page, limit, search, role, sortBy, sortOrder } = params;
+    const offset = (page - 1) * limit;
+
+    // Build where conditions
+    const whereConditions = [];
+
+    if (search) {
+      whereConditions.push(
+        sql`(${users.name} ILIKE ${`%${search}%`} OR ${users.email} ILIKE ${`%${search}%`})`,
+      );
+    }
+
+    if (role) {
+      whereConditions.push(eq(users.role, role));
+    }
+
+    const whereClause =
+      whereConditions.length > 0
+        ? sql`${whereConditions.reduce((acc, condition) => sql`${acc} AND ${condition}`)}`
+        : undefined;
+
+    // Build order by
+    const orderByClause =
+      sortOrder === "asc" ? asc(users[sortBy]) : desc(users[sortBy]);
+
+    // Get users with subscription info
+    const usersQuery = db
+      .select({
+        id: users.id,
+        name: users.name,
+        email: users.email,
+        emailVerified: users.emailVerified,
+        image: users.image,
+        role: users.role,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        subscriptionStatus: subscriptions.status,
+        subscriptionId: subscriptions.subscriptionId,
+      })
+      .from(users)
+      .leftJoin(subscriptions, eq(users.id, subscriptions.userId))
+      .where(whereClause)
+      .orderBy(orderByClause)
+      .limit(limit)
+      .offset(offset);
+
+    const usersList = await usersQuery;
+
+    // Get total count
+    const [{ total }] = await db
+      .select({ total: count() })
+      .from(users)
+      .where(whereClause);
+
+    return NextResponse.json({
+      users: usersList,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Get users error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch users" },
+      { status: 500 },
+    );
+  }
+}

@@ -10,13 +10,16 @@ import { UAParser } from "ua-parser-js";
 import { providerConfigs } from "./providers";
 
 // Dynamically build social providers based on environment variables
-const socialProviders: Record<string, { clientId: string; clientSecret: string; }> = {};
+const socialProviders: Record<
+  string,
+  { clientId: string; clientSecret: string }
+> = {};
 
 // Build social providers object based on available environment variables using unified configuration
 providerConfigs.forEach(({ name, clientIdKey, clientSecretKey }) => {
   const clientId = env[clientIdKey];
   const clientSecret = env[clientSecretKey];
-  
+
   if (clientId && clientSecret) {
     socialProviders[name] = {
       clientId: clientId as string,
@@ -54,6 +57,15 @@ export const auth = betterAuth({
       },
     },
   },
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        required: false,
+        defaultValue: "user",
+      },
+    },
+  },
   socialProviders,
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -79,13 +91,13 @@ export const auth = betterAuth({
             const os = ua.getOS();
             const browser = ua.getBrowser();
             const device = ua.getDevice();
-            
+
             return {
               data: {
                 ...session,
                 os: os.name || null,
                 browser: browser.name || null,
-                deviceType: device.type || 'desktop',
+                deviceType: device.type || "desktop",
               },
             };
           }
@@ -94,7 +106,7 @@ export const auth = betterAuth({
               ...session,
               os: null,
               browser: null,
-              deviceType: 'desktop',
+              deviceType: "desktop",
             },
           };
         },

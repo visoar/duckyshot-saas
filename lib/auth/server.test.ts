@@ -1,32 +1,32 @@
-import { describe, it, expect, beforeEach, afterEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, afterEach } from "@jest/globals";
 
 // Mock environment variables
 const mockEnv = {
-  NEXT_PUBLIC_APP_URL: 'http://localhost:3000',
-  BETTER_AUTH_SECRET: 'test-secret',
-  DATABASE_URL: 'postgresql://test',
-  RESEND_API_KEY: 'test-key',
-  CREEM_API_KEY: 'test-creem-key',
-  CREEM_WEBHOOK_SECRET: 'test-webhook-secret',
+  NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+  BETTER_AUTH_SECRET: "test-secret",
+  DATABASE_URL: "postgresql://test",
+  RESEND_API_KEY: "test-key",
+  CREEM_API_KEY: "test-creem-key",
+  CREEM_WEBHOOK_SECRET: "test-webhook-secret",
 };
 
 // Mock modules
-jest.mock('../../env', () => mockEnv);
-jest.mock('@/database', () => ({ db: {} }));
-jest.mock('@/database/tables', () => ({}));
-jest.mock('@/emails/magic-link', () => ({ sendMagicLink: jest.fn() }));
-jest.mock('@/constants', () => ({ APP_NAME: 'Test App' }));
-jest.mock('better-auth/plugins', () => ({
+jest.mock("../../env", () => mockEnv);
+jest.mock("@/database", () => ({ db: {} }));
+jest.mock("@/database/tables", () => ({}));
+jest.mock("@/emails/magic-link", () => ({ sendMagicLink: jest.fn() }));
+jest.mock("@/constants", () => ({ APP_NAME: "Test App" }));
+jest.mock("better-auth/plugins", () => ({
   magicLink: jest.fn(() => ({})),
 }));
-jest.mock('better-auth/adapters/drizzle', () => ({
+jest.mock("better-auth/adapters/drizzle", () => ({
   drizzleAdapter: jest.fn(() => ({})),
 }));
-jest.mock('better-auth', () => ({
+jest.mock("better-auth", () => ({
   betterAuth: jest.fn((config) => ({ options: config })),
 }));
 
-describe('Auth Server Configuration', () => {
+describe("Auth Server Configuration", () => {
   let originalEnv: typeof process.env;
 
   beforeEach(() => {
@@ -39,180 +39,180 @@ describe('Auth Server Configuration', () => {
     process.env = originalEnv;
   });
 
-  it('should include Google provider when both CLIENT_ID and CLIENT_SECRET are provided', async () => {
+  it("should include Google provider when both CLIENT_ID and CLIENT_SECRET are provided", async () => {
     // Mock env with Google credentials
-    jest.doMock('../../env', () => ({
+    jest.doMock("../../env", () => ({
       ...mockEnv,
-      GOOGLE_CLIENT_ID: 'google-client-id',
-      GOOGLE_CLIENT_SECRET: 'google-client-secret',
+      GOOGLE_CLIENT_ID: "google-client-id",
+      GOOGLE_CLIENT_SECRET: "google-client-secret",
     }));
 
-    const { auth } = await import('./server');
+    const { auth } = await import("./server");
     const config = auth.options;
 
-    expect(config.socialProviders).toHaveProperty('google');
+    expect(config.socialProviders).toHaveProperty("google");
     expect(config.socialProviders.google).toEqual({
-      clientId: 'google-client-id',
-      clientSecret: 'google-client-secret',
+      clientId: "google-client-id",
+      clientSecret: "google-client-secret",
     });
   });
 
-  it('should include GitHub provider when both CLIENT_ID and CLIENT_SECRET are provided', async () => {
+  it("should include GitHub provider when both CLIENT_ID and CLIENT_SECRET are provided", async () => {
     // Mock env with GitHub credentials
-    jest.doMock('../../env', () => ({
+    jest.doMock("../../env", () => ({
       ...mockEnv,
-      GITHUB_CLIENT_ID: 'github-client-id',
-      GITHUB_CLIENT_SECRET: 'github-client-secret',
+      GITHUB_CLIENT_ID: "github-client-id",
+      GITHUB_CLIENT_SECRET: "github-client-secret",
     }));
 
-    const { auth } = await import('./server');
+    const { auth } = await import("./server");
     const config = auth.options;
 
-    expect(config.socialProviders).toHaveProperty('github');
+    expect(config.socialProviders).toHaveProperty("github");
     expect(config.socialProviders.github).toEqual({
-      clientId: 'github-client-id',
-      clientSecret: 'github-client-secret',
+      clientId: "github-client-id",
+      clientSecret: "github-client-secret",
     });
   });
 
-  it('should include LinkedIn provider when LinkedIn credentials are provided', async () => {
+  it("should include LinkedIn provider when LinkedIn credentials are provided", async () => {
     // Mock env with LinkedIn credentials
-    jest.doMock('../../env', () => ({
+    jest.doMock("../../env", () => ({
       ...mockEnv,
-      LINKEDIN_CLIENT_ID: 'linkedin-client-id',
-      LINKEDIN_CLIENT_SECRET: 'linkedin-client-secret',
+      LINKEDIN_CLIENT_ID: "linkedin-client-id",
+      LINKEDIN_CLIENT_SECRET: "linkedin-client-secret",
     }));
 
-    const { auth } = await import('./server');
+    const { auth } = await import("./server");
     const config = auth.options;
 
-    expect(config.socialProviders).toHaveProperty('linkedin');
+    expect(config.socialProviders).toHaveProperty("linkedin");
     expect(config.socialProviders.linkedin).toEqual({
-      clientId: 'linkedin-client-id',
-      clientSecret: 'linkedin-client-secret',
+      clientId: "linkedin-client-id",
+      clientSecret: "linkedin-client-secret",
     });
   });
 
-  it('should include all providers when all credentials are provided', async () => {
+  it("should include all providers when all credentials are provided", async () => {
     // Mock env with Google, GitHub, and LinkedIn credentials
-    jest.doMock('../../env', () => ({
+    jest.doMock("../../env", () => ({
       ...mockEnv,
-      GOOGLE_CLIENT_ID: 'google-client-id',
-      GOOGLE_CLIENT_SECRET: 'google-client-secret',
-      GITHUB_CLIENT_ID: 'github-client-id',
-      GITHUB_CLIENT_SECRET: 'github-client-secret',
-      LINKEDIN_CLIENT_ID: 'linkedin-client-id',
-      LINKEDIN_CLIENT_SECRET: 'linkedin-client-secret',
+      GOOGLE_CLIENT_ID: "google-client-id",
+      GOOGLE_CLIENT_SECRET: "google-client-secret",
+      GITHUB_CLIENT_ID: "github-client-id",
+      GITHUB_CLIENT_SECRET: "github-client-secret",
+      LINKEDIN_CLIENT_ID: "linkedin-client-id",
+      LINKEDIN_CLIENT_SECRET: "linkedin-client-secret",
     }));
 
-    const { auth } = await import('./server');
+    const { auth } = await import("./server");
     const config = auth.options;
 
-    expect(config.socialProviders).toHaveProperty('google');
-    expect(config.socialProviders).toHaveProperty('github');
-    expect(config.socialProviders).toHaveProperty('linkedin');
+    expect(config.socialProviders).toHaveProperty("google");
+    expect(config.socialProviders).toHaveProperty("github");
+    expect(config.socialProviders).toHaveProperty("linkedin");
     expect(Object.keys(config.socialProviders)).toHaveLength(3);
   });
 
-  it('should not include Google provider when CLIENT_ID is missing', async () => {
+  it("should not include Google provider when CLIENT_ID is missing", async () => {
     // Mock env with only Google CLIENT_SECRET
-    jest.doMock('../../env', () => ({
+    jest.doMock("../../env", () => ({
       ...mockEnv,
-      GOOGLE_CLIENT_SECRET: 'google-client-secret',
+      GOOGLE_CLIENT_SECRET: "google-client-secret",
     }));
 
-    const { auth } = await import('./server');
+    const { auth } = await import("./server");
     const config = auth.options;
 
-    expect(config.socialProviders).not.toHaveProperty('google');
+    expect(config.socialProviders).not.toHaveProperty("google");
   });
 
-  it('should not include Google provider when CLIENT_SECRET is missing', async () => {
+  it("should not include Google provider when CLIENT_SECRET is missing", async () => {
     // Mock env with only Google CLIENT_ID
-    jest.doMock('../../env', () => ({
+    jest.doMock("../../env", () => ({
       ...mockEnv,
-      GOOGLE_CLIENT_ID: 'google-client-id',
+      GOOGLE_CLIENT_ID: "google-client-id",
     }));
 
-    const { auth } = await import('./server');
+    const { auth } = await import("./server");
     const config = auth.options;
 
-    expect(config.socialProviders).not.toHaveProperty('google');
+    expect(config.socialProviders).not.toHaveProperty("google");
   });
 
-  it('should not include GitHub provider when CLIENT_ID is missing', async () => {
+  it("should not include GitHub provider when CLIENT_ID is missing", async () => {
     // Mock env with only GitHub CLIENT_SECRET
-    jest.doMock('../../env', () => ({
+    jest.doMock("../../env", () => ({
       ...mockEnv,
-      GITHUB_CLIENT_SECRET: 'github-client-secret',
+      GITHUB_CLIENT_SECRET: "github-client-secret",
     }));
 
-    const { auth } = await import('./server');
+    const { auth } = await import("./server");
     const config = auth.options;
 
-    expect(config.socialProviders).not.toHaveProperty('github');
+    expect(config.socialProviders).not.toHaveProperty("github");
   });
 
-  it('should not include GitHub provider when CLIENT_SECRET is missing', async () => {
+  it("should not include GitHub provider when CLIENT_SECRET is missing", async () => {
     // Mock env with only GitHub CLIENT_ID
-    jest.doMock('../../env', () => ({
+    jest.doMock("../../env", () => ({
       ...mockEnv,
-      GITHUB_CLIENT_ID: 'github-client-id',
+      GITHUB_CLIENT_ID: "github-client-id",
     }));
 
-    const { auth } = await import('./server');
+    const { auth } = await import("./server");
     const config = auth.options;
 
-    expect(config.socialProviders).not.toHaveProperty('github');
+    expect(config.socialProviders).not.toHaveProperty("github");
   });
 
-  it('should not include LinkedIn provider when CLIENT_ID is missing', async () => {
+  it("should not include LinkedIn provider when CLIENT_ID is missing", async () => {
     // Mock env with only LinkedIn CLIENT_SECRET
-    jest.doMock('../../env', () => ({
+    jest.doMock("../../env", () => ({
       ...mockEnv,
-      LINKEDIN_CLIENT_SECRET: 'linkedin-client-secret',
+      LINKEDIN_CLIENT_SECRET: "linkedin-client-secret",
     }));
 
-    const { auth } = await import('./server');
+    const { auth } = await import("./server");
     const config = auth.options;
 
-    expect(config.socialProviders).not.toHaveProperty('linkedin');
+    expect(config.socialProviders).not.toHaveProperty("linkedin");
   });
 
-  it('should not include LinkedIn provider when CLIENT_SECRET is missing', async () => {
+  it("should not include LinkedIn provider when CLIENT_SECRET is missing", async () => {
     // Mock env with only LinkedIn CLIENT_ID
-    jest.doMock('../../env', () => ({
+    jest.doMock("../../env", () => ({
       ...mockEnv,
-      LINKEDIN_CLIENT_ID: 'linkedin-client-id',
+      LINKEDIN_CLIENT_ID: "linkedin-client-id",
     }));
 
-    const { auth } = await import('./server');
+    const { auth } = await import("./server");
     const config = auth.options;
 
-    expect(config.socialProviders).not.toHaveProperty('linkedin');
+    expect(config.socialProviders).not.toHaveProperty("linkedin");
   });
 
-  it('should have empty socialProviders when no credentials are provided', async () => {
+  it("should have empty socialProviders when no credentials are provided", async () => {
     // Mock env without any social provider credentials
-    jest.doMock('../../env', () => mockEnv);
+    jest.doMock("../../env", () => mockEnv);
 
-    const { auth } = await import('./server');
+    const { auth } = await import("./server");
     const config = auth.options;
 
     expect(config.socialProviders).toEqual({});
     expect(Object.keys(config.socialProviders)).toHaveLength(0);
   });
 
-  it('should maintain other auth configuration properties', async () => {
-    jest.doMock('../../env', () => mockEnv);
+  it("should maintain other auth configuration properties", async () => {
+    jest.doMock("../../env", () => mockEnv);
 
-    const { auth } = await import('./server');
+    const { auth } = await import("./server");
     const config = auth.options;
 
-    expect(config.appName).toBe('Test App');
-    expect(config.baseURL).toBe('http://localhost:3000');
-    expect(config.secret).toBe('test-secret');
-    expect(config.trustedOrigins).toEqual(['http://localhost:3000']);
+    expect(config.appName).toBe("Test App");
+    expect(config.baseURL).toBe("http://localhost:3000");
+    expect(config.secret).toBe("test-secret");
+    expect(config.trustedOrigins).toEqual(["http://localhost:3000"]);
     expect(config.session.expiresIn).toBe(60 * 60 * 24 * 30);
   });
 });
