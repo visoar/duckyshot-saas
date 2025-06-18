@@ -91,7 +91,10 @@ export async function GET() {
       },
       charts: {
         recentUsers,
-        monthlyRevenue: monthlyRevenueData.map(item => ({ ...item, revenue: item.revenue || 0 })),
+        monthlyRevenue: monthlyRevenueData.map((item) => ({
+          ...item,
+          revenue: item.revenue || 0,
+        })),
       },
     });
   } catch (error) {

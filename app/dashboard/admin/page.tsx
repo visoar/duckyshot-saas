@@ -35,9 +35,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <>
-      <DashboardPageHeader
-        title="Admin Dashboard"
-      />
+      <DashboardPageHeader title="Admin Dashboard" />
       <section className="space-y-6 px-4 py-2">
         {/* Stats Cards */}
         <AdminStatsCards initialStats={statsWithCharts} />

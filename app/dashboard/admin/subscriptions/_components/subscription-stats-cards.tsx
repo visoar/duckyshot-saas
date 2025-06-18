@@ -37,7 +37,7 @@ export function SubscriptionStatsCards() {
         setStats({
           totalSubscriptions: data.subscriptions?.total || 0,
           activeSubscriptions: data.subscriptions?.active || 0,
-          cancelledSubscriptions: data.subscriptions?.canceled || 0, 
+          cancelledSubscriptions: data.subscriptions?.canceled || 0,
           trialSubscriptions: 0, // Placeholder, needs API field or calculation logic
           monthlyRecurringRevenue: 0, // Placeholder, typically from a dedicated MRR calculation in API
           churnRate: 0, // Placeholder, needs API field or calculation logic (e.g., (cancelled / active_at_start_of_period) * 100)

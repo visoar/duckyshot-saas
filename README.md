@@ -97,7 +97,10 @@ cp .env.example .env
 
 ### 4. 数据库设置
 
-本项目使用 Drizzle ORM 进行数据库迁移。
+本项目使用 Drizzle ORM 进行数据库迁移。为了确保开发和生产环境的隔离，项目配置了两个独立的数据库配置文件：
+
+- `database/config.ts` - 开发环境配置，迁移文件输出到 `database/migrations/development/`
+- `database/config.prod.ts` - 生产环境配置，迁移文件输出到 `database/migrations/production/`
 
 #### 开发环境
 
@@ -123,9 +126,12 @@ pnpm db:migrate:dev # 将迁移文件应用到开发数据库
 # 1. 在开发环境中，基于 schema 变更生成迁移文件
 pnpm db:generate
 
-# 2. 将代码（包含新生成的迁移文件）部署到生产环境
+# 2. 为生产环境生成迁移文件（使用独立的生产配置）
+pnpm db:generate:prod
 
-# 3. 在生产环境中（通常通过 CI/CD 流程），应用迁移
+# 3. 将代码（包含新生成的迁移文件）部署到生产环境
+
+# 4. 在生产环境中（通常通过 CI/CD 流程），应用迁移
 pnpm db:migrate:prod
 ```
 
@@ -184,12 +190,13 @@ pnpm dev
 
 #### 数据库脚本
 
-| 脚本                   | 描述                                        | 环境 |
-| :--------------------- | :------------------------------------------ | :--- |
-| `pnpm db:generate`     | 基于模式变更生成 SQL 迁移文件。             | 开发 |
-| `pnpm db:push`         | **仅用于开发。** 直接推送模式变更到数据库。 | 开发 |
-| `pnpm db:migrate:dev`  | 将迁移文件应用到开发数据库。                | 开发 |
-| `pnpm db:migrate:prod` | **用于生产。** 将迁移文件应用到生产数据库。 | 生产 |
+| 脚本                    | 描述                                        | 环境 |
+| :---------------------- | :------------------------------------------ | :--- |
+| `pnpm db:generate`      | 基于模式变更生成 SQL 迁移文件。             | 开发 |
+| `pnpm db:generate:prod` | 为生产环境生成 SQL 迁移文件。               | 生产 |
+| `pnpm db:push`          | **仅用于开发。** 直接推送模式变更到数据库。 | 开发 |
+| `pnpm db:migrate:dev`   | 将迁移文件应用到开发数据库。                | 开发 |
+| `pnpm db:migrate:prod`  | **用于生产。** 将迁移文件应用到生产数据库。 | 生产 |
 
 ## 📁 文件上传功能
 

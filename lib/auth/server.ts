@@ -91,7 +91,7 @@ export const auth = betterAuth({
           const [userCount] = await db.select({ count: count() }).from(users);
 
           // If this is the first user, make them a super admin
-          // This is a feature for developer to use, not a bug.
+          // ! This is a feature for developer to use, not a bug.
           if (userCount.count === 0) {
             return {
               data: {

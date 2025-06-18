@@ -36,11 +36,16 @@ export function PaymentStatsCards() {
           totalPayments: data.payments?.total || 0,
           successfulPayments: data.payments?.successful || 0,
           // Assuming failedPayments is calculated as total - successful on the frontend or needs a dedicated API field
-          failedPayments: (data.payments?.total || 0) - (data.payments?.successful || 0),
+          failedPayments:
+            (data.payments?.total || 0) - (data.payments?.successful || 0),
           // monthlyRevenue and monthlyGrowth might come from charts data or need specific fields in payments stats
           // For now, let's assume they are part of a different structure or will be addressed separately
           // Placeholder for monthlyRevenue, assuming it might be in charts or a specific API field
-          monthlyRevenue: data.charts?.monthlyRevenue?.reduce((acc: number, cur: { revenue: number }) => acc + cur.revenue, 0) || 0, 
+          monthlyRevenue:
+            data.charts?.monthlyRevenue?.reduce(
+              (acc: number, cur: { revenue: number }) => acc + cur.revenue,
+              0,
+            ) || 0,
           // Placeholder for monthlyGrowth, this usually requires comparison with the previous month
           monthlyGrowth: 0, // This needs more complex logic or a dedicated API field
         });

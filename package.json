@@ -9,6 +9,7 @@
     "lint": "next lint",
     "test": "jest --coverage",
     "db:generate": "drizzle-kit generate --config=database/config.ts",
+    "db:generate:prod": "drizzle-kit generate --config=database/config.prod.ts",
     "db:migrate:dev": "drizzle-kit migrate --config=database/config.ts",
     "db:migrate:prod": "drizzle-kit migrate --config=database/config.prod.ts",
     "db:push": "drizzle-kit push --config=database/config.ts",
