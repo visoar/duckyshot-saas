@@ -24,6 +24,9 @@ const r2Client = new S3Client({
   },
 });
 
+// Export the client for reuse in other modules
+export { r2Client };
+
 interface CreatePresignedUrlParams {
   userId: string;
   fileName: string;

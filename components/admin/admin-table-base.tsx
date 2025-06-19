@@ -22,7 +22,7 @@ import { AlertTriangle, Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface TableColumn<T> {
   key: string;
-  label: string;
+  label: string | ReactNode;
   render?: (item: T) => ReactNode;
   sortable?: boolean;
 }
@@ -133,7 +133,11 @@ export function AdminTableBase<T extends { id: string | number }>({
           <TableHeader>
             <TableRow>
               {columns.map((column) => (
-                <TableHead key={String(column.key)}>{column.label}</TableHead>
+                <TableHead key={String(column.key)}>
+                  {typeof column.label === "string"
+                    ? column.label
+                    : column.label}
+                </TableHead>
               ))}
             </TableRow>
           </TableHeader>

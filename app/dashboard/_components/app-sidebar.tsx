@@ -81,6 +81,11 @@ const adminNavigation: {
     url: "/dashboard/admin/subscriptions",
     icon: Shield,
   },
+  {
+    title: "Uploads Managements",
+    url: "/dashboard/admin/uploads",
+    icon: Upload,
+  },
 ];
 
 export function AppSidebar() {
