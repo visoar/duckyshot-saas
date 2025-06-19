@@ -1,7 +1,7 @@
 import React from "react";
 import { auth } from "@/lib/auth/server";
 import { headers } from "next/headers";
-import { DashboardPageHeader } from "../_components/dashboard-page-header";
+import { DashboardPageWrapper } from "../_components/dashboard-page-wrapper";
 import { Settings } from "./_components/settings";
 import {
   getUserSubscription,
@@ -36,16 +36,13 @@ export default async function SettingsPage() {
   const activeSessions = activeSessionsRaw;
 
   return (
-    <>
-      <DashboardPageHeader title="Settings" />
-      <section className="space-y-6 px-4 py-2">
-        <Settings
-          session={session}
-          activeSessions={activeSessions} // 传递已经解析好的数据
-          subscription={subscription}
-          payments={payments}
-        />
-      </section>
-    </>
+    <DashboardPageWrapper title="Settings">
+      <Settings
+        session={session}
+        activeSessions={activeSessions} // 传递已经解析好的数据
+        subscription={subscription}
+        payments={payments}
+      />
+    </DashboardPageWrapper>
   );
 }

@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { DashboardPageHeader } from "../../_components/dashboard-page-header";
+import { DashboardPageWrapper } from "../../_components/dashboard-page-wrapper";
 import { Metadata } from "next";
 import { UserManagementTable } from "./_components/user-management-table";
 import { UserStatsCards } from "./_components/user-stats-cards";
@@ -25,36 +25,33 @@ export default async function UserManagementPage() {
   await requireAdmin();
 
   return (
-    <>
-      <DashboardPageHeader
-        title="User Management"
-        parentTitle="Admin Dashboard"
-        parentUrl="/dashboard/admin"
-      />
-      <section className="space-y-6 px-4 py-2">
-        {/* User Stats */}
-        <Suspense fallback={<UserStatsCardsSkeleton />}>
-          <UserStatsCards />
-        </Suspense>
+    <DashboardPageWrapper
+      title="User Management"
+      parentTitle="Admin Dashboard"
+      parentUrl="/dashboard/admin"
+    >
+      {/* User Stats */}
+      <Suspense fallback={<UserStatsCardsSkeleton />}>
+        <UserStatsCards />
+      </Suspense>
 
-        {/* User Management Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>All Users</CardTitle>
-            <CardDescription>
-              Manage user accounts, roles, and permissions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Suspense
-              fallback={<div className="bg-muted h-96 animate-pulse rounded" />}
-            >
-              <UserManagementTable />
-            </Suspense>
-          </CardContent>
-        </Card>
-      </section>
-    </>
+      {/* User Management Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>All Users</CardTitle>
+          <CardDescription>
+            Manage user accounts, roles, and permissions
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Suspense
+            fallback={<div className="bg-muted h-96 animate-pulse rounded" />}
+          >
+            <UserManagementTable />
+          </Suspense>
+        </CardContent>
+      </Card>
+    </DashboardPageWrapper>
   );
 }
 

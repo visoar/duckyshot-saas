@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { DashboardPageHeader } from "../../_components/dashboard-page-header";
+import { DashboardPageWrapper } from "../../_components/dashboard-page-wrapper";
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { PaymentStatsCards } from "./_components/payment-stats-cards";
@@ -24,36 +24,33 @@ export default async function PaymentsPage() {
   await requireAdmin();
 
   return (
-    <>
-      <DashboardPageHeader
-        title="Payment Management"
-        parentTitle="Admin Dashboard"
-        parentUrl="/dashboard/admin"
-      />
-      <section className="space-y-6 px-4 py-2">
-        {/* Payment Stats */}
-        <Suspense fallback={<PaymentStatsCardsSkeleton />}>
-          <PaymentStatsCards />
-        </Suspense>
+    <DashboardPageWrapper
+      title="Payment Management"
+      parentTitle="Admin Dashboard"
+      parentUrl="/dashboard/admin"
+    >
+      {/* Payment Stats */}
+      <Suspense fallback={<PaymentStatsCardsSkeleton />}>
+        <PaymentStatsCards />
+      </Suspense>
 
-        {/* Payment Management Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>All Payments</CardTitle>
-            <CardDescription>
-              View and manage payment transactions
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Suspense
-              fallback={<div className="bg-muted h-96 animate-pulse rounded" />}
-            >
-              <PaymentManagementTable />
-            </Suspense>
-          </CardContent>
-        </Card>
-      </section>
-    </>
+      {/* Payment Management Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>All Payments</CardTitle>
+          <CardDescription>
+            View and manage payment transactions
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Suspense
+            fallback={<div className="bg-muted h-96 animate-pulse rounded" />}
+          >
+            <PaymentManagementTable />
+          </Suspense>
+        </CardContent>
+      </Card>
+    </DashboardPageWrapper>
   );
 }
 

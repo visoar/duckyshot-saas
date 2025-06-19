@@ -45,7 +45,7 @@ export function UserAvatarCell({
         <AvatarFallback>{initials}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
-        <div className="truncate font-medium">{name || "Unknown User"}</div>
+        <div className="truncate font-medium">{name || "N/A"}</div>
         {email && (
           <div className="text-muted-foreground truncate text-sm">{email}</div>
         )}

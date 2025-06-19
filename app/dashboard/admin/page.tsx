@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/auth/permissions";
-import { DashboardPageHeader } from "../_components/dashboard-page-header";
+import { DashboardPageWrapper } from "../_components/dashboard-page-wrapper";
 import { Metadata } from "next";
 
 import { AdminStatsCards } from "./_components/admin-stats-cards";
@@ -34,42 +34,35 @@ export default async function AdminDashboardPage() {
   const statsWithCharts: AdminStatsWithCharts = await getAdminStatsWithCharts();
 
   return (
-    <>
-      <DashboardPageHeader title="Admin Dashboard" />
-      <section className="space-y-6 px-4 py-2">
-        {/* Stats Cards */}
-        <AdminStatsCards initialStats={statsWithCharts} />
+    <DashboardPageWrapper title="Admin Dashboard">
+      {/* Stats Cards */}
+      <AdminStatsCards initialStats={statsWithCharts} />
 
-        {/* Charts Row */}
-        <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>User Growth</CardTitle>
-              <CardDescription>
-                New user registrations over the last 30 days
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="pl-2">
-              <RecentUsersChart
-                chartData={statsWithCharts.charts.recentUsers}
-              />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Revenue Chart */}
+      {/* Charts Row */}
+      <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-1">
         <Card>
           <CardHeader>
-            <CardTitle>Revenue Overview</CardTitle>
+            <CardTitle>User Growth</CardTitle>
             <CardDescription>
-              Monthly revenue and payment trends
+              New user registrations over the last 30 days
             </CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
-            <RevenueChart chartData={statsWithCharts.charts.monthlyRevenue} />
+            <RecentUsersChart chartData={statsWithCharts.charts.recentUsers} />
           </CardContent>
         </Card>
-      </section>
-    </>
+      </div>
+
+      {/* Revenue Chart */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Revenue Overview</CardTitle>
+          <CardDescription>Monthly revenue and payment trends</CardDescription>
+        </CardHeader>
+        <CardContent className="pl-2">
+          <RevenueChart chartData={statsWithCharts.charts.monthlyRevenue} />
+        </CardContent>
+      </Card>
+    </DashboardPageWrapper>
   );
 }
