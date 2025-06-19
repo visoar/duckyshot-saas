@@ -2,13 +2,13 @@ import { Resend } from "resend";
 
 import env from "@/env";
 import { ReactNode } from "react";
-import { APP_NAME } from "@/constants";
+import { APP_NAME } from "@/lib/config/constants";
 const resend = new Resend(env.RESEND_API_KEY);
 
 const DEFAULT_SENDER_NAME = APP_NAME;
 
 // Replace with your email and sender name
-import { DEFAULT_EMAIL } from "@/constants";
+import { DEFAULT_EMAIL } from "@/lib/config/constants";
 
 export async function sendEmail(
   email: string,

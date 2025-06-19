@@ -1,7 +1,7 @@
 import React from "react";
 
 import { createMetadata } from "@/lib/metadata";
-import { COMPANY_NAME, LEGAL_EMAIL } from "@/constants";
+import { COMPANY_NAME, LEGAL_EMAIL } from "@/lib/config/constants";
 
 export const metadata = createMetadata({
   title: "Terms of Service",

@@ -1,19 +1,21 @@
-import { closeDatabase, db } from '@/database';
-import { users } from '@/database/schema';
-import { eq } from 'drizzle-orm';
+import { closeDatabase, db } from "@/database";
+import { users } from "@/database/schema";
+import { eq } from "drizzle-orm";
 
 async function main() {
-  const emailArg = process.argv.find(arg => arg.startsWith('--email='));
+  const emailArg = process.argv.find((arg) => arg.startsWith("--email="));
 
   if (!emailArg) {
-    throw new Error('Please provide an email address using --email=<your-email>');
+    throw new Error(
+      "Please provide an email address using --email=<your-email>",
+    );
   }
 
-  const adminEmail = emailArg.split('=')[1];
+  const adminEmail = emailArg.split("=")[1];
 
   const result = await db
     .update(users)
-    .set({ role: 'super_admin' })
+    .set({ role: "super_admin" })
     .where(eq(users.email, adminEmail))
     .returning();
 

@@ -2,10 +2,10 @@ import { betterAuth } from "better-auth";
 import { magicLink } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import * as tables from "@/database/tables";
-import env from "env";
+import env from "@/env";
 import { db } from "@/database";
 import { sendMagicLink } from "@/emails/magic-link";
-import { APP_NAME } from "@/constants";
+import { APP_NAME } from "@/lib/config/constants";
 import { UAParser } from "ua-parser-js";
 import { providerConfigs } from "./providers";
 

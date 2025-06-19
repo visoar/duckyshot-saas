@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import AuthLayout from "./layout";
-import { APP_NAME } from "@/constants";
+import { APP_NAME } from "@/lib/config/constants";
 
 // Mock the Logo component
 jest.mock("@/components/logo", () => ({

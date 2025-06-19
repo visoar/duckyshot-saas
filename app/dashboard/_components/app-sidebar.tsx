@@ -11,7 +11,7 @@ import {
   BarChart3,
   LucideIcon,
 } from "lucide-react";
-import { APP_NAME } from "@/constants";
+import { APP_NAME } from "@/lib/config/constants";
 
 import {
   Sidebar,

@@ -10,7 +10,7 @@ import {
   Text,
 } from "@react-email/components";
 import { sendEmail } from "@/lib/email";
-import { APP_NAME } from "@/constants";
+import { APP_NAME } from "@/lib/config/constants";
 import { UAParser } from "ua-parser-js";
 
 interface DeviceInfo {

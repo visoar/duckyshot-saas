@@ -2,7 +2,7 @@ import { Logo } from "@/components/logo";
 import { Link } from "next-view-transitions";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { APP_NAME } from "@/constants";
+import { APP_NAME } from "@/lib/config/constants";
 import { BackgroundPattern } from "@/components/ui/background-pattern";
 
 export default function AuthLayout({

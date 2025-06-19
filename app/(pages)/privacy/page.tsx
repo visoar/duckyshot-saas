@@ -1,7 +1,7 @@
 import React from "react";
 
 import { createMetadata } from "@/lib/metadata";
-import { COMPANY_NAME, PRIVACY_EMAIL } from "@/constants";
+import { COMPANY_NAME, PRIVACY_EMAIL } from "@/lib/config/constants";
 
 import env from "@/env";
 

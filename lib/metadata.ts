@@ -1,4 +1,4 @@
-import { APP_NAME, OGIMAGE, TWITTERACCOUNT } from "@/constants";
+import { APP_NAME, OGIMAGE, TWITTERACCOUNT } from "@/lib/config/constants";
 import env from "@/env";
 import type { Metadata } from "next/types";
 

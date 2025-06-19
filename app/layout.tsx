@@ -6,7 +6,11 @@ import { ViewTransitions } from "next-view-transitions";
 import { Toaster } from "@/components/ui/sonner";
 
 import { createMetadata } from "@/lib/metadata";
-import { APP_NAME, APP_DESCRIPTION, COMPANY_NAME } from "@/constants";
+import {
+  APP_NAME,
+  APP_DESCRIPTION,
+  COMPANY_NAME,
+} from "@/lib/config/constants";
 import env from "@/env";
 
 import NextTopLoader from "nextjs-toploader";

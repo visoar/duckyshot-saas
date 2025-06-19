@@ -5,7 +5,7 @@ import {
 import { headers } from "next/headers";
 import { z } from "zod";
 import { auth } from "./auth/server";
-import { APP_NAME } from "@/constants";
+import { APP_NAME } from "@/lib/config/constants";
 
 const actionClient = createSafeActionClient({
   handleServerError(e) {

@@ -3,7 +3,7 @@ import React from "react";
 import { Headphones } from "lucide-react";
 import { createMetadata } from "@/lib/metadata";
 import { ContactMethods } from "./contact-methods";
-import { COMPANY_NAME } from "@/constants";
+import { COMPANY_NAME } from "@/lib/config/constants";
 import { BackgroundPattern } from "@/components/ui/background-pattern";
 
 export const metadata = createMetadata({

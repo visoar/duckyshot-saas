@@ -7,7 +7,7 @@ import { Target, Lightbulb, Heart, Globe, Award, Sparkles } from "lucide-react";
 import Image from "next/image";
 import { Link } from "next-view-transitions";
 import { createMetadata } from "@/lib/metadata";
-import { COMPANY_NAME } from "@/constants";
+import { COMPANY_NAME } from "@/lib/config/constants";
 import { BackgroundPattern } from "@/components/ui/background-pattern";
 
 export const metadata = createMetadata({

@@ -1,7 +1,7 @@
 import React from "react";
 import { createMetadata } from "@/lib/metadata";
 import { PricingSection } from "@/components/payment-options";
-import { PAYMENT_PROVIDER } from "@/constants";
+import { PAYMENT_PROVIDER } from "@/lib/config/constants";
 import {
   Check,
   Zap,

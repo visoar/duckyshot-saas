@@ -12,7 +12,7 @@ import {
   Sparkles,
   BowArrow,
 } from "lucide-react";
-import { APP_DESCRIPTION, GITHUB_URL } from "@/constants";
+import { APP_DESCRIPTION, GITHUB_URL } from "@/lib/config/constants";
 import { Link } from "next-view-transitions";
 
 export function Hero() {

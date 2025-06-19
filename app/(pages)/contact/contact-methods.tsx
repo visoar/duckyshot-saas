@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CONTACT_EMAIL } from "@/constants";
+import { CONTACT_EMAIL } from "@/lib/config/constants";
 import { Mail, Phone, MapPin, MessageSquare } from "lucide-react";
 
 const contactMethods = [

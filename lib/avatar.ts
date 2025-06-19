@@ -4,7 +4,7 @@
  * @param style - The DiceBear avatar style (default: 'initials')
  * @returns Avatar URL
  */
-import { AVATAR_STYLE } from "@/constants";
+import { AVATAR_STYLE } from "@/lib/config/constants";
 
 export function generateAvatarUrl(
   seed: string,

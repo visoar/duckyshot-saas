@@ -1,5 +1,5 @@
 import { config, fields, collection } from "@keystatic/core";
-import { APP_NAME } from "./constants";
+import { APP_NAME } from "./lib/config/constants";
 
 export default config({
   storage: {

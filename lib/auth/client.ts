@@ -1,4 +1,4 @@
-import env from "env";
+import env from "@/env";
 import { createAuthClient } from "better-auth/react";
 import {
   magicLinkClient,

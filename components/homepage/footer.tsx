@@ -13,7 +13,7 @@ import {
   GITHUB_URL,
   TWITTERACCOUNT,
   CONTACT_EMAIL,
-} from "@/constants";
+} from "@/lib/config/constants";
 import { Github, Twitter, Mail, Heart } from "lucide-react";
 
 interface FooterLink {

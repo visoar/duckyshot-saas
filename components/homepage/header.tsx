@@ -17,7 +17,7 @@ import {
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronDown, Menu, UserCircle, ExternalLink } from "lucide-react";
-import { APP_NAME } from "@/constants";
+import { APP_NAME } from "@/lib/config/constants";
 
 interface NavItem {
   title: string;
