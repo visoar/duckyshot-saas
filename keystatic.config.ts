@@ -1,0 +1,43 @@
+import { config, fields, collection } from "@keystatic/core";
+import { APP_NAME } from "./constants";
+
+export default config({
+  storage: {
+    kind: "local",
+  },
+  ui: {
+    brand: { name: APP_NAME },
+  },
+  collections: {
+    posts: collection({
+      label: "Blog",
+      slugField: "title",
+      path: "content/blog/*",
+      format: { contentField: "content" },
+      schema: {
+        title: fields.slug({ name: { label: "Title" } }),
+        publishedDate: fields.date({ label: "Published Date" }),
+        excerpt: fields.text({
+          label: "Excerpt",
+          description: "A brief summary of the blog post (optional)",
+          multiline: true,
+        }),
+        tags: fields.array(fields.text({ label: "Tag" }), {
+          label: "Tags",
+          itemLabel: (props) => props.value || "Tag",
+        }),
+        featured: fields.checkbox({
+          label: "Featured Post",
+          description: "Mark this post as featured",
+        }),
+        heroImage: fields.image({
+          label: "Hero Image",
+          description: "Featured image for the blog post (optional)",
+          directory: "public/blog",
+          publicPath: "/blog/",
+        }),
+        content: fields.markdoc({ label: "Content" }),
+      },
+    }),
+  },
+});

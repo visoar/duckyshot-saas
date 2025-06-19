@@ -1,6 +1,6 @@
 import React from "react";
 import { DashboardPageWrapper } from "../_components/dashboard-page-wrapper";
-import { Metadata } from "next";
+import { createMetadata } from "@/lib/metadata";
 import { RandomToast } from "./_components/random-toast";
 import {
   Card,
@@ -22,12 +22,10 @@ import {
   Zap,
 } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Home",
-    template: "%s | Home",
-  },
-};
+export const metadata = createMetadata({
+  title: "Home",
+  description: "Dashboard home page with overview and quick actions",
+});
 
 export default function HomeRoute() {
   return (

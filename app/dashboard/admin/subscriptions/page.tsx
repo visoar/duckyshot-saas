@@ -7,18 +7,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DashboardPageWrapper } from "../../_components/dashboard-page-wrapper";
-import { Metadata } from "next";
+import { createMetadata } from "@/lib/metadata";
 import { Suspense } from "react";
 import { SubscriptionStatsCards } from "./_components/subscription-stats-cards";
 import { SubscriptionManagementTable } from "./_components/subscription-management-table";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Subscription Management",
-    template: "%s | Subscription Management",
-  },
+export const metadata = createMetadata({
+  title: "Subscription Management",
   description: "Monitor and manage all user subscriptions",
-};
+});
 
 export default async function SubscriptionsPage() {
   await requireAdmin();

@@ -7,18 +7,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DashboardPageWrapper } from "../../_components/dashboard-page-wrapper";
-import { Metadata } from "next";
+import { createMetadata } from "@/lib/metadata";
 import { Suspense } from "react";
 import { PaymentStatsCards } from "./_components/payment-stats-cards";
 import { PaymentManagementTable } from "./_components/payment-management-table";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Payment Management",
-    template: "%s | Payment Management",
-  },
+export const metadata = createMetadata({
+  title: "Payment Management",
   description: "Monitor and manage all payment transactions",
-};
+});
 
 export default async function PaymentsPage() {
   await requireAdmin();

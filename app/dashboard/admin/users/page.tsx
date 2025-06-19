@@ -8,17 +8,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DashboardPageWrapper } from "../../_components/dashboard-page-wrapper";
-import { Metadata } from "next";
+import { createMetadata } from "@/lib/metadata";
 import { UserManagementTable } from "./_components/user-management-table";
 import { UserStatsCards } from "./_components/user-stats-cards";
 
-export const metadata: Metadata = {
-  title: {
-    default: "User Management",
-    template: "%s | User Management",
-  },
+export const metadata = createMetadata({
+  title: "User Management",
   description: "Manage user accounts, roles, and permissions",
-};
+});
 
 export default async function UserManagementPage() {
   // Require admin authentication

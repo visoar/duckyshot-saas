@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/auth/permissions";
 import { DashboardPageWrapper } from "../_components/dashboard-page-wrapper";
-import { Metadata } from "next";
+import { createMetadata } from "@/lib/metadata";
 
 import { AdminStatsCards } from "./_components/admin-stats-cards";
 import {
@@ -17,14 +17,11 @@ import {
 import { RecentUsersChart } from "./_components/recent-users-chart";
 import { RevenueChart } from "./_components/revenue-chart";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Admin Dashboard",
-    template: "%s | Admin Dashboard",
-  },
+export const metadata = createMetadata({
+  title: "Admin Dashboard",
   description:
     "Administrative dashboard for managing users, payments, and system overview",
-};
+});
 
 export default async function AdminDashboardPage() {
   // Require admin authentication

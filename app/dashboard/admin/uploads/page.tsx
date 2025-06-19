@@ -8,17 +8,14 @@ import {
 } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/auth/permissions";
 import { DashboardPageWrapper } from "../../_components/dashboard-page-wrapper";
-import { Metadata } from "next";
+import { createMetadata } from "@/lib/metadata";
 import { UploadManagementTable } from "./_components/upload-management-table";
 import { UploadStatsCards } from "./_components/upload-stats-cards";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Upload Management",
-    template: "%s | Upload Management",
-  },
+export const metadata = createMetadata({
+  title: "Upload Management",
   description: "Manage user uploads, file storage, and content moderation",
-};
+});
 
 function UploadStatsCardsSkeleton() {
   return (

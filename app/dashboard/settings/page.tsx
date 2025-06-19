@@ -7,12 +7,12 @@ import {
   getUserSubscription,
   getUserPayments,
 } from "@/lib/database/subscription";
-import { Metadata } from "next";
+import { createMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata = createMetadata({
   title: "Settings",
   description: "Manage your account and subscription settings.",
-};
+});
 
 export default async function SettingsPage() {
   // Cache headers to avoid multiple calls
