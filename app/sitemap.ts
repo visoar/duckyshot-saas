@@ -1,10 +1,11 @@
 import { MetadataRoute } from "next";
+import { createReader } from "@keystatic/core/reader";
+import keystaticConfig from "@/keystatic.config";
 import env from "@/env";
 
-// TODO: Dynamically generate sitemap entries from your content sources (e.g., database, CMS)
-// For now, we'll add some static common pages.
+const reader = createReader(process.cwd(), keystaticConfig);
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
 
   // Base URL for the site
@@ -48,27 +49,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly",
       priority: 0.3,
     },
-    // Add other static pages here
-    // Example:
-    // {
-    //   url: `${baseUrl}/blog`,
-    //   lastModified,
-    //   changeFrequency: 'weekly',
-    //   priority: 0.9,
-    // },
+    {
+      url: `${baseUrl}/blog`,
+      lastModified,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
   ];
 
-  // TODO: Fetch dynamic routes (e.g., blog posts, product pages)
-  // const dynamicBlogPosts = await fetchBlogPostsFromDatabase();
-  // const blogPostEntries = dynamicBlogPosts.map(post => ({
-  //   url: `${baseUrl}/blog/${post.slug}`,
-  //   lastModified: post.updatedAt,
-  //   changeFrequency: 'weekly',
-  //   priority: 0.7,
-  // }));
+  // Fetch dynamic blog posts from Keystatic
+  const blogPosts = await reader.collections.posts.all();
+  const blogPostEntries: MetadataRoute.Sitemap = blogPosts.map((post) => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: post.entry.publishedDate
+      ? new Date(post.entry.publishedDate)
+      : lastModified,
+    changeFrequency: "monthly" as const,
+    priority: post.entry.featured ? 0.8 : 0.7,
+  }));
 
-  return [
-    ...staticPages,
-    // ...blogPostEntries,
-  ];
+  return [...staticPages, ...blogPostEntries];
 }

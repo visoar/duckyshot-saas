@@ -37,9 +37,43 @@ export async function generateMetadata({
     });
   }
 
+  const description =
+    post.excerpt ||
+    `Read our comprehensive blog post about ${post.title}. Discover insights, tips, and best practices in this detailed article.`;
+  const publishedTime = post.publishedDate
+    ? new Date(post.publishedDate).toISOString()
+    : undefined;
+  const modifiedTime = publishedTime; // Use published date as modified time for now
+
   return createMetadata({
     title: post.title,
-    description: `Read our blog post: ${post.title}`,
+    description,
+    openGraph: {
+      title: post.title,
+      description,
+      type: "article",
+      publishedTime,
+      modifiedTime,
+      images: post.heroImage
+        ? [
+            {
+              url: post.heroImage,
+              width: 1200,
+              height: 630,
+              alt: post.title,
+            },
+          ]
+        : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      images: post.heroImage ? [post.heroImage] : undefined,
+    },
+    alternates: {
+      canonical: `/blog/${slug}`,
+    },
   });
 }
 
