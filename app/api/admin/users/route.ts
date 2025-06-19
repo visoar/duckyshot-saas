@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/permissions";
 import { db } from "@/database";
-import { users, subscriptions } from "@/database/schema";
+import { users, subscriptions, userRoleEnum } from "@/database/schema";
 import { eq, desc, asc, sql, count } from "drizzle-orm";
 import { z } from "zod";
 
@@ -9,7 +9,7 @@ const getUsersSchema = z.object({
   page: z.coerce.number().min(1).default(1),
   limit: z.coerce.number().min(1).max(100).default(20),
   search: z.string().optional(),
-  role: z.enum(["user", "admin", "super_admin"]).optional(),
+  role: z.enum(userRoleEnum.enumValues).optional(),
   sortBy: z.enum(["createdAt", "name", "email"]).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });

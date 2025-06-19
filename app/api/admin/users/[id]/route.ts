@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/permissions";
 import { db } from "@/database";
-import { users, subscriptions, payments, uploads } from "@/database/schema";
+import {
+  users,
+  subscriptions,
+  payments,
+  uploads,
+  userRoleEnum,
+} from "@/database/schema";
 import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
 
 const updateUserSchema = z.object({
   name: z.string().min(1).optional(),
-  role: z.enum(["user", "admin", "super_admin"]).optional(),
+  role: z.enum(userRoleEnum.enumValues).optional(),
   emailVerified: z.boolean().optional(),
 });
 

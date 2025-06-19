@@ -1,7 +1,9 @@
 import { auth } from "./server";
 import { redirect } from "next/navigation";
+import { users } from "@/database/schema";
 
-export type UserRole = "user" | "admin" | "super_admin";
+// 从数据库schema推断UserRole类型，确保类型定义的单一来源
+export type UserRole = (typeof users.$inferSelect)["role"];
 
 export interface AuthUser {
   id: string;

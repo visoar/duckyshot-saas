@@ -6,7 +6,15 @@ import {
   boolean,
   uuid,
   index,
+  pgEnum,
 } from "drizzle-orm/pg-core";
+
+// 定义用户角色枚举
+export const userRoleEnum = pgEnum("user_role", [
+  "user",
+  "admin",
+  "super_admin",
+]);
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -14,7 +22,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("emailVerified").notNull(),
   image: text("image"),
-  role: text("role").notNull().default("user"), // "user" | "admin" | "super_admin"
+  role: userRoleEnum("role").notNull().default("user"),
   paymentProviderCustomerId: text("paymentProviderCustomerId").unique(),
   createdAt: timestamp("createdAt").notNull(),
   updatedAt: timestamp("updatedAt").notNull(),

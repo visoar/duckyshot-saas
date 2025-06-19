@@ -1,7 +1,13 @@
 // lib/admin/stats.ts
 import { AdminStats } from "@/app/dashboard/admin/_components/admin-stats-cards";
 import { db } from "@/database";
-import { users, subscriptions, payments, uploads } from "@/database/schema";
+import {
+  users,
+  subscriptions,
+  payments,
+  uploads,
+  userRoleEnum,
+} from "@/database/schema";
 import { count, sum, desc } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 
@@ -32,7 +38,10 @@ export async function getAdminStats(): Promise<AdminStats> {
           sql`CASE WHEN ${users.emailVerified} = true THEN 1 END`,
         ),
         admins: count(
-          sql`CASE WHEN ${users.role} IN ('admin', 'super_admin') THEN 1 END`,
+          sql`CASE WHEN ${users.role} IN (${userRoleEnum.enumValues
+            .filter((role) => role !== "user")
+            .map((role) => `'${role}'`)
+            .join(", ")}) THEN 1 END`,
         ),
       })
       .from(users);

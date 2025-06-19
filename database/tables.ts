@@ -7,6 +7,7 @@ import {
   payments,
   webhookEvents,
   uploads,
+  userRoleEnum,
 } from "./schema";
 
 export {
@@ -18,4 +19,5 @@ export {
   payments,
   webhookEvents,
   uploads,
+  userRoleEnum,
 };

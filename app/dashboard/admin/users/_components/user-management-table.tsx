@@ -25,6 +25,8 @@ import { Trash2, Edit } from "lucide-react";
 import { toast } from "sonner";
 import { AdminTableBase } from "@/components/admin/admin-table-base";
 import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
+import { userRoleEnum } from "@/database/schema";
+import type { UserRole } from "@/lib/auth/permissions";
 
 interface User {
   id: string;
@@ -32,7 +34,7 @@ interface User {
   email: string;
   emailVerified: boolean;
   image?: string;
-  role: "user" | "admin" | "super_admin";
+  role: UserRole;
   createdAt: string;
   updatedAt: string;
   subscriptionStatus?: string;
@@ -270,9 +272,10 @@ export function UserManagementTable() {
 
   const roleFilterOptions = [
     { value: "all", label: "All Roles" },
-    { value: "user", label: "User" },
-    { value: "admin", label: "Admin" },
-    { value: "super_admin", label: "Super Admin" },
+    ...userRoleEnum.enumValues.map((role) => ({
+      value: role,
+      label: role.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+    })),
   ];
 
   return (
@@ -329,7 +332,7 @@ export function UserManagementTable() {
                 </Label>
                 <Select
                   value={editingUser.role}
-                  onValueChange={(value: "user" | "admin" | "super_admin") =>
+                  onValueChange={(value: UserRole) =>
                     setEditingUser({ ...editingUser, role: value })
                   }
                 >
@@ -337,9 +340,13 @@ export function UserManagementTable() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="user">User</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                    {userRoleEnum.enumValues.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {role
+                          .replace("_", " ")
+                          .replace(/\b\w/g, (l) => l.toUpperCase())}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
