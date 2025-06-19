@@ -48,26 +48,7 @@ export default function RootLayout({
   return (
     <ViewTransitions>
       <html lang="en" suppressHydrationWarning>
-        <head>
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                (function() {
-                  try {
-                    var theme = localStorage.getItem('theme') || 'light';
-                    var systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                    var resolvedTheme = theme === 'system' ? systemTheme : theme;
-                    document.documentElement.classList.toggle('dark', resolvedTheme === 'dark');
-                    document.documentElement.style.colorScheme = resolvedTheme;
-                  } catch (e) {
-                    document.documentElement.classList.remove('dark');
-                    document.documentElement.style.colorScheme = 'light';
-                  }
-                })();
-              `,
-            }}
-          />
-        </head>
+        <head />
         <body suppressHydrationWarning>
           <NuqsAdapter>
             <ThemeProvider

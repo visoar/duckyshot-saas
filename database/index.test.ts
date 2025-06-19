@@ -4,7 +4,7 @@ import {
   getConnectionConfig,
   getEnvironmentType,
   validateDatabaseConfig,
-} from "./config";
+} from "@/lib/database/connection";
 
 describe("Database Connection Configuration", () => {
   afterEach(async () => {
