@@ -51,10 +51,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No files provided" }, { status: 400 });
     }
 
-    const uploadResults = [];
-
-    // Process each file
-    for (const file of files) {
+    // Function to process a single file
+    const processFile = async (file: File) => {
       try {
         // Validate file type
         if (!isFileTypeAllowed(file.type)) {
@@ -72,7 +70,7 @@ export async function POST(request: NextRequest) {
         const fileExtension = getFileExtension(file.type);
         const timestamp = Date.now();
         const uuid = randomUUID();
-        const key = `uploads/${session.user.id}/${timestamp}-${uuid}.${fileExtension}`;
+        const key = `uploads/${session.user!.id}/${timestamp}-${uuid}.${fileExtension}`;
 
         // Create file stream from the uploaded file
         const fileStream = file.stream();
@@ -97,7 +95,7 @@ export async function POST(request: NextRequest) {
 
         // Store upload record in database
         await db.insert(uploads).values({
-          userId: session.user.id,
+          userId: session.user!.id,
           fileKey: key,
           url: publicUrl,
           fileName: file.name,
@@ -105,23 +103,27 @@ export async function POST(request: NextRequest) {
           contentType: file.type,
         });
 
-        uploadResults.push({
+        return {
           fileName: file.name,
           url: publicUrl,
           key: key,
           size: file.size,
           contentType: file.type,
           success: true,
-        });
+        };
       } catch (error) {
         console.error(`Error uploading file ${file.name}:`, error);
-        uploadResults.push({
+        return {
           fileName: file.name,
           success: false,
           error: error instanceof Error ? error.message : "Unknown error",
-        });
+        };
       }
-    }
+    };
+
+    // Process all files in parallel
+    const uploadPromises = files.map(processFile);
+    const uploadResults = await Promise.all(uploadPromises);
 
     const successCount = uploadResults.filter((r) => r.success).length;
     const failureCount = uploadResults.length - successCount;
