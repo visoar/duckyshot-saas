@@ -190,10 +190,8 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
       </SidebarContent>
-      <SidebarFooter className="p-2">
-        <div className="flex items-center justify-center">
-          <UserButton />
-        </div>
+      <SidebarFooter className="border-sidebar-divider border-t p-2">
+        <UserButton />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
