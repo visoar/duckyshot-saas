@@ -8,8 +8,6 @@ import { sendMagicLink } from "@/emails/magic-link";
 import { APP_NAME } from "@/constants";
 import { UAParser } from "ua-parser-js";
 import { providerConfigs } from "./providers";
-import { users } from "@/database/schema";
-import { count } from "drizzle-orm";
 
 // Dynamically build social providers based on environment variables
 const socialProviders: Record<
@@ -84,30 +82,6 @@ export const auth = betterAuth({
     },
   },
   databaseHooks: {
-    user: {
-      create: {
-        before: async (user) => {
-          // Check if this is the first user in the system
-          const [userCount] = await db.select({ count: count() }).from(users);
-
-          // If this is the first user, make them a super admin
-          // ! This is a feature for developer to use, not a bug.
-          if (userCount.count === 0) {
-            return {
-              data: {
-                ...user,
-                role: "super_admin",
-              },
-            };
-          }
-
-          // Otherwise, use the default role
-          return {
-            data: user,
-          };
-        },
-      },
-    },
     session: {
       create: {
         before: async (session) => {

@@ -16,7 +16,8 @@
     "prettier:check": "prettier --check --ignore-path .gitignore .",
     "prettier:format": "prettier --write --ignore-path .gitignore .",
     "analyze": "ANALYZE=true next build",
-    "analyze:dev": "ANALYZE=true next dev"
+    "analyze:dev": "ANALYZE=true next dev",
+    "set:admin": "tsx --env-file=.env scripts/set-admin.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.830.0",
@@ -86,6 +87,7 @@
     "sonner": "^2.0.5",
     "standardwebhooks": "^1.0.0",
     "tailwind-merge": "^3.3.1",
+    "tsx": "^4.20.3",
     "vaul": "^1.1.2",
     "zod": "^3.25.64"
   },
