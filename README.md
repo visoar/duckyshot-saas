@@ -19,6 +19,7 @@
 - **UI 组件库 (shadcn/ui + Tailwind CSS):** 使用 [shadcn/ui](https://ui.shadcn.com/) 构建，它是一个基于 Radix UI 和 Tailwind CSS 的可访问、可组合的组件库，内置主题支持。
 - **表单处理 (Zod + React Hook Form):** 通过 [Zod](https://zod.dev/) 和 [React Hook Form](https://react-hook-form.com/) 实现强大的、类型安全的表单验证。
 - **文件上传 (Cloudflare R2):** 基于 Cloudflare R2 的安全文件上传系统，支持客户端直传和多种文件类型与大小限制。
+- **博客系统 (Keystatic):** 集成 [Keystatic](https://keystatic.com/) 作为 CMS，提供 Markdown/MDX 内容管理能力，方便创建和管理博客文章。
 - **代码质量:** 内置 ESLint 和 Prettier，确保代码风格统一和质量。
 
 ## 🛠️ 技术栈
@@ -141,7 +142,14 @@ pnpm db:migrate:prod
 > - 生产环境迁移应通过 CI/CD 流程自动化执行。
 > - 在应用迁移前，务必备份生产数据库。
 
-### 5. 启动开发服务器
+### 5. 内容管理 (Keystatic)
+
+项目使用 Keystatic 作为内容管理系统 (CMS)，用于管理博客文章等内容。
+
+- **访问方式:** 在开发环境中，您可以通过访问 `/keystatic` 路径来进入 Keystatic 的管理界面。
+- **生产环境限制:** 为了安全起见，Keystatic 的管理界面和相关 API 在生产环境中默认是禁用的。这意味着在部署到生产服务器后，无法通过 `/keystatic` 路径访问管理后台。
+
+### 6. 启动开发服务器
 
 ```bash
 pnpm dev

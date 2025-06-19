@@ -1,6 +1,16 @@
 import { makeRouteHandler } from "@keystatic/next/route-handler";
-import config from "@/keystatic.config";
+import keystaticConfig, { showAdminUI } from "@/keystatic.config";
 
-export const { POST, GET } = makeRouteHandler({
-  config,
-});
+export const { POST, GET } = (() => {
+  const notFoundRouteHandler = () => {
+    return new Response(null, {
+      status: 404,
+    });
+  };
+  if (showAdminUI === false) {
+    return { GET: notFoundRouteHandler, POST: notFoundRouteHandler };
+  }
+  return makeRouteHandler({
+    config: keystaticConfig,
+  });
+})();
