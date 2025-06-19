@@ -32,15 +32,29 @@ export function SubscriptionStatsCards() {
           throw new Error("Failed to fetch stats");
         }
         const data = await response.json();
-        // Assuming trialSubscriptions is not directly available and needs to be calculated or added to API
-        // Placeholder for trialSubscriptions, churnRate, and monthlyRecurringRevenue as they might need specific API fields or calculations
+        
+        // Calculate trial subscriptions (assuming trial status is indicated by specific conditions)
+        // This would need to be implemented in the API for accurate data
+        const trialSubscriptions = 0; // Would need API support for trial status
+        
+        // Calculate MRR from payment data (simplified calculation)
+        // In a real scenario, this should be calculated server-side with proper business logic
+        const monthlyRevenue = data.payments?.totalRevenue || 0;
+        const monthlyRecurringRevenue = Math.round(monthlyRevenue / 12); // Simplified MRR estimation
+        
+        // Calculate churn rate (cancelled / total active at period start)
+        // This is a simplified calculation - real churn rate needs historical data
+        const totalActive = data.subscriptions?.active || 0;
+        const totalCancelled = data.subscriptions?.canceled || 0;
+        const churnRate = totalActive > 0 ? (totalCancelled / (totalActive + totalCancelled)) * 100 : 0;
+        
         setStats({
           totalSubscriptions: data.subscriptions?.total || 0,
           activeSubscriptions: data.subscriptions?.active || 0,
           cancelledSubscriptions: data.subscriptions?.canceled || 0,
-          trialSubscriptions: 0, // Placeholder, needs API field or calculation logic
-          monthlyRecurringRevenue: 0, // Placeholder, typically from a dedicated MRR calculation in API
-          churnRate: 0, // Placeholder, needs API field or calculation logic (e.g., (cancelled / active_at_start_of_period) * 100)
+          trialSubscriptions,
+          monthlyRecurringRevenue,
+          churnRate,
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");

@@ -8,7 +8,6 @@ if (!env.CREEM_API_KEY) {
 export const creemClient = new Creem({
   // 根据环境选择服务器，0 是 live_mode, 1 是 test_mode
   serverIdx: env.CREEM_ENVIRONMENT === "live_mode" ? 0 : 1,
-  // 不需要在这里设置 apiKey，将在每次调用时传入，以符合最佳实践
 });
 
 export const creemApiKey = env.CREEM_API_KEY;
