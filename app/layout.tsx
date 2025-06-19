@@ -2,6 +2,7 @@ import "@/styles/globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { ViewTransitions } from "next-view-transitions";
+import { Oxanium, Merriweather, Fira_Code } from 'next/font/google';
 
 import { Toaster } from "@/components/ui/sonner";
 
@@ -15,6 +16,10 @@ import env from "@/env";
 
 import NextTopLoader from "nextjs-toploader";
 import { CookieConsent } from "@/components/cookie-consent";
+
+const oxanium = Oxanium({ subsets: ['latin'], variable: '--font-sans' }); 
+const merriweather = Merriweather({ subsets: ['latin'], weight: ["400", "700"], variable: '--font-serif' }); 
+const firaCode = Fira_Code({ subsets: ['latin'], variable: '--font-mono' });
 
 export const metadata = createMetadata({
   title: {
@@ -51,7 +56,7 @@ export default function RootLayout({
 }>) {
   return (
     <ViewTransitions>
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en" className={`${oxanium.variable} ${merriweather.variable} ${firaCode.variable}`} suppressHydrationWarning>
         <head />
         <body suppressHydrationWarning>
           <NuqsAdapter>
