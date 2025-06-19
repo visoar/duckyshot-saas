@@ -19,7 +19,6 @@ interface BlogPostCardProps {
   heroImage?: string;
   publishedDate?: string;
   featured?: boolean;
-  tags?: string[];
   variant?: "featured" | "regular";
   className?: string;
 }
@@ -31,7 +30,6 @@ export function BlogPostCard({
   heroImage,
   publishedDate,
   featured = false,
-  tags = [],
   variant = "regular",
   className,
 }: BlogPostCardProps) {
@@ -125,8 +123,9 @@ export function BlogPostCard({
           {/* Meta information */}
           <BlogPostMeta
             publishedDate={publishedDate}
-            featured={false} // Don't show badge here as it's already shown above
-            tags={tags}
+            featured={false}
+            tags={[]} // Don't show tags in card, only show date/time/author
+            showBadge={false} // Don't show badge here as it's already shown above
             className="justify-start"
           />
         </div>

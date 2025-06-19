@@ -8,6 +8,7 @@ interface BlogPostMetaProps {
   tags?: string[];
   readTime?: string;
   author?: string;
+  showBadge?: boolean;
 
   variant?: "overlay" | "default";
   className?: string;
@@ -19,6 +20,7 @@ export function BlogPostMeta({
   tags = [],
   readTime = "5 min read",
   author = "Admin",
+  showBadge = true,
 
   variant = "default",
   className,
@@ -26,6 +28,7 @@ export function BlogPostMeta({
   const isOverlay = variant === "overlay";
   const textColor = isOverlay ? "text-white/80" : "text-muted-foreground";
   const badgeVariant = featured ? "default" : "secondary";
+  const isCenter = className?.includes("justify-center");
 
   const featuredBadgeClasses = isOverlay
     ? "bg-primary/90 text-primary-foreground border-primary/20 backdrop-blur-sm"
@@ -38,37 +41,50 @@ export function BlogPostMeta({
   return (
     <div className={cn("space-y-4", className)}>
       {/* Badge */}
-      <div className="flex items-center justify-center gap-2">
-        {featured ? (
-          <Badge
-            variant={badgeVariant}
-            className={cn(
-              "hover:bg-primary/20 transition-colors",
-              featuredBadgeClasses,
-            )}
-          >
-            <Sparkles className="mr-1 h-3 w-3" />
-            Featured
-          </Badge>
-        ) : (
-          <Badge
-            variant={badgeVariant}
-            className={cn(
-              "hover:bg-muted transition-colors",
-              articleBadgeClasses,
-            )}
-          >
-            Article
-          </Badge>
-        )}
-      </div>
-
-      {/* Meta info */}
-      <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-6">
+      {showBadge && (
         <div
           className={cn(
-            "flex flex-wrap items-center justify-center gap-3 text-sm sm:gap-6",
+            "flex items-center gap-2",
+            isCenter && "justify-center",
+          )}
+        >
+          {featured ? (
+            <Badge
+              variant={badgeVariant}
+              className={cn(
+                "hover:bg-primary/20 transition-colors",
+                featuredBadgeClasses,
+              )}
+            >
+              <Sparkles className="mr-1 h-3 w-3" />
+              Featured
+            </Badge>
+          ) : (
+            <Badge
+              variant={badgeVariant}
+              className={cn(
+                "hover:bg-muted transition-colors",
+                articleBadgeClasses,
+              )}
+            >
+              Article
+            </Badge>
+          )}
+        </div>
+      )}
+
+      {/* Meta info */}
+      <div
+        className={cn(
+          "flex flex-col gap-2 sm:flex-row sm:gap-6",
+          isCenter && "items-center justify-center",
+        )}
+      >
+        <div
+          className={cn(
+            "flex flex-wrap items-center gap-3 text-sm sm:gap-6",
             textColor,
+            isCenter && "justify-center",
           )}
         >
           {publishedDate && (
@@ -96,7 +112,9 @@ export function BlogPostMeta({
 
       {/* Tags */}
       {tags.length > 0 && (
-        <div className="flex flex-wrap justify-center gap-2">
+        <div
+          className={cn("flex flex-wrap gap-2", isCenter && "justify-center")}
+        >
           {tags.map((tag, index) => (
             <Badge
               key={index}

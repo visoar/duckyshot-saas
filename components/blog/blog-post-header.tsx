@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { BackgroundPattern } from "@/components/ui/background-pattern";
+import { Badge } from "@/components/ui/badge";
 import { BlogPostMeta } from "./blog-post-meta";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
@@ -66,7 +67,8 @@ export function BlogPostHeader({
                   publishedDate={publishedDate}
                   featured={featured}
                   variant="overlay"
-                  className="mb-6"
+                  className="mb-6 justify-center"
+                  showBadge={true}
                 />
 
                 <h1 className="mb-4 text-2xl font-bold tracking-tight text-white drop-shadow-lg sm:mb-6 sm:text-4xl md:text-5xl lg:text-6xl">
@@ -88,7 +90,17 @@ export function BlogPostHeader({
           <section className="bg-background/50 py-6 sm:py-8">
             <div className="container mx-auto px-4 sm:px-6">
               <div className="mx-auto max-w-4xl">
-                <BlogPostMeta tags={tags} className="justify-center" />
+                <div className="flex flex-wrap justify-center gap-2">
+                  {tags.map((tag, index) => (
+                    <Badge
+                      key={index}
+                      variant="outline"
+                      className="hover:bg-primary/10 text-xs transition-colors"
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </div>
           </section>
@@ -125,7 +137,8 @@ export function BlogPostHeader({
               <BlogPostMeta
                 publishedDate={publishedDate}
                 featured={featured}
-                className="mb-6 sm:mb-8"
+                className="mb-6 justify-center sm:mb-8"
+                showBadge={true}
               />
 
               <h1 className="text-foreground mb-6 text-3xl font-bold tracking-tight sm:mb-8 sm:text-4xl lg:text-5xl xl:text-6xl">
@@ -136,6 +149,23 @@ export function BlogPostHeader({
                 <p className="text-muted-foreground mx-auto mb-6 max-w-3xl text-lg leading-relaxed sm:mb-8 sm:text-xl">
                   {excerpt}
                 </p>
+              )}
+
+              {/* Tags section */}
+              {tags.length > 0 && (
+                <div className="mt-6 sm:mt-8">
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {tags.map((tag, index) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="hover:bg-primary/10 text-xs transition-colors"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               )}
             </header>
           </div>

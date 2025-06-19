@@ -101,9 +101,6 @@ export default async function BlogPage() {
                           heroImage={post.entry.heroImage || undefined}
                           publishedDate={post.entry.publishedDate || undefined}
                           featured={post.entry.featured}
-                          tags={
-                            post.entry.tags ? [...post.entry.tags] : undefined
-                          }
                           variant="featured"
                         />
                       ))}
@@ -134,9 +131,6 @@ export default async function BlogPage() {
                           heroImage={post.entry.heroImage || undefined}
                           publishedDate={post.entry.publishedDate || undefined}
                           featured={post.entry.featured}
-                          tags={
-                            post.entry.tags ? [...post.entry.tags] : undefined
-                          }
                           variant="regular"
                         />
                       ))}
