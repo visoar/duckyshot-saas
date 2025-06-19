@@ -5,7 +5,7 @@ const env = createEnv({
   // Server-side environment variables
   server: {
     // Database URL
-    DATABASE_URL: z.string(),
+    DATABASE_URL: z.string().url({ message: "Invalid database URL" }),
 
     // Database connection pool settings
     DB_POOL_SIZE: z.coerce.number().default(20),

@@ -1,7 +1,6 @@
 import React from "react";
 import { DashboardPageWrapper } from "../_components/dashboard-page-wrapper";
 import { createMetadata } from "@/lib/metadata";
-import { RandomToast } from "./_components/random-toast";
 import {
   Card,
   CardContent,
@@ -30,7 +29,6 @@ export const metadata = createMetadata({
 export default function HomeRoute() {
   return (
     <DashboardPageWrapper title="Home">
-      <RandomToast />
       {/* Welcome Section */}
       <div className="from-primary/5 via-primary/10 to-primary/5 relative overflow-hidden rounded-lg border bg-gradient-to-r p-6">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.03),transparent_50%)]" />
@@ -145,9 +143,6 @@ export default function HomeRoute() {
               Common tasks to help you get started
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <RandomToast />
-          </CardContent>
         </Card>
 
         <Card>

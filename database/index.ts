@@ -2,7 +2,10 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import env from "@/env";
 import * as tables from "./tables";
-import { getConnectionConfig, validateDatabaseConfig } from "./config";
+import {
+  getConnectionConfig,
+  validateDatabaseConfig,
+} from "@/lib/database/connection";
 
 // Use unified database URL
 const databaseUrl = env.DATABASE_URL;
