@@ -31,11 +31,14 @@ export async function DELETE(
     const deleteResult = await deleteFile(upload.fileKey);
     if (!deleteResult.success) {
       console.error("Error deleting file from storage:", deleteResult.error);
-      // Continue with database deletion even if storage deletion fails
-      // This prevents orphaned database records
+      // Return error if storage deletion fails to prevent orphaned files
+      return NextResponse.json(
+        { error: "Failed to delete file from storage. Database record not deleted." },
+        { status: 500 }
+      );
     }
 
-    // Delete upload record from database
+    // Delete upload record from database only after successful R2 deletion
     await db.delete(uploads).where(eq(uploads.id, uploadId));
 
     return NextResponse.json({
