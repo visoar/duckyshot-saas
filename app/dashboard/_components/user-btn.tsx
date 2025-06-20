@@ -22,7 +22,7 @@ import { authClient } from "@/lib/auth/client";
 import { toast } from "sonner";
 import { useRouter } from "nextjs-toploader/app";
 import React, { useState } from "react";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 import { useSession } from "@/lib/auth/client";
 
 export function UserButton() {

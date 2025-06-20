@@ -16,7 +16,7 @@ jest.mock("@/lib/auth/client", () => ({
 }));
 jest.mock("next/navigation");
 jest.mock("sonner");
-jest.mock("next-view-transitions", () => ({
+jest.mock("next/link", () => ({
   Link: ({ children, href, ...props }: React.ComponentProps<"a">) => (
     <a href={href} {...props}>
       {children}

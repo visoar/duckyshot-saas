@@ -6,7 +6,7 @@ import React from "react";
 import { createMetadata } from "@/lib/metadata";
 import { BlogPostHeader } from "@/components/blog/blog-post-header";
 import { Button } from "@/components/ui/button";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { renderMarkdoc } from "@/lib/utils";
 

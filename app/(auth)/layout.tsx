@@ -1,5 +1,5 @@
 import { Logo } from "@/components/logo";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { APP_NAME } from "@/lib/config/constants";

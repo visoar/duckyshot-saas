@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import { ArrowRight, CheckCircle } from "lucide-react";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 
 export function CallToAction() {
   return (

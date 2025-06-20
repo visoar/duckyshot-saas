@@ -6,7 +6,7 @@ import env from "@/env";
 import { db } from "@/database";
 import { sendMagicLink } from "@/emails/magic-link";
 import { APP_NAME } from "@/lib/config/constants";
-import { UAParser } from "ua-parser-js";
+// 移除: import { UAParser } from "ua-parser-js";
 import { providerConfigs } from "./providers";
 
 // Dynamically build social providers based on environment variables
@@ -42,20 +42,9 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: false,
     },
-    additionalFields: {
-      os: {
-        type: "string",
-        required: false,
-      },
-      browser: {
-        type: "string",
-        required: false,
-      },
-      deviceType: {
-        type: "string",
-        required: false,
-      },
-    },
+    // 我们不再预先解析和存储这些字段，所以可以从附加字段中移除
+    // better-auth 会自动存储原始的 userAgent
+    additionalFields: {},
   },
   user: {
     additionalFields: {
@@ -71,7 +60,6 @@ export const auth = betterAuth({
     provider: "pg",
     schema: {
       ...tables,
-      // ...relations,
     },
     usePlural: true,
   }),
@@ -81,38 +69,8 @@ export const auth = betterAuth({
       trustedProviders: ["google", "github", "linkedin"],
     },
   },
-  databaseHooks: {
-    session: {
-      create: {
-        before: async (session) => {
-          // Parse userAgent once during session creation for performance optimization
-          if (session.userAgent) {
-            const ua = new UAParser(session.userAgent);
-            const os = ua.getOS();
-            const browser = ua.getBrowser();
-            const device = ua.getDevice();
-
-            return {
-              data: {
-                ...session,
-                os: os.name || null,
-                browser: browser.name || null,
-                deviceType: device.type || "desktop",
-              },
-            };
-          }
-          return {
-            data: {
-              ...session,
-              os: null,
-              browser: null,
-              deviceType: "desktop",
-            },
-          };
-        },
-      },
-    },
-  },
+  // 完全移除 databaseHooks，因为我们不再在创建会话时进行解析
+  // databaseHooks: { ... },
   plugins: [
     magicLink({
       sendMagicLink: async ({ email, url }, request) => {

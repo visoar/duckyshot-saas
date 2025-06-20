@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { BlogPostMeta } from "./blog-post-meta";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 import { calculateReadingTime } from "@/lib/utils";
 
 interface BlogPostHeaderProps {

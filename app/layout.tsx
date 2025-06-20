@@ -1,7 +1,6 @@
 import "@/styles/globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { ViewTransitions } from "next-view-transitions";
 import { Oxanium, Merriweather, Fira_Code } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
@@ -59,29 +58,27 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ViewTransitions>
-      <html
-        lang="en"
-        className={`${oxanium.variable} ${merriweather.variable} ${firaCode.variable}`}
-        suppressHydrationWarning
-      >
-        <head />
-        <body suppressHydrationWarning>
-          <NuqsAdapter>
-            <ThemeProvider
-              attribute={"class"}
-              defaultTheme="light"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <NextTopLoader color="hsl(var(--primary))" showSpinner={false} />
-              {children}
-              <Toaster />
-              <CookieConsent />
-            </ThemeProvider>
-          </NuqsAdapter>
-        </body>
-      </html>
-    </ViewTransitions>
+    <html
+      lang="en"
+      className={`${oxanium.variable} ${merriweather.variable} ${firaCode.variable}`}
+      suppressHydrationWarning
+    >
+      <head />
+      <body suppressHydrationWarning>
+        <NuqsAdapter>
+          <ThemeProvider
+            attribute={"class"}
+            defaultTheme="light"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <NextTopLoader color="hsl(var(--primary))" showSpinner={false} />
+            {children}
+            <Toaster />
+            <CookieConsent />
+          </ThemeProvider>
+        </NuqsAdapter>
+      </body>
+    </html>
   );
 }

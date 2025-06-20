@@ -32,7 +32,7 @@ import { useRouter } from "nextjs-toploader/app";
 import { UserButton } from "./user-btn";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 import { useSession } from "@/lib/auth/client";
 
 const navigation: {

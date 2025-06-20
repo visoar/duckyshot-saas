@@ -6,7 +6,7 @@ import { signIn } from "@/lib/auth/client";
 import { authSchema } from "@/schemas/auth.schema";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Mail } from "lucide-react";
 import { useRouter } from "next/navigation";

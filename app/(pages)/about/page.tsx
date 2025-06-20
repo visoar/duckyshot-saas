@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Target, Lightbulb, Heart, Globe, Award, Sparkles } from "lucide-react";
 import Image from "next/image";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 import { createMetadata } from "@/lib/metadata";
 import { COMPANY_NAME } from "@/lib/config/constants";
 import { BackgroundPattern } from "@/components/ui/background-pattern";

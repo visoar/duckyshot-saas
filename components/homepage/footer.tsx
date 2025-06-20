@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Logo } from "@/components/logo";

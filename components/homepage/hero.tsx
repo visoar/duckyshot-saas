@@ -12,7 +12,7 @@ import {
   BowArrow,
 } from "lucide-react";
 import { APP_DESCRIPTION, GITHUB_URL } from "@/lib/config/constants";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 
 export function Hero() {
   return (

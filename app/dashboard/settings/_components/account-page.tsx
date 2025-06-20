@@ -21,10 +21,10 @@ import {
 } from "@/components/ui/dialog";
 import { authClient } from "@/lib/auth/client";
 import { Session } from "@/types/auth";
-import { Edit, Laptop, Loader2, PhoneIcon } from "lucide-react";
+import { Edit, Loader2, MonitorSmartphone, Smartphone, Tablet } from "lucide-react";
 import { useSession } from "@/lib/auth/client";
+import { userAgent } from "next/server";
 
-// 更新 props 类型
 export function AccountPage(props: {
   activeSessions: Array<{
     id: string;
@@ -35,13 +35,14 @@ export function AccountPage(props: {
     updatedAt: Date;
     ipAddress?: string | null;
     userAgent?: string | null;
+    // os, browser, deviceType are no longer reliably available
     os?: string | null;
     browser?: string | null;
     deviceType?: string | null;
   }>;
 }) {
   const router = useRouter();
-  const { data: currentUserSession, isPending } = useSession(); // 重命名 session 为 currentUserSession, 移除未使用的 update
+  const { data: currentUserSession, isPending } = useSession();
   const [isTerminating, setIsTerminating] = useState<string>();
 
   return (
@@ -86,14 +87,50 @@ export function AccountPage(props: {
           <h3 className="mb-4 text-base font-semibold">Active Sessions</h3>
           <div className="grid gap-4 sm:grid-cols-2">
             {props.activeSessions
-              .filter((session) => session.os || session.browser) // 过滤掉无法解析的
+              .filter((session) => session.userAgent) // 只显示有 userAgent 的会话
               .map((session) => {
-                const device =
-                  session.deviceType === "mobile" ? (
-                    <PhoneIcon className="h-4 w-4" />
-                  ) : (
-                    <Laptop className="h-4 w-4" />
-                  );
+                // Parse user agent to get device info
+                let deviceInfo = {
+                  browser: "Unknown",
+                  os: "Unknown",
+                  device: "Desktop"
+                };
+                
+                if (session.userAgent) {
+                  try {
+                    // Create a mock request object for userAgent parsing
+                    const mockRequest = {
+                      headers: {
+                        get: (name: string) => {
+                          if (name.toLowerCase() === 'user-agent') {
+                            return session.userAgent;
+                          }
+                          return null;
+                        }
+                      }
+                    } as Request;
+                    
+                    const parsed = userAgent(mockRequest);
+                    deviceInfo = {
+                      browser: parsed.browser.name || "Unknown",
+                      os: parsed.os.name || "Unknown",
+                      device: parsed.device.type === "mobile" ? "Mobile" : 
+                              parsed.device.type === "tablet" ? "Tablet" : "Desktop"
+                    };
+                  } catch (error) {
+                    console.error('Error parsing user agent:', error);
+                  }
+                }
+                
+                // Choose appropriate icon based on device type
+                const deviceIcon = deviceInfo.device === "Mobile" ? 
+                  <Smartphone className="h-4 w-4" /> :
+                  deviceInfo.device === "Tablet" ? 
+                  <Tablet className="h-4 w-4" /> :
+                  <MonitorSmartphone className="h-4 w-4" />;
+                  
+                const deviceDisplay = `${deviceInfo.browser} on ${deviceInfo.os}`;
+                const deviceTypeDisplay = deviceInfo.device;
 
                 return (
                   <Card
@@ -101,14 +138,28 @@ export function AccountPage(props: {
                     className="flex items-center justify-between p-4"
                   >
                     <div className="flex items-center gap-3">
-                      {device}
+                      {deviceIcon}
                       <div>
                         <p className="text-sm font-medium">
-                          {session.os || "Unknown OS"}
+                          {deviceTypeDisplay}
+                          {session.ipAddress && (
+                            <>
+                              <span className="text-muted-foreground mx-1">•</span>
+                              <span className="font-mono text-xs">{session.ipAddress}</span>
+                            </>
+                          )}
                         </p>
-                        <p className="text-muted-foreground text-xs">
-                          {session.browser || "Unknown Browser"}
+                        <p
+                          className="text-muted-foreground text-xs"
+                          title={session.userAgent || ""}
+                        >
+                          {deviceDisplay}
                         </p>
+                        {session.createdAt && (
+                          <p className="text-muted-foreground text-xs mt-1">
+                            Active since {new Date(session.createdAt).toLocaleDateString()}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <Button
@@ -147,6 +198,7 @@ export function AccountPage(props: {
   );
 }
 
+// ... EditUserDialog component remains unchanged ...
 function EditUserDialog({
   session,
   isPending,

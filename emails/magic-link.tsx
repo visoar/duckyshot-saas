@@ -10,17 +10,18 @@ import {
   Text,
 } from "@react-email/components";
 import { sendEmail } from "@/lib/email";
-import { APP_NAME } from "@/lib/config/constants";
-import { UAParser } from "ua-parser-js";
+import { APP_NAME, COMPANY_NAME } from "@/lib/config/constants";
+import { userAgent } from "next/server";
 
 interface DeviceInfo {
   browser?: string;
   os?: string;
   device?: string;
   location?: string;
-  ip?: string;
+  ip?: string; // We keep IP in the data structure for potential logging, but won't show it in the email.
 }
 
+// MagicLinkEmailBody component is updated to NOT show the IP address.
 const MagicLinkEmailBody = ({
   email,
   url,
@@ -266,18 +267,7 @@ const MagicLinkEmailBody = ({
                       (approximate)
                     </Text>
                   )}
-                  {deviceInfo.location && deviceInfo.ip && (
-                    <Text
-                      style={{
-                        fontSize: "12px",
-                        lineHeight: "18px",
-                        color: "#9ca3af",
-                        margin: "0",
-                      }}
-                    >
-                      IP: {deviceInfo.ip}
-                    </Text>
-                  )}
+                  {/* IP address rendering has been removed as requested. */}
                 </div>
               )}
 
@@ -362,8 +352,8 @@ const MagicLinkEmailBody = ({
                   textAlign: "center",
                 }}
               >
-                © {new Date().getFullYear()} {APP_NAME}. All rights reserved. |{" "}
-                {currentDate}
+                © {new Date().getFullYear()} {APP_NAME}, {COMPANY_NAME}. All
+                rights reserved. | {currentDate}
               </Text>
             </div>
           </Container>
@@ -373,34 +363,42 @@ const MagicLinkEmailBody = ({
   );
 };
 
-function parseDeviceInfo(request?: Request): DeviceInfo | undefined {
-  if (!request) return undefined;
+/**
+ * Parses device, IP, and geo information from the request object in a runtime-agnostic way.
+ * This version is compatible with both Vercel and Cloudflare.
+ * @param request The incoming Request object.
+ * @returns An object with device information.
+ */
+function parseDeviceInfo(request: Request): DeviceInfo {
+  const { headers } = request;
 
-  const userAgent = request.headers.get("user-agent");
-  if (!userAgent) return undefined;
+  // 1. Parse User-Agent using the performant, lazy-loaded userAgent function
+  const { browser, os, device } = userAgent(request);
 
-  const ua = new UAParser(userAgent);
-  const browser = ua.getBrowser();
-  const os = ua.getOS();
-  const device = ua.getDevice();
+  // 2. Safely get IP address, prioritizing Cloudflare's header.
+  const ip = (
+    headers.get("cf-connecting-ip") ??
+    headers.get("x-forwarded-for") ??
+    "N/A"
+  )
+    .split(",")[0]
+    .trim();
 
-  // Get IP address from various headers
-  const ip =
-    request.headers.get("x-forwarded-for") ||
-    request.headers.get("x-real-ip") ||
-    request.headers.get("cf-connecting-ip") ||
-    undefined;
+  // 3. Safely get Geo location from Cloudflare- and Vercel-specific headers.
+  const city = headers.get("cf-ipcity") ?? headers.get("x-vercel-ip-city");
+  const country =
+    headers.get("cf-ipcountry") ?? headers.get("x-vercel-ip-country");
+  const region =
+    headers.get("cf-ipregioncode") ?? headers.get("x-vercel-ip-country-region");
 
-  // Extract location from Vercel's geo headers if available
-  const city = request.headers.get("x-vercel-ip-city");
-  const region = request.headers.get("x-vercel-ip-country-region");
-  const country = request.headers.get("x-vercel-ip-country");
-
+  // 4. Construct the location string from available geo data.
   let location: string | undefined;
-  if (city && region && country) {
-    location = `${decodeURIComponent(city)}, ${decodeURIComponent(region)}, ${decodeURIComponent(country)}`;
-  } else if (country) {
-    location = decodeURIComponent(country);
+  const locationParts = [city, region, country]
+    .filter(Boolean)
+    .map((part) => decodeURIComponent(part!));
+
+  if (locationParts.length > 0) {
+    location = locationParts.join(", ");
   }
 
   return {
@@ -413,7 +411,7 @@ function parseDeviceInfo(request?: Request): DeviceInfo | undefined {
           ? "Tablet"
           : "Desktop",
     location,
-    ip: ip?.split(",")[0]?.trim(), // Take first IP if multiple
+    ip, // IP is still available in the returned object for other uses (e.g. logging)
   };
 }
 
@@ -423,17 +421,24 @@ export async function sendMagicLink(
   request?: Request,
 ) {
   try {
-    const deviceInfo = parseDeviceInfo(request);
+    // The request object is optional, so handle the case where it might not exist.
+    const deviceInfo = request ? parseDeviceInfo(request) : undefined;
 
-    const res = await sendEmail(
+    await sendEmail(
       email,
       `Your secure sign-in link for ${APP_NAME}`,
-      <>
-        <MagicLinkEmailBody email={email} url={url} deviceInfo={deviceInfo} />
-      </>,
+      <MagicLinkEmailBody email={email} url={url} deviceInfo={deviceInfo} />,
     );
-    return res;
   } catch (error) {
-    return error;
+    // Log the error but don't re-throw, as failing to send device info
+    // should not prevent the magic link email from being sent.
+    console.error("Error sending magic link email with device info:", error);
+
+    // As a fallback, send the email without device info
+    await sendEmail(
+      email,
+      `Your secure sign-in link for ${APP_NAME}`,
+      <MagicLinkEmailBody email={email} url={url} />,
+    );
   }
 }
