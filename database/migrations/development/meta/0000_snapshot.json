@@ -1,5 +1,5 @@
 {
-  "id": "6b888f72-44f5-487b-8118-1b355f6b8c82",
+  "id": "cb3aa2fa-87e8-4190-9c38-766dd9656222",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -276,36 +276,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "ipAddress": {
-          "name": "ipAddress",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "userAgent": {
-          "name": "userAgent",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "os": {
-          "name": "os",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "browser": {
-          "name": "browser",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "deviceType": {
-          "name": "deviceType",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "userId": {
           "name": "userId",
           "type": "text",
@@ -313,7 +283,23 @@
           "notNull": true
         }
       },
-      "indexes": {},
+      "indexes": {
+        "sessions_userId_idx": {
+          "name": "sessions_userId_idx",
+          "columns": [
+            {
+              "expression": "userId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "sessions_userId_users_id_fk": {
           "name": "sessions_userId_users_id_fk",
@@ -606,7 +592,8 @@
         },
         "role": {
           "name": "role",
-          "type": "text",
+          "type": "user_role",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": true,
           "default": "'user'"
@@ -802,7 +789,13 @@
       "isRLSEnabled": false
     }
   },
-  "enums": {},
+  "enums": {
+    "public.user_role": {
+      "name": "user_role",
+      "schema": "public",
+      "values": ["user", "admin", "super_admin"]
+    }
+  },
   "schemas": {},
   "sequences": {},
   "roles": {},

@@ -7,10 +7,10 @@ import { cn } from "@/lib/utils";
 import { Bell, CreditCard, Palette, UserCircle } from "lucide-react";
 import { Session } from "@/types/auth";
 import type { Subscription, PaymentRecord } from "@/types/billing";
-import dynamic from "next/dynamic"; // 导入 dynamic
-import type { ComponentType, FC } from "react"; // Added FC
+import dynamic from "next/dynamic";
+import type { ComponentType, FC } from "react";
 
-// 使用 dynamic 动态导入各个页面组件
+// Dynamic imports for page components
 const AccountPage = dynamic(() =>
   import("./account-page").then((mod) => mod.AccountPage),
 );
@@ -25,39 +25,20 @@ const BillingPage = dynamic(() =>
 );
 
 // Define Props for each page component
-interface AccountPageProps {
-  activeSessions: Array<{
-    id: string;
-    token: string;
-    userId: string;
-    expiresAt: Date;
-    createdAt: Date;
-    updatedAt: Date;
-    ipAddress?: string | null;
-    userAgent?: string | null;
-    os?: string | null;
-    browser?: string | null;
-    deviceType?: string | null;
-  }>;
-}
-
 interface BillingPageProps {
   subscription: Subscription | null;
   payments: PaymentRecord[];
 }
 
 // Union type for all possible page props
-export type SettingsPageProps =
-  | AccountPageProps
-  | BillingPageProps
-  | Record<string, never>; // For pages with no props like NotificationPage and AppearancePage
+export type SettingsPageProps = BillingPageProps | Record<string, never>; // For pages with no props like AccountPage, NotificationPage, and AppearancePage
 
-// 统一的标签页配置，包含组件引用
+// Unified tab configuration
 interface SettingsTabConfig {
   name: string;
   value: string;
   icon: ComponentType<{ className?: string }>;
-  component: FC<SettingsPageProps>; // Use the union type
+  component: FC<SettingsPageProps>;
 }
 
 const settingsTabsConfig: SettingsTabConfig[] = [
@@ -88,44 +69,27 @@ const settingsTabsConfig: SettingsTabConfig[] = [
 ];
 
 export function Settings({
-  activeSessions,
   subscription,
   payments,
 }: {
   session: Session | null;
-  activeSessions: Array<{
-    id: string;
-    token: string;
-    userId: string;
-    expiresAt: Date;
-    createdAt: Date;
-    updatedAt: Date;
-    ipAddress?: string | null;
-    userAgent?: string | null;
-    os?: string | null;
-    browser?: string | null;
-    deviceType?: string | null;
-  }>;
   subscription: Subscription | null;
   payments: PaymentRecord[];
 }) {
   const [tab, setTab] = useQueryState("page", { defaultValue: "account" });
 
-  // 找到当前活动的标签页配置
   const activeTabConfig = settingsTabsConfig.find((t) => t.value === tab);
   const ActiveComponent = activeTabConfig?.component;
 
-  // 根据不同组件准备相应的props
   const getComponentProps = (): SettingsPageProps => {
     switch (tab) {
-      case "account":
-        return { activeSessions };
       case "billing":
         return { subscription, payments };
+      case "account":
       case "notifications":
       case "appearance":
       default:
-        return {} as Record<string, never>; // Ensure it matches a part of the union type
+        return {} as Record<string, never>;
     }
   };
 

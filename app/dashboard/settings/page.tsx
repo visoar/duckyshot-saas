@@ -15,15 +15,11 @@ export const metadata = createMetadata({
 });
 
 export default async function SettingsPage() {
-  // Cache headers to avoid multiple calls
   const requestHeaders = await headers();
   const session = await auth.api.getSession({ headers: requestHeaders });
 
-  // Parallel data fetching for better performance
-  const [activeSessionsRaw, subscription, payments] = await Promise.all([
-    session
-      ? auth.api.listSessions({ headers: requestHeaders })
-      : Promise.resolve([]),
+  // Parallel data fetching for better performance (removed activeSessions fetch)
+  const [subscription, payments] = await Promise.all([
     session?.user?.id
       ? getUserSubscription(session.user.id)
       : Promise.resolve(null),
@@ -32,14 +28,10 @@ export default async function SettingsPage() {
       : Promise.resolve([]),
   ]);
 
-  // Use pre-parsed userAgent data from database for better performance
-  const activeSessions = activeSessionsRaw;
-
   return (
     <DashboardPageWrapper title="Settings">
       <Settings
         session={session}
-        activeSessions={activeSessions} // 传递已经解析好的数据
         subscription={subscription}
         payments={payments}
       />
