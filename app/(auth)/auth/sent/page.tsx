@@ -1,4 +1,4 @@
-"use client"; // This page now needs client-side logic to read params
+"use client";
 
 import { useSearchParams } from "next/navigation";
 import { LinkSentCard } from "@/components/auth/link-sent-card";

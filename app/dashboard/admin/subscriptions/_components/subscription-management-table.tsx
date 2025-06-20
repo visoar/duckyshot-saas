@@ -136,13 +136,6 @@ export function SubscriptionManagementTable() {
     }
   };
 
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency.toUpperCase(),
-    }).format(amount / 100); // Assuming amounts are in cents
-  };
-
   const formatDate = (dateString: string | Date | null | undefined) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
