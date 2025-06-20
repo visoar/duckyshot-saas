@@ -5,6 +5,7 @@ import { BlogPostMeta } from "./blog-post-meta";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import { Link } from "next-view-transitions";
+import { calculateReadingTime } from "@/lib/utils";
 
 interface BlogPostHeaderProps {
   title: string;
@@ -15,6 +16,8 @@ interface BlogPostHeaderProps {
   tags?: string[];
   backHref?: string;
   backText?: string;
+  author?: string;
+  content: string;
 }
 
 export function BlogPostHeader({
@@ -26,6 +29,8 @@ export function BlogPostHeader({
   tags = [],
   backHref = "/blog",
   backText = "Back to Blog",
+  author,
+  content,
 }: BlogPostHeaderProps) {
   const hasImage = !!heroImage;
 
@@ -69,6 +74,8 @@ export function BlogPostHeader({
                   variant="overlay"
                   className="mb-6 justify-center"
                   showBadge={true}
+                  author={author}
+                  readTime={calculateReadingTime(content)}
                 />
 
                 <h1 className="mb-4 text-2xl font-bold tracking-tight text-white drop-shadow-lg sm:mb-6 sm:text-4xl md:text-5xl lg:text-6xl">
@@ -139,6 +146,8 @@ export function BlogPostHeader({
                 featured={featured}
                 className="mb-6 justify-center sm:mb-8"
                 showBadge={true}
+                author={author}
+                readTime={calculateReadingTime(content)}
               />
 
               <h1 className="text-foreground mb-6 text-3xl font-bold tracking-tight sm:mb-8 sm:text-4xl lg:text-5xl xl:text-6xl">

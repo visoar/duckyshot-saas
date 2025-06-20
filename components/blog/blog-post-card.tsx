@@ -10,7 +10,7 @@ import { Link } from "next-view-transitions";
 import { Sparkles } from "lucide-react";
 import { BlogPostMeta } from "./blog-post-meta";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
+import { cn, calculateReadingTime } from "@/lib/utils";
 
 interface BlogPostCardProps {
   slug: string;
@@ -21,6 +21,8 @@ interface BlogPostCardProps {
   featured?: boolean;
   variant?: "featured" | "regular";
   className?: string;
+  author?: string;
+  content: string;
 }
 
 export function BlogPostCard({
@@ -32,6 +34,8 @@ export function BlogPostCard({
   featured = false,
   variant = "regular",
   className,
+  author,
+  content,
 }: BlogPostCardProps) {
   const isFeatured = variant === "featured";
   const hasImage = !!heroImage;
@@ -127,6 +131,8 @@ export function BlogPostCard({
             tags={[]} // Don't show tags in card, only show date/time/author
             showBadge={false} // Don't show badge here as it's already shown above
             className="justify-start"
+            author={author}
+            readTime={calculateReadingTime(content)}
           />
         </div>
       </CardHeader>

@@ -8,6 +8,7 @@ import { BlogPostHeader } from "@/components/blog/blog-post-header";
 import { Button } from "@/components/ui/button";
 import { Link } from "next-view-transitions";
 import type { Metadata } from "next";
+import { renderMarkdoc } from "@/lib/utils";
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -85,6 +86,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
+  const content = await post.content();
+  const author = post.author
+    ? await reader.collections.authors.read(post.author)
+    : null; 
+
   return (
     <>
       <BlogPostHeader
@@ -94,6 +100,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         publishedDate={post.publishedDate || undefined}
         featured={post.featured}
         tags={post.tags ? [...post.tags] : undefined}
+        content={renderMarkdoc(content.node)}
+        author={author?.name || 'Anonymous'}
       />
 
       {/* Article Content */}
@@ -101,10 +109,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <div className="container mx-auto px-4 sm:px-6">
           <div className="mx-auto max-w-4xl">
             <article className="prose prose-base prose-slate dark:prose-invert sm:prose-lg markdoc-content mx-auto max-w-none">
-              {Markdoc.renderers.react(
-                Markdoc.transform((await post.content()).node),
-                React,
-              )}
+              {Markdoc.renderers.react(Markdoc.transform(content.node), React)}
             </article>
           </div>
         </div>

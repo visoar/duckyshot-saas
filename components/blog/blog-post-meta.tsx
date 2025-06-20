@@ -18,8 +18,8 @@ export function BlogPostMeta({
   publishedDate,
   featured = false,
   tags = [],
-  readTime = "5 min read",
-  author = "Admin",
+  readTime,
+  author,
   showBadge = true,
 
   variant = "default",

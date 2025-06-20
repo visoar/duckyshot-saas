@@ -5,6 +5,7 @@ import { createMetadata } from "@/lib/metadata";
 import { BackgroundPattern } from "@/components/ui/background-pattern";
 import { BlogPostCard } from "@/components/blog/blog-post-card";
 import type { Metadata } from "next";
+import { renderMarkdoc } from "@/lib/utils";
 
 export const metadata: Metadata = createMetadata({
   title: "Blog",
@@ -92,18 +93,32 @@ export default async function BlogPage() {
                       </p>
                     </div>
                     <div className="grid gap-6 sm:gap-8 lg:gap-12">
-                      {featuredPosts.map((post) => (
-                        <BlogPostCard
-                          key={post.slug}
-                          slug={post.slug}
-                          title={post.entry.title}
-                          excerpt={post.entry.excerpt || undefined}
-                          heroImage={post.entry.heroImage || undefined}
-                          publishedDate={post.entry.publishedDate || undefined}
-                          featured={post.entry.featured}
-                          variant="featured"
-                        />
-                      ))}
+                      {await Promise.all(
+                        featuredPosts.map(async (post) => {
+                  const content = await post.entry.content();
+                          const author = post.entry.author
+                            ? await reader.collections.authors.read(
+                                post.entry.author
+                              )
+                            : null;
+                          return (
+                            <BlogPostCard
+                              key={post.slug}
+                              slug={post.slug}
+                              title={post.entry.title}
+                              excerpt={post.entry.excerpt || undefined}
+                              heroImage={post.entry.heroImage || undefined}
+                              publishedDate={
+                                post.entry.publishedDate || undefined
+                              }
+                              featured={post.entry.featured}
+                              variant="featured"
+                              content={renderMarkdoc(content.node)}
+                              author={author?.name || 'Anonymous'}
+                            />
+                          );
+                        }),
+                      )}
                     </div>
                   </section>
                 )}
@@ -122,18 +137,32 @@ export default async function BlogPage() {
                       </div>
                     )}
                     <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:gap-8">
-                      {regularPosts.map((post) => (
-                        <BlogPostCard
-                          key={post.slug}
-                          slug={post.slug}
-                          title={post.entry.title}
-                          excerpt={post.entry.excerpt || undefined}
-                          heroImage={post.entry.heroImage || undefined}
-                          publishedDate={post.entry.publishedDate || undefined}
-                          featured={post.entry.featured}
-                          variant="regular"
-                        />
-                      ))}
+                      {await Promise.all(
+                        regularPosts.map(async (post) => {
+                  const content = await post.entry.content();
+                          const author = post.entry.author
+                            ? await reader.collections.authors.read(
+                                post.entry.author
+                              )
+                            : null;
+                          return (
+                            <BlogPostCard
+                              key={post.slug}
+                              slug={post.slug}
+                              title={post.entry.title}
+                              excerpt={post.entry.excerpt || undefined}
+                              heroImage={post.entry.heroImage || undefined}
+                              publishedDate={
+                                post.entry.publishedDate || undefined
+                              }
+                              featured={post.entry.featured}
+                              variant="regular"
+                              content={renderMarkdoc(content.node)}
+                              author={author?.name || 'Anonymous'}
+                            />
+                          );
+                        }),
+                      )}
                     </div>
                   </section>
                 )}

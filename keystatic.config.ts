@@ -12,6 +12,20 @@ export default config({
     brand: { name: APP_NAME },
   },
   collections: {
+    authors: collection({
+      label: 'Authors',
+      slugField: 'name',
+      path: 'content/authors/*',
+      format: { data: 'json' },
+      schema: {
+        name: fields.slug({ name: { label: 'Name' } }),
+        avatar: fields.image({
+          label: 'Avatar',
+          directory: 'public/avatars',
+          publicPath: '/avatars/',
+        }),
+      },
+    }),
     posts: collection({
       label: "Blog",
       slugField: "title",
@@ -20,6 +34,10 @@ export default config({
       schema: {
         title: fields.slug({ name: { label: "Title" } }),
         publishedDate: fields.date({ label: "Published Date" }),
+        author: fields.relationship({
+          label: 'Author',
+          collection: 'authors',
+        }),
         excerpt: fields.text({
           label: "Excerpt",
           description: "A brief summary of the blog post (optional)",

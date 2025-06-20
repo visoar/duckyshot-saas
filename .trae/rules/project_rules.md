@@ -10,6 +10,7 @@
 - 开发前优先检查现有可复用组件
 - 组件命名使用 PascalCase，函数使用 camelCase
 - 优先使用 Server Components，需要交互时使用 Client Components
+- 所有功能都要正确实现，不要 Mock 数据或者硬编码示例数据
 
 ## 界面规范
 
