@@ -145,6 +145,7 @@ export function AppSidebar() {
                     <SidebarMenuButton
                       isActive={item.url === pathname}
                       tooltip={item.title}
+                      className="cursor-pointer"
                     >
                       <item.icon className="size-4" />
                       <span>{item.title}</span>
@@ -178,6 +179,7 @@ export function AppSidebar() {
                       <SidebarMenuButton
                         isActive={item.url === pathname}
                         tooltip={item.title}
+                        className="cursor-pointer"
                       >
                         <item.icon className="size-4" />
                         <span>{item.title}</span>

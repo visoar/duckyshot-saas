@@ -6,23 +6,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Bell, CreditCard, Palette, UserCircle } from "lucide-react";
 import { Session } from "@/types/auth";
-import type { Subscription } from "@/types/billing";
+import type { Subscription, PaymentRecord } from "@/types/billing";
 import dynamic from "next/dynamic"; // 导入 dynamic
 import type { ComponentType, FC } from "react"; // Added FC
-
-// Define local PaymentRecord as it's not exported from @/types/billing
-interface PaymentRecord {
-  id: string;
-  paymentId: string;
-  amount: number;
-  currency: string;
-  status: string;
-  paymentType: string;
-  tierId: string;
-  tierName: string;
-  createdAt: Date;
-  subscriptionId: string | null;
-}
 
 // 使用 dynamic 动态导入各个页面组件
 const AccountPage = dynamic(() =>
@@ -100,19 +86,6 @@ const settingsTabsConfig: SettingsTabConfig[] = [
     component: AppearancePage as FC<SettingsPageProps>,
   },
 ];
-
-interface PaymentRecord {
-  id: string;
-  paymentId: string;
-  amount: number;
-  currency: string;
-  status: string;
-  paymentType: string;
-  tierId: string;
-  tierName: string;
-  createdAt: Date;
-  subscriptionId: string | null;
-}
 
 export function Settings({
   activeSessions,

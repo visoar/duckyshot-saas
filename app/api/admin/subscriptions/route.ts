@@ -99,29 +99,10 @@ export async function GET(request: NextRequest) {
       }
 
       return {
-        id: sub.id,
-        userId: sub.userId,
-        userName: sub.user?.name || "Unknown User",
-        userEmail: sub.user?.email || "Unknown Email",
-        userImage: sub.user?.image,
-        status: sub.status as
-          | "active"
-          | "cancelled"
-          | "past_due"
-          | "trialing"
-          | "incomplete",
+        ...sub,
         planName: productTier?.name || "Unknown Plan",
-        planPrice: productTier
-          ? getSubscriptionPrice(productTier, sub.productId)
-          : undefined,
+        planPrice: productTier?.prices.monthly || productTier?.prices.yearly,
         currency: productTier?.currency || "USD",
-        currentPeriodStart: sub.currentPeriodStart?.toISOString() || "",
-        currentPeriodEnd: sub.currentPeriodEnd?.toISOString() || "",
-        cancelAtPeriodEnd: !!sub.canceledAt,
-        // Use Creem subscription ID instead of Stripe
-        creemSubscriptionId: sub.subscriptionId,
-        createdAt: sub.createdAt.toISOString(),
-        updatedAt: sub.updatedAt.toISOString(),
       };
     });
 
@@ -208,48 +189,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Helper function to determine subscription price based on product ID
-    // Define a more specific type for productTier if possible, or use a known one
-    // For now, using a basic structure based on usage
-    interface ProductTier {
-      id: string;
-      pricing: {
-        creem: {
-          monthly: string;
-          yearly: string;
-          oneTime?: string; // Added optional oneTime property
-        };
-      };
-      prices: {
-        monthly: number;
-        yearly: number;
-        oneTime?: number; // Added optional oneTime property
-      };
-    }
 
-    function getSubscriptionPrice(
-      productTier: ProductTier,
-      productId: string,
-    ): number {
-      const { pricing, prices } = productTier;
-
-      // If productId is the internal tier ID, default to monthly price
-      if (productId === productTier.id) {
-        return Math.round(prices.monthly * 100); // Convert to cents
-      }
-
-      // Check which billing cycle this product ID corresponds to
-      if (pricing.creem.monthly === productId) {
-        return Math.round(prices.monthly * 100); // Convert to cents
-      } else if (pricing.creem.yearly === productId) {
-        return Math.round(prices.yearly * 100); // Convert to cents  } else if (pricing.creem.oneTime === productId) {
-        // Ensure prices.oneTime is a number, defaulting to 0 if falsy
-        const oneTimePrice = Number(prices.oneTime || 0);
-        return Math.round(oneTimePrice * 100); // Convert to cents
-      }
-
-      // Default to monthly price if no match
-      return Math.round(prices.monthly * 100);
-    }
   } catch (error) {
     console.error("Get subscriptions error:", error);
     return NextResponse.json(

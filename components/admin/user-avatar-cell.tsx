@@ -3,10 +3,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getUserAvatarUrl } from "@/lib/avatar";
 
-interface UserAvatarCellProps {
-  name?: string;
-  email?: string;
-  image?: string;
+export interface UserAvatarCellProps {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
   size?: "sm" | "md" | "lg";
   showInfo?: boolean;
   className?: string;
@@ -45,7 +45,7 @@ export function UserAvatarCell({
         <AvatarFallback>{initials}</AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
-        <div className="truncate font-medium">{name || "N/A"}</div>
+        <div className="truncate font-medium">{name || email || "N/A"}</div>
         {email && (
           <div className="text-muted-foreground truncate text-sm">{email}</div>
         )}

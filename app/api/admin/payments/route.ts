@@ -76,8 +76,12 @@ export async function GET(request: NextRequest) {
       .select({
         id: payments.id,
         userId: payments.userId,
-        userName: users.name,
-        userEmail: users.email,
+        user: {
+          id: users.id,
+          name: users.name,
+          email: users.email,
+          image: users.image,
+        },
         paymentId: payments.paymentId,
         amount: payments.amount,
         currency: payments.currency,

@@ -106,3 +106,41 @@ export type CreemWebhookPayload = {
   created_at: number;
   object: CreemCheckoutObject | CreemSubscriptionObject | CreemPaymentObject;
 };
+
+export interface PaymentRecord {
+  id: string;
+  paymentId: string;
+  amount: number;
+  currency: string;
+  status: string;
+  paymentType: string;
+  tierId: string;
+  tierName: string;
+  createdAt: Date;
+  subscriptionId: string | null;
+}
+
+export interface SubscriptionWithUser extends Subscription {
+  planName: string;
+  planPrice: number;
+  currency: string;
+  user: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PaymentWithUser extends PaymentRecord {
+  paymentMethod: string;
+  stripePaymentIntentId: string;
+  user: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  };
+}

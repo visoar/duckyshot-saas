@@ -27,22 +27,24 @@ import { AdminTableBase } from "@/components/admin/admin-table-base";
 import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
 import { userRoleEnum } from "@/database/schema";
 import type { UserRole } from "@/lib/auth/permissions";
+import type { User } from "better-auth";
 
-interface User {
+
+interface UserWithSubscription extends User {
   id: string;
   name: string;
   email: string;
-  emailVerified: boolean;
   image?: string;
   role: UserRole;
-  createdAt: string;
-  updatedAt: string;
+  emailVerified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
   subscriptionStatus?: string;
   subscriptionId?: string;
 }
 
 interface UsersResponse {
-  users: User[];
+  users: UserWithSubscription[];
   pagination: {
     page: number;
     limit: number;
@@ -52,7 +54,7 @@ interface UsersResponse {
 }
 
 export function UserManagementTable() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserWithSubscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -60,7 +62,7 @@ export function UserManagementTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editingUser, setEditingUser] = useState<UserWithSubscription | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const fetchUsers = async (page = 1, search = "", role = "all") => {
@@ -79,10 +81,17 @@ export function UserManagementTable() {
       }
 
       const data: UsersResponse = await response.json();
-      setUsers(data.users);
-      setCurrentPage(data.pagination.page);
-      setTotalPages(data.pagination.totalPages);
-      setTotalUsers(data.pagination.total);
+      const { users: fetchedUsers, pagination } = data;
+      setUsers(
+        fetchedUsers.map((user) => ({
+          ...user,
+          createdAt: new Date(user.createdAt),
+          updatedAt: new Date(user.updatedAt),
+        })),
+      );
+      setCurrentPage(pagination.page);
+      setTotalPages(pagination.totalPages);
+      setTotalUsers(pagination.total);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -106,10 +115,9 @@ export function UserManagementTable() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    fetchUsers(page, searchTerm, roleFilter);
   };
 
-  const handleEditUser = (user: User) => {
+  const handleEditUser = (user: UserWithSubscription) => {
     setEditingUser({ ...user });
     setIsEditDialogOpen(true);
   };
@@ -181,7 +189,7 @@ export function UserManagementTable() {
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: Date) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -190,14 +198,14 @@ export function UserManagementTable() {
   };
 
   const columns: Array<{
-    key: keyof User | string;
+    key: keyof UserWithSubscription | string;
     label: string;
-    render?: (item: User) => ReactNode;
+    render?: (item: UserWithSubscription) => ReactNode;
   }> = [
     {
       key: "user",
       label: "User",
-      render: (user: User) => (
+      render: (user: UserWithSubscription) => (
         <UserAvatarCell
           name={user.name}
           email={user.email}
@@ -208,7 +216,7 @@ export function UserManagementTable() {
     {
       key: "role",
       label: "Role",
-      render: (user: User) => (
+      render: (user: UserWithSubscription) => (
         <Badge variant={getRoleBadgeVariant(user.role)}>
           {user.role.replace("_", " ").toUpperCase()}
         </Badge>
@@ -216,8 +224,8 @@ export function UserManagementTable() {
     },
     {
       key: "status",
-      label: "Status",
-      render: (user: User) => (
+      label: "Email Status",
+      render: (user: UserWithSubscription) => (
         <Badge variant={user.emailVerified ? "outline" : "secondary"}>
           {user.emailVerified ? "Verified" : "Unverified"}
         </Badge>
@@ -226,7 +234,7 @@ export function UserManagementTable() {
     {
       key: "subscription",
       label: "Subscription",
-      render: (user: User) =>
+      render: (user: UserWithSubscription) =>
         user.subscriptionStatus ? (
           <Badge
             variant={
@@ -242,14 +250,14 @@ export function UserManagementTable() {
     {
       key: "createdAt",
       label: "Joined",
-      render: (user: User) => (
+      render: (user: UserWithSubscription) => (
         <span className="text-sm">{formatDate(user.createdAt)}</span>
       ),
     },
     {
       key: "actions",
       label: "Actions",
-      render: (user: User) => (
+      render: (user: UserWithSubscription) => (
         <div className="flex items-center justify-end space-x-2">
           <Button
             variant="ghost"
@@ -280,7 +288,7 @@ export function UserManagementTable() {
 
   return (
     <>
-      <AdminTableBase<User>
+      <AdminTableBase<UserWithSubscription>
         columns={columns}
         data={users}
         loading={loading}

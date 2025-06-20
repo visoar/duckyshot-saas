@@ -21,21 +21,8 @@ import {
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
-import type { Subscription } from "@/types/billing";
+import type { Subscription, PaymentRecord } from "@/types/billing";
 import { useRouter } from "nextjs-toploader/app";
-
-interface PaymentRecord {
-  id: string;
-  paymentId: string;
-  amount: number;
-  currency: string;
-  status: string;
-  paymentType: string;
-  tierId: string;
-  tierName: string;
-  createdAt: Date;
-  subscriptionId: string | null;
-}
 
 interface BillingPageProps {
   subscription: Subscription | null;
@@ -181,6 +168,7 @@ export function BillingPage({ subscription, payments }: BillingPageProps) {
                     </TableCell>
                     <TableCell>
                       <Badge
+                        className="capitalize"
                         variant={
                           payment.status === "succeeded"
                             ? "default"

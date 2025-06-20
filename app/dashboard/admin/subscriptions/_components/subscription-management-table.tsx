@@ -15,27 +15,10 @@ import { Calendar, X } from "lucide-react";
 import { toast } from "sonner";
 import { AdminTableBase } from "@/components/admin/admin-table-base";
 import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
-
-interface Subscription {
-  id: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  userImage?: string;
-  status: "active" | "cancelled" | "past_due" | "trialing" | "incomplete";
-  planName?: string;
-  planPrice?: number;
-  currency: string;
-  currentPeriodStart: string;
-  currentPeriodEnd: string;
-  cancelAtPeriodEnd: boolean;
-  creemSubscriptionId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { SubscriptionWithUser } from "@/types/billing";
 
 interface SubscriptionsResponse {
-  subscriptions: Subscription[];
+  subscriptions: SubscriptionWithUser[];
   pagination: {
     page: number;
     limit: number;
@@ -45,7 +28,9 @@ interface SubscriptionsResponse {
 }
 
 export function SubscriptionManagementTable() {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [subscriptions, setSubscriptions] = useState<SubscriptionWithUser[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,7 +39,7 @@ export function SubscriptionManagementTable() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalSubscriptions, setTotalSubscriptions] = useState(0);
   const [cancellingSubscription, setCancellingSubscription] =
-    useState<Subscription | null>(null);
+    useState<SubscriptionWithUser | null>(null);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
   const fetchSubscriptions = async (page = 1, search = "", status = "all") => {
@@ -73,7 +58,17 @@ export function SubscriptionManagementTable() {
       }
 
       const data: SubscriptionsResponse = await response.json();
-      setSubscriptions(data.subscriptions);
+      const subscriptionsWithDates = data.subscriptions.map((sub) => ({
+        ...sub,
+        createdAt: new Date(sub.createdAt),
+        currentPeriodStart: sub.currentPeriodStart
+          ? new Date(sub.currentPeriodStart)
+          : null,
+        currentPeriodEnd: sub.currentPeriodEnd
+          ? new Date(sub.currentPeriodEnd)
+          : null,
+      }));
+      setSubscriptions(subscriptionsWithDates);
       setCurrentPage(data.pagination.page);
       setTotalPages(data.pagination.totalPages);
       setTotalSubscriptions(data.pagination.total);
@@ -100,10 +95,9 @@ export function SubscriptionManagementTable() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    fetchSubscriptions(page, searchTerm, statusFilter);
   };
 
-  const handleCancelSubscription = (subscription: Subscription) => {
+  const handleCancelSubscription = (subscription: SubscriptionWithUser) => {
     setCancellingSubscription(subscription);
     setIsCancelDialogOpen(true);
   };
@@ -115,7 +109,7 @@ export function SubscriptionManagementTable() {
       // In a real implementation, you would call your subscription cancellation API
       // For now, we'll just show a toast
       toast.success(
-        `Subscription for ${cancellingSubscription.userName} has been cancelled`,
+        `Subscription for ${cancellingSubscription.user?.name || cancellingSubscription.user?.email} has been cancelled`,
       );
       setIsCancelDialogOpen(false);
       setCancellingSubscription(null);
@@ -131,7 +125,7 @@ export function SubscriptionManagementTable() {
         return "default";
       case "trialing":
         return "secondary";
-      case "cancelled":
+      case "canceled":
         return "outline";
       case "past_due":
         return "destructive";
@@ -149,7 +143,8 @@ export function SubscriptionManagementTable() {
     }).format(amount / 100); // Assuming amounts are in cents
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date | null | undefined) => {
+    if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -158,39 +153,34 @@ export function SubscriptionManagementTable() {
   };
 
   const columns: Array<{
-    key: keyof Subscription | string;
+    key: keyof SubscriptionWithUser | string;
     label: string;
-    render?: (item: Subscription) => ReactNode;
+    render?: (item: SubscriptionWithUser) => ReactNode;
   }> = [
     {
       key: "user",
       label: "User",
-      render: (subscription: Subscription) => (
+      render: (subscription: SubscriptionWithUser) => (
         <UserAvatarCell
-          name={subscription.userName}
-          email={subscription.userEmail}
-          image={subscription.userImage}
-        />
+           name={subscription.user?.name}
+           email={subscription.user?.email}
+           image={subscription.user?.image}
+          />
       ),
     },
     {
       key: "plan",
       label: "Plan",
-      render: (subscription: Subscription) => (
+      render: (subscription: SubscriptionWithUser) => (
         <div>
           <div className="font-medium">{subscription.planName}</div>
-          <div className="text-muted-foreground text-sm">
-            {subscription.planPrice
-              ? formatCurrency(subscription.planPrice, subscription.currency)
-              : "N/A"}
-          </div>
         </div>
       ),
     },
     {
       key: "status",
       label: "Status",
-      render: (subscription: Subscription) => (
+      render: (subscription: SubscriptionWithUser) => (
         <Badge
           variant={getStatusBadgeVariant(subscription.status)}
           className="capitalize"
@@ -202,7 +192,7 @@ export function SubscriptionManagementTable() {
     {
       key: "period",
       label: "Period",
-      render: (subscription: Subscription) => (
+      render: (subscription: SubscriptionWithUser) => (
         <div className="text-sm">
           <div className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
@@ -217,18 +207,18 @@ export function SubscriptionManagementTable() {
     {
       key: "created",
       label: "Created",
-      render: (subscription: Subscription) =>
+      render: (subscription: SubscriptionWithUser) =>
         formatDate(subscription.createdAt),
     },
     {
       key: "actions",
       label: "Actions",
-      render: (subscription: Subscription) => (
+      render: (subscription: SubscriptionWithUser) => (
         <Button
           variant="outline"
           size="sm"
           onClick={() => handleCancelSubscription(subscription)}
-          disabled={subscription.status === "cancelled"}
+          disabled={subscription.status === "canceled"}
         >
           <X className="mr-1 h-4 w-4" />
           Cancel
@@ -241,14 +231,14 @@ export function SubscriptionManagementTable() {
     { value: "all", label: "All Statuses" },
     { value: "active", label: "Active" },
     { value: "trialing", label: "Trialing" },
-    { value: "cancelled", label: "Cancelled" },
+    { value: "canceled", label: "Canceled" },
     { value: "past_due", label: "Past Due" },
     { value: "incomplete", label: "Incomplete" },
   ];
 
   return (
     <div className="space-y-4">
-      <AdminTableBase<Subscription>
+      <AdminTableBase<SubscriptionWithUser>
         data={subscriptions}
         columns={columns}
         loading={loading}
@@ -277,7 +267,7 @@ export function SubscriptionManagementTable() {
             <DialogTitle>Cancel Subscription</DialogTitle>
             <DialogDescription>
               Are you sure you want to cancel the subscription for{" "}
-              {cancellingSubscription?.userName}? This action cannot be undone
+              {cancellingSubscription?.user?.name}? This action cannot be undone
               and the user will lose access at the end of their current billing
               period.
             </DialogDescription>

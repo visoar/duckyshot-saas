@@ -5,24 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 import { AdminTableBase } from "@/components/admin/admin-table-base";
 import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
-
-interface Payment {
-  id: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  amount: number;
-  currency: string;
-  status: "pending" | "completed" | "failed" | "cancelled";
-  paymentMethod?: string;
-  stripePaymentIntentId?: string;
-  subscriptionId?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { PaymentWithUser } from "@/types/billing";
 
 interface PaymentsResponse {
-  payments: Payment[];
+  payments: PaymentWithUser[];
   pagination: {
     page: number;
     limit: number;
@@ -32,7 +18,7 @@ interface PaymentsResponse {
 }
 
 export function PaymentManagementTable() {
-  const [payments, setPayments] = useState<Payment[]>([]);
+  const [payments, setPayments] = useState<PaymentWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,7 +43,11 @@ export function PaymentManagementTable() {
       }
 
       const data: PaymentsResponse = await response.json();
-      setPayments(data.payments);
+      const paymentsWithDates = data.payments.map((payment) => ({
+        ...payment,
+        createdAt: new Date(payment.createdAt),
+      }));
+      setPayments(paymentsWithDates);
       setCurrentPage(data.pagination.page);
       setTotalPages(data.pagination.totalPages);
       setTotalPayments(data.pagination.total);
@@ -84,7 +74,6 @@ export function PaymentManagementTable() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    fetchPayments(page, searchTerm, statusFilter);
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -109,7 +98,7 @@ export function PaymentManagementTable() {
     }).format(amount / 100); // Assuming amounts are in cents
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | Date) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -129,21 +118,21 @@ export function PaymentManagementTable() {
   };
 
   const columns: Array<{
-    key: keyof Payment | string;
+    key: keyof PaymentWithUser | string;
     label: string;
-    render?: (item: Payment) => ReactNode;
+    render?: (item: PaymentWithUser) => ReactNode;
   }> = [
     {
       key: "user",
       label: "User",
-      render: (payment: Payment) => (
-        <UserAvatarCell name={payment.userName} email={payment.userEmail} />
+      render: (payment: PaymentWithUser) => (
+        <UserAvatarCell name={payment.user?.name} email={payment.user?.email} />
       ),
     },
     {
       key: "amount",
       label: "Amount",
-      render: (payment: Payment) => (
+      render: (payment: PaymentWithUser) => (
         <div className="font-medium">
           {formatCurrency(payment.amount, payment.currency)}
         </div>
@@ -152,7 +141,7 @@ export function PaymentManagementTable() {
     {
       key: "status",
       label: "Status",
-      render: (payment: Payment) => (
+      render: (payment: PaymentWithUser) => (
         <Badge
           variant={getStatusBadgeVariant(payment.status)}
           className="capitalize"
@@ -164,19 +153,19 @@ export function PaymentManagementTable() {
     {
       key: "method",
       label: "Method",
-      render: (payment: Payment) => (
+      render: (payment: PaymentWithUser) => (
         <div className="text-sm">{payment.paymentMethod || "N/A"}</div>
       ),
     },
     {
       key: "created",
       label: "Created",
-      render: (payment: Payment) => formatDate(payment.createdAt),
+      render: (payment: PaymentWithUser) => formatDate(payment.createdAt),
     },
     {
       key: "actions",
       label: "Actions",
-      render: (payment: Payment) =>
+      render: (payment: PaymentWithUser) =>
         payment.stripePaymentIntentId && (
           <button
             onClick={() => openStripePayment(payment.stripePaymentIntentId!)}
@@ -199,7 +188,7 @@ export function PaymentManagementTable() {
 
   return (
     <div className="space-y-4">
-      <AdminTableBase<Payment>
+      <AdminTableBase<PaymentWithUser>
         data={payments}
         columns={columns}
         loading={loading}
