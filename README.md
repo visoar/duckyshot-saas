@@ -164,8 +164,12 @@ pnpm dev
 **设置流程：**
 
 1.  首先，确保您想要提升为管理员的用户已经通过常规方式在系统中注册了一个账户。
-2.  在您的服务器或本地开发环境中，运行以下命令：
-
+2.  在您的服务器（使用环境变量）或本地开发环境中（使用.env文件作为环境变量），运行以下命令。
+    服务器环境中可用：
+    ```bash
+    pnpm set:admin:prod --email=your-email@example.com
+    ```
+    本地开发环境中可用：
     ```bash
     pnpm set:admin --email=your-email@example.com
     ```
