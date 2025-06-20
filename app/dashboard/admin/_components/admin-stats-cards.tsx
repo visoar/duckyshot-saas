@@ -15,20 +15,20 @@ import { Badge } from "@/components/ui/badge";
 export interface AdminStats {
   users: {
     total: number;
-    verified: number; // count(sql`CASE WHEN ${users.emailVerified} = true THEN 1 END`)
+    verified: number;
 
-    admins: number; // count(sql`CASE WHEN ${users.role} IN ('admin', 'super_admin') THEN 1 END`)
+    admins: number;
   };
   subscriptions: {
     total: number;
-    active: number; // count(sql`CASE WHEN ${subscriptions.status} = 'active' THEN 1 END`)
+    active: number;
 
-    canceled: number; // count(sql`CASE WHEN ${subscriptions.status} = 'canceled' THEN 1 END`)
+    canceled: number;
   };
   payments: {
     total: number;
     totalRevenue: number;
-    successful: number; // count(sql`CASE WHEN ${payments.status} = 'succeeded' THEN 1 END`)
+    successful: number;
   };
   uploads: {
     total: number;

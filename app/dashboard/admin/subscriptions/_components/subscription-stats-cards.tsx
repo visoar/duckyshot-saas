@@ -32,22 +32,25 @@ export function SubscriptionStatsCards() {
           throw new Error("Failed to fetch stats");
         }
         const data = await response.json();
-        
+
         // Calculate trial subscriptions (assuming trial status is indicated by specific conditions)
         // This would need to be implemented in the API for accurate data
         const trialSubscriptions = 0; // Would need API support for trial status
-        
+
         // Calculate MRR from payment data (simplified calculation)
         // In a real scenario, this should be calculated server-side with proper business logic
         const monthlyRevenue = data.payments?.totalRevenue || 0;
         const monthlyRecurringRevenue = Math.round(monthlyRevenue / 12); // Simplified MRR estimation
-        
+
         // Calculate churn rate (cancelled / total active at period start)
         // This is a simplified calculation - real churn rate needs historical data
         const totalActive = data.subscriptions?.active || 0;
         const totalCancelled = data.subscriptions?.canceled || 0;
-        const churnRate = totalActive > 0 ? (totalCancelled / (totalActive + totalCancelled)) * 100 : 0;
-        
+        const churnRate =
+          totalActive > 0
+            ? (totalCancelled / (totalActive + totalCancelled)) * 100
+            : 0;
+
         setStats({
           totalSubscriptions: data.subscriptions?.total || 0,
           activeSubscriptions: data.subscriptions?.active || 0,

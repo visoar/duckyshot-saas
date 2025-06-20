@@ -2,7 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/permissions";
 import { db } from "@/database";
 import { payments, users } from "@/database/schema";
-import { eq, desc, asc, sql, count } from "drizzle-orm";
+import {
+  eq,
+  desc,
+  asc,
+  sql,
+  count,
+  and,
+  or,
+  gte,
+  lte,
+  ilike,
+} from "drizzle-orm";
 import { z } from "zod";
 
 const getPaymentsSchema = z.object({
@@ -33,7 +44,11 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       whereConditions.push(
-        sql`(${users.name} ILIKE ${`%${search}%`} OR ${users.email} ILIKE ${`%${search}%`} OR ${payments.paymentId} ILIKE ${`%${search}%`})`,
+        or(
+          ilike(users.name, `%${search}%`),
+          ilike(users.email, `%${search}%`),
+          ilike(payments.paymentId, `%${search}%`),
+        ),
       );
     }
 
@@ -42,17 +57,15 @@ export async function GET(request: NextRequest) {
     }
 
     if (dateFrom) {
-      whereConditions.push(sql`${payments.createdAt} >= ${new Date(dateFrom)}`);
+      whereConditions.push(gte(payments.createdAt, new Date(dateFrom)));
     }
 
     if (dateTo) {
-      whereConditions.push(sql`${payments.createdAt} <= ${new Date(dateTo)}`);
+      whereConditions.push(lte(payments.createdAt, new Date(dateTo)));
     }
 
     const whereClause =
-      whereConditions.length > 0
-        ? sql`${whereConditions.reduce((acc, condition) => sql`${acc} AND ${condition}`)}`
-        : undefined;
+      whereConditions.length > 0 ? and(...whereConditions) : undefined;
 
     // Build order by
     const orderByClause =
@@ -68,20 +81,20 @@ export async function GET(request: NextRequest) {
         paymentId: payments.paymentId,
         amount: payments.amount,
         currency: payments.currency,
-        status: sql<string>`CASE 
-          WHEN ${payments.status} = 'succeeded' THEN 'completed'
-          WHEN ${payments.status} = 'canceled' THEN 'cancelled'
-          ELSE ${payments.status}
-        END`,
+        status: sql<string>`case 
+          when ${payments.status} = 'succeeded' then 'completed'
+          when ${payments.status} = 'canceled' then 'cancelled'
+          else ${payments.status}
+        end`,
         paymentType: payments.paymentType,
-        paymentMethod: sql<string>`CASE 
-          WHEN ${payments.paymentType} = 'subscription' THEN 'Subscription'
-          WHEN ${payments.paymentType} = 'one_time' THEN 'One-time Payment'
-          WHEN ${payments.paymentType} = 'card' THEN 'Credit Card'
-          WHEN ${payments.paymentType} = 'bank_transfer' THEN 'Bank Transfer'
-          WHEN ${payments.paymentType} = 'paypal' THEN 'PayPal'
-          ELSE COALESCE(${payments.paymentType}, 'Unknown')
-        END`,
+        paymentMethod: sql<string>`case 
+          when ${payments.paymentType} = 'subscription' then 'Subscription'
+          when ${payments.paymentType} = 'one_time' then 'One-time Payment'
+          when ${payments.paymentType} = 'card' then 'Credit Card'
+          when ${payments.paymentType} = 'bank_transfer' then 'Bank Transfer'
+          when ${payments.paymentType} = 'paypal' then 'PayPal'
+          else coalesce(${payments.paymentType}, 'Unknown')
+        end`,
         productId: payments.productId,
         stripePaymentIntentId: payments.paymentId,
         subscriptionId: payments.subscriptionId,
@@ -107,15 +120,15 @@ export async function GET(request: NextRequest) {
     // Get summary stats
     const [summaryStats] = await db
       .select({
-        totalAmount: sql<number>`COALESCE(SUM(${payments.amount}), 0)`,
+        totalAmount: sql<number>`coalesce(sum(${payments.amount}), 0)`,
         successfulPayments: count(
-          sql`CASE WHEN ${payments.status} = 'succeeded' THEN 1 END`,
+          sql`case when ${payments.status} = 'succeeded' then 1 end`,
         ),
         failedPayments: count(
-          sql`CASE WHEN ${payments.status} = 'failed' THEN 1 END`,
+          sql`case when ${payments.status} = 'failed' then 1 end`,
         ),
         pendingPayments: count(
-          sql`CASE WHEN ${payments.status} = 'pending' THEN 1 END`,
+          sql`case when ${payments.status} = 'pending' then 1 end`,
         ),
       })
       .from(payments)

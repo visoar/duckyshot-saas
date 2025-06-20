@@ -1,15 +1,8 @@
 // lib/admin/stats.ts
 import { AdminStats } from "@/app/dashboard/admin/_components/admin-stats-cards";
 import { db } from "@/database";
-import {
-  users,
-  subscriptions,
-  payments,
-  uploads,
-  userRoleEnum,
-} from "@/database/schema";
-import { count, sum, desc } from "drizzle-orm";
-import { sql } from "drizzle-orm";
+import { users, subscriptions, payments, uploads } from "@/database/schema";
+import { count, sum, desc, eq, inArray, gte } from "drizzle-orm";
 
 // Extended interface for chart data
 export interface ChartData {
@@ -30,79 +23,93 @@ export interface AdminStatsWithCharts extends AdminStats {
 
 export async function getAdminStats(): Promise<AdminStats> {
   try {
-    // Get basic stats
-    const [userStatsData] = await db
-      .select({
-        total: count(),
-        verified: count(
-          sql`CASE WHEN ${users.emailVerified} = true THEN 1 END`,
-        ),
-        admins: count(
-          sql`CASE WHEN ${users.role} IN (${userRoleEnum.enumValues
-            .filter((role) => role !== "user")
-            .map((role) => `'${role}'`)
-            .join(", ")}) THEN 1 END`,
-        ),
-      })
-      .from(users);
+    const userStatsQueries = {
+      total: db.select({ value: count() }).from(users),
+      verified: db
+        .select({ value: count() })
+        .from(users)
+        .where(eq(users.emailVerified, true)),
+      admins: db
+        .select({ value: count() })
+        .from(users)
+        .where(inArray(users.role, ["admin", "super_admin"])),
+    };
 
-    // Get subscription stats
-    const [subscriptionStatsData] = await db
-      .select({
-        total: count(),
-        active: count(
-          sql`CASE WHEN ${subscriptions.status} = 'active' THEN 1 END`,
-        ),
-        canceled: count(
-          sql`CASE WHEN ${subscriptions.status} = 'canceled' THEN 1 END`,
-        ),
-      })
-      .from(subscriptions);
+    const subscriptionStatsQueries = {
+      total: db.select({ value: count() }).from(subscriptions),
+      active: db
+        .select({ value: count() })
+        .from(subscriptions)
+        .where(eq(subscriptions.status, "active")),
+      canceled: db
+        .select({ value: count() })
+        .from(subscriptions)
+        .where(eq(subscriptions.status, "canceled")),
+    };
 
-    // Get payment stats
-    const [paymentStatsData] = await db
-      .select({
-        total: count(),
-        totalRevenue: sum(payments.amount).mapWith(Number), // Ensure amount is number
-        successful: count(
-          sql`CASE WHEN ${payments.status} = 'succeeded' THEN 1 END`, // API uses 'succeeded'
-        ),
-      })
-      .from(payments);
+    const paymentStatsQueries = {
+      total: db.select({ value: count() }).from(payments),
+      totalRevenue: db.select({ value: sum(payments.amount) }).from(payments),
+      successful: db
+        .select({ value: count() })
+        .from(payments)
+        .where(eq(payments.status, "succeeded")),
+    };
 
-    // Get upload stats
-    const [uploadStatsData] = await db
-      .select({
-        total: count(),
-        totalSize: sum(uploads.fileSize).mapWith(Number), // Ensure fileSize is number and matches schema
-      })
-      .from(uploads);
+    const uploadStatsQueries = {
+      total: db.select({ value: count() }).from(uploads),
+      totalSize: db.select({ value: sum(uploads.fileSize) }).from(uploads),
+    };
+
+    const [
+      userTotal,
+      userVerified,
+      userAdmins,
+      subTotal,
+      subActive,
+      subCanceled,
+      payTotal,
+      payTotalRevenue,
+      paySuccessful,
+      uploadTotal,
+      uploadTotalSize,
+    ] = await Promise.all([
+      userStatsQueries.total.execute(),
+      userStatsQueries.verified.execute(),
+      userStatsQueries.admins.execute(),
+      subscriptionStatsQueries.total.execute(),
+      subscriptionStatsQueries.active.execute(),
+      subscriptionStatsQueries.canceled.execute(),
+      paymentStatsQueries.total.execute(),
+      paymentStatsQueries.totalRevenue.execute(),
+      paymentStatsQueries.successful.execute(),
+      uploadStatsQueries.total.execute(),
+      uploadStatsQueries.totalSize.execute(),
+    ]);
 
     return {
       users: {
-        total: userStatsData?.total || 0,
-        verified: userStatsData?.verified || 0,
-        admins: userStatsData?.admins || 0,
+        total: userTotal[0].value,
+        verified: userVerified[0].value,
+        admins: userAdmins[0].value,
       },
       subscriptions: {
-        total: subscriptionStatsData?.total || 0,
-        active: subscriptionStatsData?.active || 0,
-        canceled: subscriptionStatsData?.canceled || 0,
+        total: subTotal[0].value,
+        active: subActive[0].value,
+        canceled: subCanceled[0].value,
       },
       payments: {
-        total: paymentStatsData?.total || 0,
-        totalRevenue: paymentStatsData?.totalRevenue || 0,
-        successful: paymentStatsData?.successful || 0,
+        total: payTotal[0].value,
+        totalRevenue: Number(payTotalRevenue[0].value) || 0,
+        successful: paySuccessful[0].value,
       },
       uploads: {
-        total: uploadStatsData?.total || 0,
-        totalSize: uploadStatsData?.totalSize || 0,
+        total: uploadTotal[0].value,
+        totalSize: Number(uploadTotalSize[0].value) || 0,
       },
     };
   } catch (error) {
     console.error("Error fetching admin stats in lib/admin/stats.ts:", error);
-    // Return a default or empty state in case of error to prevent breaking the page
-    // Or rethrow the error if the page should show a global error boundary
     return {
       users: { total: 0, verified: 0, admins: 0 },
       subscriptions: { total: 0, active: 0, canceled: 0 },
@@ -115,46 +122,65 @@ export async function getAdminStats(): Promise<AdminStats> {
 // New function to get all admin data including charts
 export async function getAdminStatsWithCharts(): Promise<AdminStatsWithCharts> {
   try {
-    // Use Promise.all to fetch all data in parallel
-    const [basicStats, recentUsersData, monthlyRevenueData] = await Promise.all(
-      [
-        getAdminStats(),
-        // Get recent users (last 30 days)
-        db
-          .select({
-            date: sql<string>`DATE(${users.createdAt})`,
-            count: count(),
-          })
-          .from(users)
-          .where(sql`${users.createdAt} >= NOW() - INTERVAL '30 days'`)
-          .groupBy(sql`DATE(${users.createdAt})`)
-          .orderBy(desc(sql`DATE(${users.createdAt})`)),
-        // Get revenue by month (last 12 months)
-        db
-          .select({
-            month: sql<string>`TO_CHAR(${payments.createdAt}, 'YYYY-MM')`,
-            revenue: sum(payments.amount).mapWith(Number),
-            count: count(),
-          })
-          .from(payments)
-          .where(sql`${payments.createdAt} >= NOW() - INTERVAL '12 month'`)
-          .groupBy(sql`TO_CHAR(${payments.createdAt}, 'YYYY-MM')`)
-          .orderBy(desc(sql`TO_CHAR(${payments.createdAt}, 'YYYY-MM')`)),
-      ],
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+    const [basicStats, recentUsersRaw, monthlyRevenueRaw] = await Promise.all([
+      getAdminStats(),
+      db
+        .select({ createdAt: users.createdAt })
+        .from(users)
+        .where(gte(users.createdAt, thirtyDaysAgo))
+        .orderBy(desc(users.createdAt)),
+      db
+        .select({ createdAt: payments.createdAt, amount: payments.amount })
+        .from(payments)
+        .where(gte(payments.createdAt, twelveMonthsAgo))
+        .orderBy(desc(payments.createdAt)),
+    ]);
+
+    const userCountsByDate = recentUsersRaw.reduce(
+      (acc, user) => {
+        const date = user.createdAt.toISOString().split("T")[0]; // 'YYYY-MM-DD'
+        acc[date] = (acc[date] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
     );
+
+    const recentUsersData = Object.entries(userCountsByDate)
+      .map(([date, count]) => ({ date, count }))
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    const revenueByMonth = monthlyRevenueRaw.reduce(
+      (acc, payment) => {
+        const month = payment.createdAt.toISOString().substring(0, 7); // 'YYYY-MM'
+        if (!acc[month]) {
+          acc[month] = { revenue: 0, count: 0 };
+        }
+        acc[month].revenue += Number(payment.amount);
+        acc[month].count += 1;
+        return acc;
+      },
+      {} as Record<string, { revenue: number; count: number }>,
+    );
+
+    const monthlyRevenueData = Object.entries(revenueByMonth)
+      .map(([month, data]) => ({
+        month,
+        revenue: data.revenue,
+        count: data.count,
+      }))
+      .sort((a, b) => b.month.localeCompare(a.month));
 
     return {
       ...basicStats,
       charts: {
-        recentUsers: recentUsersData.map((item) => ({
-          date: item.date,
-          count: item.count,
-        })),
-        monthlyRevenue: monthlyRevenueData.map((item) => ({
-          month: item.month,
-          revenue: item.revenue || 0,
-          count: item.count,
-        })),
+        recentUsers: recentUsersData,
+        monthlyRevenue: monthlyRevenueData,
       },
     };
   } catch (error) {

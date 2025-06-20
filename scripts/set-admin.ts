@@ -1,4 +1,4 @@
-import { closeDatabase, db } from "@/database";
+import { db, closeDatabase } from "@/database";
 import { users } from "@/database/schema";
 import { eq } from "drizzle-orm";
 

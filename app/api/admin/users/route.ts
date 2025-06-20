@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/permissions";
 import { db } from "@/database";
 import { users, subscriptions, userRoleEnum } from "@/database/schema";
-import { eq, desc, asc, sql, count } from "drizzle-orm";
+import { eq, desc, asc, count, and, or, ilike } from "drizzle-orm";
 import { z } from "zod";
 
 const getUsersSchema = z.object({
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       whereConditions.push(
-        sql`(${users.name} ILIKE ${`%${search}%`} OR ${users.email} ILIKE ${`%${search}%`})`,
+        or(ilike(users.name, `%${search}%`), ilike(users.email, `%${search}%`)),
       );
     }
 
@@ -39,9 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
     const whereClause =
-      whereConditions.length > 0
-        ? sql`${whereConditions.reduce((acc, condition) => sql`${acc} AND ${condition}`)}`
-        : undefined;
+      whereConditions.length > 0 ? and(...whereConditions) : undefined;
 
     // Build order by
     const orderByClause =

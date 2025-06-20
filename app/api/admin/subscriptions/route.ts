@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/permissions";
 import { db } from "@/database";
 import { subscriptions, users } from "@/database/schema";
-import { eq, desc, asc, sql, count } from "drizzle-orm";
+import { eq, desc, asc, count, and, or, ilike, between } from "drizzle-orm";
 import { z } from "zod";
 import {
   getProductTierByProductId,
@@ -40,7 +40,11 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       whereConditions.push(
-        sql`(${users.name} ILIKE ${`%${search}%`} OR ${users.email} ILIKE ${`%${search}%`} OR ${subscriptions.subscriptionId} ILIKE ${`%${search}%`})`,
+        or(
+          ilike(users.name, `%${search}%`),
+          ilike(users.email, `%${search}%`),
+          ilike(subscriptions.subscriptionId, `%${search}%`),
+        ),
       );
     }
 
@@ -49,9 +53,7 @@ export async function GET(request: NextRequest) {
     }
 
     const whereClause =
-      whereConditions.length > 0
-        ? sql`${whereConditions.reduce((acc, condition) => sql`${acc} AND ${condition}`)}`
-        : undefined;
+      whereConditions.length > 0 ? and(...whereConditions) : undefined;
 
     // Build order by
     const orderByClause =
@@ -131,27 +133,68 @@ export async function GET(request: NextRequest) {
       .where(whereClause);
 
     // Get summary stats
-    const [summaryStats] = await db
-      .select({
-        activeSubscriptions: count(
-          sql`CASE WHEN ${subscriptions.status} = 'active' THEN 1 END`,
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+    const summaryQueries = {
+      activeSubscriptions: db
+        .select({ value: count() })
+        .from(subscriptions)
+        .leftJoin(users, eq(subscriptions.userId, users.id))
+        .where(and(eq(subscriptions.status, "active"), whereClause)),
+      canceledSubscriptions: db
+        .select({ value: count() })
+        .from(subscriptions)
+        .leftJoin(users, eq(subscriptions.userId, users.id))
+        .where(and(eq(subscriptions.status, "canceled"), whereClause)),
+      pastDueSubscriptions: db
+        .select({ value: count() })
+        .from(subscriptions)
+        .leftJoin(users, eq(subscriptions.userId, users.id))
+        .where(and(eq(subscriptions.status, "past_due"), whereClause)),
+      unpaidSubscriptions: db
+        .select({ value: count() })
+        .from(subscriptions)
+        .leftJoin(users, eq(subscriptions.userId, users.id))
+        .where(and(eq(subscriptions.status, "unpaid"), whereClause)),
+      expiringThisMonth: db
+        .select({ value: count() })
+        .from(subscriptions)
+        .leftJoin(users, eq(subscriptions.userId, users.id))
+        .where(
+          and(
+            eq(subscriptions.status, "active"),
+            between(
+              subscriptions.currentPeriodEnd,
+              new Date(),
+              thirtyDaysFromNow,
+            ),
+            whereClause,
+          ),
         ),
-        canceledSubscriptions: count(
-          sql`CASE WHEN ${subscriptions.status} = 'canceled' THEN 1 END`,
-        ),
-        pastDueSubscriptions: count(
-          sql`CASE WHEN ${subscriptions.status} = 'past_due' THEN 1 END`,
-        ),
-        unpaidSubscriptions: count(
-          sql`CASE WHEN ${subscriptions.status} = 'unpaid' THEN 1 END`,
-        ),
-        expiringThisMonth: count(
-          sql`CASE WHEN ${subscriptions.currentPeriodEnd} BETWEEN NOW() AND NOW() + INTERVAL '30 days' AND ${subscriptions.status} = 'active' THEN 1 END`,
-        ),
-      })
-      .from(subscriptions)
-      .leftJoin(users, eq(subscriptions.userId, users.id))
-      .where(whereClause);
+    };
+
+    const [
+      activeResult,
+      canceledResult,
+      pastDueResult,
+      unpaidResult,
+      expiringResult,
+    ] = await Promise.all([
+      summaryQueries.activeSubscriptions.execute(),
+      summaryQueries.canceledSubscriptions.execute(),
+      summaryQueries.pastDueSubscriptions.execute(),
+      summaryQueries.unpaidSubscriptions.execute(),
+      summaryQueries.expiringThisMonth.execute(),
+    ]);
+
+    const summaryStats = {
+      activeSubscriptions: activeResult[0].value,
+      canceledSubscriptions: canceledResult[0].value,
+      pastDueSubscriptions: pastDueResult[0].value,
+      unpaidSubscriptions: unpaidResult[0].value,
+      expiringThisMonth: expiringResult[0].value,
+    };
 
     return NextResponse.json({
       subscriptions: subscriptionsList,

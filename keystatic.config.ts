@@ -5,6 +5,7 @@ import { APP_NAME } from "./lib/config/constants";
 
 export default config({
   storage: {
+    // 仅在本地开发环境中可用管理面板
     kind: "local",
   },
   ui: {

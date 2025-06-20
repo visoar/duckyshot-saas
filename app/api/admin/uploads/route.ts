@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/database";
 import { uploads, users } from "@/database/schema";
 import { requireAdmin } from "@/lib/auth/permissions";
-import { eq, desc, ilike, or, and, sql } from "drizzle-orm";
+import { eq, desc, ilike, or, and, sql, like, not } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,42 +35,42 @@ export async function GET(request: NextRequest) {
     if (fileType !== "all") {
       switch (fileType) {
         case "image":
-          conditions.push(sql`${uploads.contentType} LIKE 'image/%'`);
+          conditions.push(like(uploads.contentType, "image/%"));
           break;
         case "video":
-          conditions.push(sql`${uploads.contentType} LIKE 'video/%'`);
+          conditions.push(like(uploads.contentType, "video/%"));
           break;
         case "audio":
-          conditions.push(sql`${uploads.contentType} LIKE 'audio/%'`);
+          conditions.push(like(uploads.contentType, "audio/%"));
           break;
         case "pdf":
-          conditions.push(sql`${uploads.contentType} LIKE '%pdf%'`);
+          conditions.push(like(uploads.contentType, "%pdf%"));
           break;
         case "text":
-          conditions.push(sql`${uploads.contentType} LIKE 'text/%'`);
+          conditions.push(like(uploads.contentType, "text/%"));
           break;
         case "archive":
           conditions.push(
             or(
-              sql`${uploads.contentType} LIKE '%zip%'`,
-              sql`${uploads.contentType} LIKE '%rar%'`,
-              sql`${uploads.contentType} LIKE '%tar%'`,
-              sql`${uploads.contentType} LIKE '%7z%'`,
+              like(uploads.contentType, "%zip%"),
+              like(uploads.contentType, "%rar%"),
+              like(uploads.contentType, "%tar%"),
+              like(uploads.contentType, "%7z%"),
             ),
           );
           break;
         case "other":
           conditions.push(
             and(
-              sql`${uploads.contentType} NOT LIKE 'image/%'`,
-              sql`${uploads.contentType} NOT LIKE 'video/%'`,
-              sql`${uploads.contentType} NOT LIKE 'audio/%'`,
-              sql`${uploads.contentType} NOT LIKE '%pdf%'`,
-              sql`${uploads.contentType} NOT LIKE 'text/%'`,
-              sql`${uploads.contentType} NOT LIKE '%zip%'`,
-              sql`${uploads.contentType} NOT LIKE '%rar%'`,
-              sql`${uploads.contentType} NOT LIKE '%tar%'`,
-              sql`${uploads.contentType} NOT LIKE '%7z%'`,
+              not(like(uploads.contentType, "image/%")),
+              not(like(uploads.contentType, "video/%")),
+              not(like(uploads.contentType, "audio/%")),
+              not(like(uploads.contentType, "%pdf%")),
+              not(like(uploads.contentType, "text/%")),
+              not(like(uploads.contentType, "%zip%")),
+              not(like(uploads.contentType, "%rar%")),
+              not(like(uploads.contentType, "%tar%")),
+              not(like(uploads.contentType, "%7z%")),
             ),
           );
           break;
