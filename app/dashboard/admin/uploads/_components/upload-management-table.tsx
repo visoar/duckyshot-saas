@@ -64,6 +64,12 @@ export function UploadManagementTable() {
   );
   const [isBatchDeleteDialogOpen, setIsBatchDeleteDialogOpen] = useState(false);
   const [isBatchDeleting, setIsBatchDeleting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [batchDeleteResults, setBatchDeleteResults] = useState<{
+    successCount: number;
+    failedCount: number;
+    failures?: Array<{ uploadId: string; fileName: string; error?: unknown }>;
+  } | null>(null);
 
   const fetchUploads = async (page = 1, search = "", fileType = "all") => {
     try {
@@ -107,13 +113,15 @@ export function UploadManagementTable() {
   };
 
   const handleDeleteUpload = async (upload: Upload) => {
+    setIsDeleting(true);
     try {
       const response = await fetch(`/api/admin/uploads/${upload.id}`, {
         method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete upload");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to delete upload");
       }
 
       toast.success(`File "${upload.fileName}" deleted successfully`);
@@ -123,6 +131,7 @@ export function UploadManagementTable() {
         err instanceof Error ? err.message : "Failed to delete upload",
       );
     } finally {
+      setIsDeleting(false);
       setIsDeleteDialogOpen(false);
       setDeletingUpload(null);
     }
@@ -132,6 +141,7 @@ export function UploadManagementTable() {
     if (selectedUploads.size === 0) return;
 
     setIsBatchDeleting(true);
+    setBatchDeleteResults(null);
     try {
       const response = await fetch("/api/admin/uploads/batch-delete", {
         method: "DELETE",
@@ -144,17 +154,27 @@ export function UploadManagementTable() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete uploads");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to delete uploads");
       }
 
       const result = await response.json();
 
+      // Store results for detailed display
+      setBatchDeleteResults({
+        successCount: result.deletedCount || 0,
+        failedCount: result.failedDeletions || 0,
+        failures: result.failures || [],
+      });
+
       if (result.failedDeletions > 0) {
         toast.warning(
-          `Deleted ${result.deletedCount} files successfully, ${result.failedDeletions} failed`,
+          `Deleted ${result.deletedCount} files successfully, ${result.failedDeletions} failed. Check details below.`,
         );
       } else {
         toast.success(`Successfully deleted ${result.deletedCount} files`);
+        // Close dialog immediately if all succeeded
+        setIsBatchDeleteDialogOpen(false);
       }
 
       setSelectedUploads(new Set());
@@ -163,9 +183,9 @@ export function UploadManagementTable() {
       toast.error(
         err instanceof Error ? err.message : "Failed to delete uploads",
       );
+      setIsBatchDeleteDialogOpen(false);
     } finally {
       setIsBatchDeleting(false);
-      setIsBatchDeleteDialogOpen(false);
     }
   };
 
@@ -350,6 +370,7 @@ export function UploadManagementTable() {
               setDeletingUpload(upload);
               setIsDeleteDialogOpen(true);
             }}
+            disabled={isDeleting && deletingUpload?.id === upload.id}
           >
             <Trash2 className="text-destructive h-4 w-4" />
           </Button>
@@ -531,6 +552,8 @@ export function UploadManagementTable() {
             <Button
               variant="outline"
               onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={isDeleting}
+              className="cursor-pointer"
             >
               Cancel
             </Button>
@@ -539,8 +562,10 @@ export function UploadManagementTable() {
               onClick={() =>
                 deletingUpload && handleDeleteUpload(deletingUpload)
               }
+              disabled={isDeleting}
+              className="cursor-pointer"
             >
-              Delete Upload
+              {isDeleting ? "Deleting..." : "Delete Upload"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -549,55 +574,130 @@ export function UploadManagementTable() {
       {/* Batch Delete Confirmation Dialog */}
       <Dialog
         open={isBatchDeleteDialogOpen}
-        onOpenChange={setIsBatchDeleteDialogOpen}
+        onOpenChange={(open) => {
+          if (!open && !isBatchDeleting) {
+            setIsBatchDeleteDialogOpen(false);
+            setBatchDeleteResults(null);
+          }
+        }}
       >
-        <DialogContent>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Delete Multiple Uploads</DialogTitle>
+            <DialogTitle>
+              {batchDeleteResults
+                ? "Batch Delete Results"
+                : "Delete Multiple Uploads"}
+            </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete {selectedUploads.size} upload
-              {selectedUploads.size > 1 ? "s" : ""}? This action cannot be
-              undone and will permanently remove the files from both the
-              database and storage.
+              {batchDeleteResults
+                ? `Deletion completed: ${batchDeleteResults.successCount} successful, ${batchDeleteResults.failedCount} failed`
+                : `Are you sure you want to delete ${selectedUploads.size} upload${selectedUploads.size > 1 ? "s" : ""}? This action cannot be undone and will permanently remove the files from both the database and storage.`}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2">
-            <p className="text-sm font-medium">
-              Selected uploads ({selectedUploads.size}):
-            </p>
-            <div className="max-h-32 space-y-1 overflow-x-hidden overflow-y-auto">
-              {uploads
-                .filter((upload) => selectedUploads.has(upload.id))
-                .map((upload) => (
-                  <div
-                    key={upload.id}
-                    className="text-muted-foreground flex max-w-md items-center justify-between text-sm"
-                  >
-                    <span className="max-w-sm truncate">{upload.fileName}</span>
-                    <span className="text-xs">
-                      {formatFileSize(upload.fileSize)}
-                    </span>
-                  </div>
-                ))}
+
+          {!batchDeleteResults ? (
+            <div className="space-y-2">
+              <p className="text-sm font-medium">
+                Selected uploads ({selectedUploads.size}):
+              </p>
+              <div className="max-h-32 space-y-1 overflow-x-hidden overflow-y-auto">
+                {uploads
+                  .filter((upload) => selectedUploads.has(upload.id))
+                  .map((upload) => (
+                    <div
+                      key={upload.id}
+                      className="text-muted-foreground flex max-w-md items-center justify-between text-sm"
+                    >
+                      <span className="max-w-sm truncate">
+                        {upload.fileName}
+                      </span>
+                      <span className="text-xs">
+                        {formatFileSize(upload.fileSize)}
+                      </span>
+                    </div>
+                  ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Success Summary */}
+              {batchDeleteResults.successCount > 0 && (
+                <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+                  <p className="text-sm font-medium text-green-800">
+                    ✓ Successfully deleted {batchDeleteResults.successCount}{" "}
+                    file{batchDeleteResults.successCount > 1 ? "s" : ""}
+                  </p>
+                </div>
+              )}
+
+              {/* Failure Details */}
+              {batchDeleteResults.failedCount > 0 && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                  <p className="mb-2 text-sm font-medium text-red-800">
+                    ✗ Failed to delete {batchDeleteResults.failedCount} file
+                    {batchDeleteResults.failedCount > 1 ? "s" : ""}
+                  </p>
+                  {batchDeleteResults.failures &&
+                    batchDeleteResults.failures.length > 0 && (
+                      <div className="max-h-32 space-y-1 overflow-y-auto">
+                        {batchDeleteResults.failures.map((failure, index) => (
+                          <div key={index} className="text-xs text-red-700">
+                            <span className="font-medium">
+                              {failure.fileName}
+                            </span>
+                            {failure.error ? (
+                              <span className="ml-2 text-red-600">
+                                -{" "}
+                                {typeof failure.error === "string"
+                                  ? failure.error
+                                  : String(failure.error) || "Unknown error"}
+                              </span>
+                            ) : null}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  <p className="mt-2 text-xs text-red-600">
+                    These files may still exist in storage. You can try deleting
+                    them individually or contact support.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsBatchDeleteDialogOpen(false)}
-              disabled={isBatchDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleBatchDelete}
-              disabled={isBatchDeleting}
-            >
-              {isBatchDeleting
-                ? "Deleting..."
-                : `Delete ${selectedUploads.size} Upload${selectedUploads.size > 1 ? "s" : ""}`}
-            </Button>
+            {!batchDeleteResults ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsBatchDeleteDialogOpen(false)}
+                  disabled={isBatchDeleting}
+                  className="cursor-pointer"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleBatchDelete}
+                  disabled={isBatchDeleting}
+                  className="cursor-pointer"
+                >
+                  {isBatchDeleting
+                    ? "Deleting..."
+                    : `Delete ${selectedUploads.size} Upload${selectedUploads.size > 1 ? "s" : ""}`}
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => {
+                  setIsBatchDeleteDialogOpen(false);
+                  setBatchDeleteResults(null);
+                }}
+              >
+                Close
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

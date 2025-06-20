@@ -33,8 +33,11 @@ export async function DELETE(
       console.error("Error deleting file from storage:", deleteResult.error);
       // Return error if storage deletion fails to prevent orphaned files
       return NextResponse.json(
-        { error: "Failed to delete file from storage. Database record not deleted." },
-        { status: 500 }
+        {
+          error:
+            "Failed to delete file from storage. Database record not deleted.",
+        },
+        { status: 500 },
       );
     }
 

@@ -13,16 +13,16 @@ export default config({
   },
   collections: {
     authors: collection({
-      label: 'Authors',
-      slugField: 'name',
-      path: 'content/authors/*',
-      format: { data: 'json' },
+      label: "Authors",
+      slugField: "name",
+      path: "content/authors/*",
+      format: { data: "json" },
       schema: {
-        name: fields.slug({ name: { label: 'Name' } }),
+        name: fields.slug({ name: { label: "Name" } }),
         avatar: fields.image({
-          label: 'Avatar',
-          directory: 'public/avatars',
-          publicPath: '/avatars/',
+          label: "Avatar",
+          directory: "public/avatars",
+          publicPath: "/avatars/",
         }),
       },
     }),
@@ -35,8 +35,8 @@ export default config({
         title: fields.slug({ name: { label: "Title" } }),
         publishedDate: fields.date({ label: "Published Date" }),
         author: fields.relationship({
-          label: 'Author',
-          collection: 'authors',
+          label: "Author",
+          collection: "authors",
         }),
         excerpt: fields.text({
           label: "Excerpt",

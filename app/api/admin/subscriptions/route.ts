@@ -189,7 +189,6 @@ export async function GET(request: NextRequest) {
     });
 
     // Helper function to determine subscription price based on product ID
-
   } catch (error) {
     console.error("Get subscriptions error:", error);
     return NextResponse.json(

@@ -89,7 +89,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const content = await post.content();
   const author = post.author
     ? await reader.collections.authors.read(post.author)
-    : null; 
+    : null;
 
   return (
     <>
@@ -101,7 +101,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         featured={post.featured}
         tags={post.tags ? [...post.tags] : undefined}
         content={renderMarkdoc(content.node)}
-        author={author?.name || 'Anonymous'}
+        author={author?.name || "Anonymous"}
       />
 
       {/* Article Content */}

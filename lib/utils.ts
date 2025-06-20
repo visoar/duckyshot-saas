@@ -8,30 +8,30 @@ export function cn(...inputs: ClassValue[]) {
 
 export function renderMarkdoc(nodeOrNodes: Node | Node[]): string {
   if (Array.isArray(nodeOrNodes)) {
-    return nodeOrNodes.map((n: Node) => renderMarkdoc(n)).join('');
+    return nodeOrNodes.map((n: Node) => renderMarkdoc(n)).join("");
   }
 
   const node = nodeOrNodes;
 
-  if (typeof node === 'string') {
+  if (typeof node === "string") {
     return node;
   }
 
-  if (!node || typeof node !== 'object') {
-    return '';
+  if (!node || typeof node !== "object") {
+    return "";
   }
 
   // Handle text nodes
-  if (node.type === 'text' && typeof node.attributes?.content === 'string') {
+  if (node.type === "text" && typeof node.attributes?.content === "string") {
     return node.attributes.content;
   }
 
   // Handle nodes with children
-  if ('children' in node && Array.isArray(node.children)) {
-    return node.children.map((child: Node) => renderMarkdoc(child)).join(' ');
+  if ("children" in node && Array.isArray(node.children)) {
+    return node.children.map((child: Node) => renderMarkdoc(child)).join(" ");
   }
 
-  return '';
+  return "";
 }
 
 export function formatCurrency(
@@ -47,11 +47,13 @@ export function formatCurrency(
 
 export function calculateReadingTime(text: string): string {
   // Remove HTML tags
-  const plainText = text.replace(/<[^>]+>/g, '');
+  const plainText = text.replace(/<[^>]+>/g, "");
   const wordsPerMinute = 200;
-  const noOfWords = plainText.split(/\s/g).filter(word => word.length > 0).length;
+  const noOfWords = plainText
+    .split(/\s/g)
+    .filter((word) => word.length > 0).length;
   const minutes = noOfWords / wordsPerMinute;
   const readTime = Math.max(1, Math.ceil(minutes));
-  
+
   return `${readTime} min read`;
 }

@@ -29,7 +29,6 @@ import { userRoleEnum } from "@/database/schema";
 import type { UserRole } from "@/lib/auth/permissions";
 import type { User } from "better-auth";
 
-
 interface UserWithSubscription extends User {
   id: string;
   name: string;
@@ -62,7 +61,9 @@ export function UserManagementTable() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [editingUser, setEditingUser] = useState<UserWithSubscription | null>(null);
+  const [editingUser, setEditingUser] = useState<UserWithSubscription | null>(
+    null,
+  );
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const fetchUsers = async (page = 1, search = "", role = "all") => {

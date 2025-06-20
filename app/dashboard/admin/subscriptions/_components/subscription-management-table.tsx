@@ -155,10 +155,10 @@ export function SubscriptionManagementTable() {
       label: "User",
       render: (subscription: SubscriptionWithUser) => (
         <UserAvatarCell
-           name={subscription.user?.name}
-           email={subscription.user?.email}
-           image={subscription.user?.image}
-          />
+          name={subscription.user?.name}
+          email={subscription.user?.email}
+          image={subscription.user?.image}
+        />
       ),
     },
     {

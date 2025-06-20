@@ -95,10 +95,10 @@ export default async function BlogPage() {
                     <div className="grid gap-6 sm:gap-8 lg:gap-12">
                       {await Promise.all(
                         featuredPosts.map(async (post) => {
-                  const content = await post.entry.content();
+                          const content = await post.entry.content();
                           const author = post.entry.author
                             ? await reader.collections.authors.read(
-                                post.entry.author
+                                post.entry.author,
                               )
                             : null;
                           return (
@@ -114,7 +114,7 @@ export default async function BlogPage() {
                               featured={post.entry.featured}
                               variant="featured"
                               content={renderMarkdoc(content.node)}
-                              author={author?.name || 'Anonymous'}
+                              author={author?.name || "Anonymous"}
                             />
                           );
                         }),
@@ -139,10 +139,10 @@ export default async function BlogPage() {
                     <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:gap-8">
                       {await Promise.all(
                         regularPosts.map(async (post) => {
-                  const content = await post.entry.content();
+                          const content = await post.entry.content();
                           const author = post.entry.author
                             ? await reader.collections.authors.read(
-                                post.entry.author
+                                post.entry.author,
                               )
                             : null;
                           return (
@@ -158,7 +158,7 @@ export default async function BlogPage() {
                               featured={post.entry.featured}
                               variant="regular"
                               content={renderMarkdoc(content.node)}
-                              author={author?.name || 'Anonymous'}
+                              author={author?.name || "Anonymous"}
                             />
                           );
                         }),
