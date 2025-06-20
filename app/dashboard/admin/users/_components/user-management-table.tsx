@@ -115,57 +115,57 @@ export function UserManagementTable({
     label: string;
     render?: (item: UserWithSubscription) => ReactNode;
   }> = [
-      {
-        key: "user",
-        label: "User",
-        render: (user) => (
-          <UserAvatarCell
-            name={user.name}
-            email={user.email}
-            image={user.image ?? undefined}
-          />
-        ),
-      },
-      {
-        key: "role",
-        label: "Role",
-        render: (user) => (
-          <Badge
-            className="capitalize"
-            variant={
-              user.role === "admin" || user.role === "super_admin"
-                ? "default"
-                : "outline"
-            }
-          >
-            {user.role}
-          </Badge>
-        ),
-      },
-      {
-        key: "status",
-        label: "Email Status",
-        render: (user) => (
-          <Badge variant={user.emailVerified ? "outline" : "default"}>
-            {user.emailVerified ? "Verified" : "Unverified"}
-          </Badge>
-        ),
-      },
-      {
-        key: "createdAt",
-        label: "Joined",
-        render: (user) => formatDate(user.createdAt),
-      },
-      {
-        key: "actions",
-        label: "Actions",
-        render: (user) => (
-          <Button variant="ghost" size="sm" onClick={() => handleEditUser(user)}>
-            <Edit className="h-4 w-4" />
-          </Button>
-        ),
-      },
-    ];
+    {
+      key: "user",
+      label: "User",
+      render: (user) => (
+        <UserAvatarCell
+          name={user.name}
+          email={user.email}
+          image={user.image ?? undefined}
+        />
+      ),
+    },
+    {
+      key: "role",
+      label: "Role",
+      render: (user) => (
+        <Badge
+          className="capitalize"
+          variant={
+            user.role === "admin" || user.role === "super_admin"
+              ? "default"
+              : "outline"
+          }
+        >
+          {user.role}
+        </Badge>
+      ),
+    },
+    {
+      key: "status",
+      label: "Email Status",
+      render: (user) => (
+        <Badge variant={user.emailVerified ? "outline" : "default"}>
+          {user.emailVerified ? "Verified" : "Unverified"}
+        </Badge>
+      ),
+    },
+    {
+      key: "createdAt",
+      label: "Joined",
+      render: (user) => formatDate(user.createdAt),
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (user) => (
+        <Button variant="ghost" size="sm" onClick={() => handleEditUser(user)}>
+          <Edit className="h-4 w-4" />
+        </Button>
+      ),
+    },
+  ];
 
   const roleFilterOptions = [
     { value: "all", label: "All Roles" },

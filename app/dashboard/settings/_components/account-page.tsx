@@ -21,7 +21,13 @@ import {
 } from "@/components/ui/dialog";
 import { authClient } from "@/lib/auth/client";
 import { Session } from "@/types/auth";
-import { Edit, Loader2, MonitorSmartphone, Smartphone, Tablet } from "lucide-react";
+import {
+  Edit,
+  Loader2,
+  MonitorSmartphone,
+  Smartphone,
+  Tablet,
+} from "lucide-react";
 import { useSession } from "@/lib/auth/client";
 import { userAgent } from "next/server";
 
@@ -93,42 +99,49 @@ export function AccountPage(props: {
                 let deviceInfo = {
                   browser: "Unknown",
                   os: "Unknown",
-                  device: "Desktop"
+                  device: "Desktop",
                 };
-                
+
                 if (session.userAgent) {
                   try {
                     // Create a mock request object for userAgent parsing
                     const mockRequest = {
                       headers: {
                         get: (name: string) => {
-                          if (name.toLowerCase() === 'user-agent') {
+                          if (name.toLowerCase() === "user-agent") {
                             return session.userAgent;
                           }
                           return null;
-                        }
-                      }
+                        },
+                      },
                     } as Request;
-                    
+
                     const parsed = userAgent(mockRequest);
                     deviceInfo = {
                       browser: parsed.browser.name || "Unknown",
                       os: parsed.os.name || "Unknown",
-                      device: parsed.device.type === "mobile" ? "Mobile" : 
-                              parsed.device.type === "tablet" ? "Tablet" : "Desktop"
+                      device:
+                        parsed.device.type === "mobile"
+                          ? "Mobile"
+                          : parsed.device.type === "tablet"
+                            ? "Tablet"
+                            : "Desktop",
                     };
                   } catch (error) {
-                    console.error('Error parsing user agent:', error);
+                    console.error("Error parsing user agent:", error);
                   }
                 }
-                
+
                 // Choose appropriate icon based on device type
-                const deviceIcon = deviceInfo.device === "Mobile" ? 
-                  <Smartphone className="h-4 w-4" /> :
-                  deviceInfo.device === "Tablet" ? 
-                  <Tablet className="h-4 w-4" /> :
-                  <MonitorSmartphone className="h-4 w-4" />;
-                  
+                const deviceIcon =
+                  deviceInfo.device === "Mobile" ? (
+                    <Smartphone className="h-4 w-4" />
+                  ) : deviceInfo.device === "Tablet" ? (
+                    <Tablet className="h-4 w-4" />
+                  ) : (
+                    <MonitorSmartphone className="h-4 w-4" />
+                  );
+
                 const deviceDisplay = `${deviceInfo.browser} on ${deviceInfo.os}`;
                 const deviceTypeDisplay = deviceInfo.device;
 
@@ -144,8 +157,12 @@ export function AccountPage(props: {
                           {deviceTypeDisplay}
                           {session.ipAddress && (
                             <>
-                              <span className="text-muted-foreground mx-1">•</span>
-                              <span className="font-mono text-xs">{session.ipAddress}</span>
+                              <span className="text-muted-foreground mx-1">
+                                •
+                              </span>
+                              <span className="font-mono text-xs">
+                                {session.ipAddress}
+                              </span>
                             </>
                           )}
                         </p>
@@ -156,8 +173,9 @@ export function AccountPage(props: {
                           {deviceDisplay}
                         </p>
                         {session.createdAt && (
-                          <p className="text-muted-foreground text-xs mt-1">
-                            Active since {new Date(session.createdAt).toLocaleDateString()}
+                          <p className="text-muted-foreground mt-1 text-xs">
+                            Active since{" "}
+                            {new Date(session.createdAt).toLocaleDateString()}
                           </p>
                         )}
                       </div>

@@ -155,89 +155,89 @@ export function UploadManagementTable({
     label: ReactNode;
     render: (item: Upload) => ReactNode;
   }> = [
-      {
-        key: "select",
-        label: (
-          <Checkbox
-            checked={isAllSelected || (isPartiallySelected && "indeterminate")}
-            onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
-          />
-        ),
-        render: (upload) => (
-          <Checkbox
-            checked={selectedUploads.has(upload.id)}
-            onCheckedChange={(checked) =>
-              handleSelectUpload(upload.id, Boolean(checked))
-            }
-          />
-        ),
-      },
-      {
-        key: "user",
-        label: "User",
-        render: (upload) => (
-          <UserAvatarCell
-            name={upload.user.name}
-            email={upload.user.email}
-            image={upload.user.image}
-          />
-        ),
-      },
-      {
-        key: "fileName",
-        label: "File",
-        render: (upload) => (
-          <div>
-            <p className="max-w-xs truncate font-medium">{upload.fileName}</p>
-            <p className="text-muted-foreground text-xs">
-              {formatFileSize(upload.fileSize)}
-            </p>
-          </div>
-        ),
-      },
-      {
-        key: "createdAt",
-        label: "Uploaded",
-        render: (upload) => (
-          <p className="text-sm">
-            {new Date(upload.createdAt).toLocaleDateString()}
+    {
+      key: "select",
+      label: (
+        <Checkbox
+          checked={isAllSelected || (isPartiallySelected && "indeterminate")}
+          onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
+        />
+      ),
+      render: (upload) => (
+        <Checkbox
+          checked={selectedUploads.has(upload.id)}
+          onCheckedChange={(checked) =>
+            handleSelectUpload(upload.id, Boolean(checked))
+          }
+        />
+      ),
+    },
+    {
+      key: "user",
+      label: "User",
+      render: (upload) => (
+        <UserAvatarCell
+          name={upload.user.name}
+          email={upload.user.email}
+          image={upload.user.image}
+        />
+      ),
+    },
+    {
+      key: "fileName",
+      label: "File",
+      render: (upload) => (
+        <div>
+          <p className="max-w-xs truncate font-medium">{upload.fileName}</p>
+          <p className="text-muted-foreground text-xs">
+            {formatFileSize(upload.fileSize)}
           </p>
-        ),
-      },
-      {
-        key: "actions",
-        label: "Actions",
-        render: (upload) => (
-          <div className="flex items-center space-x-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                setSelectedUpload(upload);
-                setIsViewDialogOpen(true);
-              }}
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => window.open(upload.url, "_blank")}
-            >
-              <ExternalLink className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setUploadToDelete(upload)}
-              disabled={isDeleting}
-            >
-              <Trash2 className="text-destructive h-4 w-4" />
-            </Button>
-          </div>
-        ),
-      },
-    ];
+        </div>
+      ),
+    },
+    {
+      key: "createdAt",
+      label: "Uploaded",
+      render: (upload) => (
+        <p className="text-sm">
+          {new Date(upload.createdAt).toLocaleDateString()}
+        </p>
+      ),
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (upload) => (
+        <div className="flex items-center space-x-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              setSelectedUpload(upload);
+              setIsViewDialogOpen(true);
+            }}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => window.open(upload.url, "_blank")}
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setUploadToDelete(upload)}
+            disabled={isDeleting}
+          >
+            <Trash2 className="text-destructive h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   const filterOptions = [
     { value: "all", label: "All Types" },
@@ -326,8 +326,8 @@ export function UploadManagementTable({
             <DialogDescription>
               Are you sure you want to delete this file? This action is
               irreversible.
-              <div className="group hover:bg-gray-100 rounded-md cursor-pointer">
-                <p className="mt-2 font-medium max-w-md truncate group-hover:whitespace-normal group-hover:overflow-visible group-hover:text-clip">
+              <div className="group cursor-pointer rounded-md hover:bg-gray-100">
+                <p className="mt-2 max-w-md truncate font-medium group-hover:overflow-visible group-hover:text-clip group-hover:whitespace-normal">
                   this-is-another-super-long-file-name-that-will-be-truncated-by-default.zip
                 </p>
               </div>

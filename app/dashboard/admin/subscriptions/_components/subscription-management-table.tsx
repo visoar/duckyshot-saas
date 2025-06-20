@@ -76,7 +76,8 @@ export function SubscriptionManagementTable({
         throw new Error(errorData.error || "Failed to cancel subscription");
       }
       toast.success(
-        `Subscription for ${cancellingSubscription.user?.name || "user"
+        `Subscription for ${
+          cancellingSubscription.user?.name || "user"
         } cancellation initiated.`,
       );
       router.refresh(); // Refresh page data to update table status
@@ -118,63 +119,63 @@ export function SubscriptionManagementTable({
     label: string;
     render?: (item: SubscriptionWithUser) => ReactNode;
   }> = [
-      {
-        key: "user",
-        label: "User",
-        render: (sub) => (
-          <UserAvatarCell
-            name={sub.user?.name}
-            email={sub.user?.email}
-            image={sub.user?.image}
-          />
-        ),
-      },
-      {
-        key: "plan",
-        label: "Plan",
-        render: (sub) => <div className="font-medium">{sub.planName}</div>,
-      },
-      {
-        key: "status",
-        label: "Status",
-        render: (sub) => (
-          <Badge
-            variant={getStatusBadgeVariant(sub.status)}
-            className="capitalize"
-          >
-            {sub.status}
-          </Badge>
-        ),
-      },
-      {
-        key: "period",
-        label: "Current Period",
-        render: (sub) => (
-          <div className="flex items-center gap-1 text-sm">
-            <Calendar className="h-3 w-3" />
-            <span>
-              {formatDate(sub.currentPeriodStart)} -{" "}
-              {formatDate(sub.currentPeriodEnd)}
-            </span>
-          </div>
-        ),
-      },
-      {
-        key: "actions",
-        label: "Actions",
-        render: (sub) => (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleCancelClick(sub)}
-            disabled={sub.status === "canceled" || isCancelling}
-          >
-            <X className="mr-1 h-4 w-4" />
-            Cancel
-          </Button>
-        ),
-      },
-    ];
+    {
+      key: "user",
+      label: "User",
+      render: (sub) => (
+        <UserAvatarCell
+          name={sub.user?.name}
+          email={sub.user?.email}
+          image={sub.user?.image}
+        />
+      ),
+    },
+    {
+      key: "plan",
+      label: "Plan",
+      render: (sub) => <div className="font-medium">{sub.planName}</div>,
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (sub) => (
+        <Badge
+          variant={getStatusBadgeVariant(sub.status)}
+          className="capitalize"
+        >
+          {sub.status}
+        </Badge>
+      ),
+    },
+    {
+      key: "period",
+      label: "Current Period",
+      render: (sub) => (
+        <div className="flex items-center gap-1 text-sm">
+          <Calendar className="h-3 w-3" />
+          <span>
+            {formatDate(sub.currentPeriodStart)} -{" "}
+            {formatDate(sub.currentPeriodEnd)}
+          </span>
+        </div>
+      ),
+    },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (sub) => (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handleCancelClick(sub)}
+          disabled={sub.status === "canceled" || isCancelling}
+        >
+          <X className="mr-1 h-4 w-4" />
+          Cancel
+        </Button>
+      ),
+    },
+  ];
 
   const statusFilterOptions = [
     { value: "all", label: "All Statuses" },
