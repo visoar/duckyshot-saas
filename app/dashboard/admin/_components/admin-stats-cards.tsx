@@ -10,6 +10,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { formatFileSize } from "@/lib/config/upload";
 
 // This type is also used by lib/admin/stats.ts
 export interface AdminStats {
@@ -62,13 +63,6 @@ export function AdminStatsCards({ initialStats }: AdminStatsCardsProps) {
       currency: "USD",
       minimumFractionDigits: 0,
     }).format(amount / 100); // Assuming amount is in cents
-  };
-
-  const formatFileSize = (bytes: number) => {
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-    if (bytes === 0) return "0 Bytes";
-    const i = Math.floor(Math.log(bytes) / Math.log(1024));
-    return Math.round((bytes / Math.pow(1024, i)) * 100) / 100 + " " + sizes[i];
   };
 
   return (

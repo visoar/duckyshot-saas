@@ -18,6 +18,7 @@ import { Trash2, Eye, Download, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { AdminTableBase } from "@/components/admin/admin-table-base";
 import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
+import { formatFileSize } from "@/lib/config/upload";
 
 interface Upload {
   id: string;
@@ -211,14 +212,6 @@ export function UploadManagementTable() {
     uploads.length > 0 && selectedUploads.size === uploads.length;
   const isPartiallySelected =
     selectedUploads.size > 0 && selectedUploads.size < uploads.length;
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
 
   const getFileTypeFromMime = (contentType: string): string => {
     if (contentType.startsWith("image/")) return "Image";

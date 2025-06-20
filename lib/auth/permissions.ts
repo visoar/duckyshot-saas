@@ -1,9 +1,9 @@
 import { auth } from "./server";
 import { redirect } from "next/navigation";
-import { users } from "@/database/schema";
+import { UserRole, hasRole as checkRole } from "@/lib/config/roles";
 
-// 从数据库schema推断UserRole类型，确保类型定义的单一来源
-export type UserRole = (typeof users.$inferSelect)["role"];
+// 重新导出 UserRole 类型以保持向后兼容性
+export type { UserRole };
 
 export interface AuthUser {
   id: string;
@@ -46,13 +46,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
  * Check if user has required role
  */
 export function hasRole(userRole: UserRole, requiredRole: UserRole): boolean {
-  const roleHierarchy: Record<UserRole, number> = {
-    user: 1,
-    admin: 2,
-    super_admin: 3,
-  };
-
-  return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
+  return checkRole(userRole, requiredRole);
 }
 
 /**

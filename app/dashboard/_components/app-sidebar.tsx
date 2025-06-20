@@ -12,6 +12,7 @@ import {
   LucideIcon,
 } from "lucide-react";
 import { APP_NAME } from "@/lib/config/constants";
+import { isAdminRole, UserRole } from "@/lib/config/roles";
 
 import {
   Sidebar,
@@ -94,19 +95,9 @@ export function AppSidebar() {
   const { open, toggleSidebar } = useSidebar();
   const { data: session } = useSession();
 
-  // Check if user has admin role
-  const hasAdminRole = (userRole: string) => {
-    const roleHierarchy: Record<string, number> = {
-      user: 1,
-      admin: 2,
-      super_admin: 3,
-    };
-    return roleHierarchy[userRole] >= roleHierarchy["admin"];
-  };
-
   const isAdmin =
     session?.user &&
-    hasAdminRole((session.user as { role?: string }).role || "user");
+    isAdminRole((session.user as { role?: UserRole }).role || "user");
 
   const handleNavigation = (url: string) => () => {
     router.replace(url);

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/database";
 import { uploads } from "@/database/schema";
 import { requireAdmin } from "@/lib/auth/permissions";
+import { formatFileSize } from "@/lib/config/upload";
 import { count, sum, desc, gte } from "drizzle-orm";
 
 export async function GET() {
@@ -63,15 +64,6 @@ export async function GET() {
         percentage: Math.round((count / (basicStats.total || 1)) * 100),
       }))
       .sort((a, b) => b.count - a.count);
-
-    // Format file sizes
-    const formatFileSize = (bytes: number): string => {
-      if (bytes === 0) return "0 Bytes";
-      const k = 1024;
-      const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-    };
 
     const totalSize = Number(basicStats.totalSize) || 0;
     const averageSize = basicStats.total > 0 ? totalSize / basicStats.total : 0;
