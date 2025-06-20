@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useState, ReactNode } from "react";
+import { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 import { AdminTableBase } from "@/components/admin/admin-table-base";
 import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
 import { PaymentWithUser } from "@/types/billing";
+import { useAdminTable } from "@/hooks/use-admin-table";
+import { Button } from "@/components/ui/button";
 
-interface PaymentsResponse {
-  payments: PaymentWithUser[];
-  pagination: {
+interface PaymentManagementTableProps {
+  initialData: PaymentWithUser[];
+  initialPagination: {
     page: number;
     limit: number;
     total: number;
@@ -17,198 +19,162 @@ interface PaymentsResponse {
   };
 }
 
-export function PaymentManagementTable() {
-  const [payments, setPayments] = useState<PaymentWithUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalPayments, setTotalPayments] = useState(0);
+const getStatusBadgeVariant = (status: string) => {
+  switch (status) {
+    case "succeeded":
+      return "secondary";
+    case "pending":
+      return "outline";
+    case "failed":
+      return "destructive";
+    case "canceled":
+      return "outline";
+    default:
+      return "secondary";
+  }
+};
 
-  const fetchPayments = async (page = 1, search = "", status = "all") => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: "20",
-        ...(search && { search }),
-        ...(status !== "all" && { status }),
-      });
+const formatCurrency = (amount: number, currency: string) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency.toUpperCase(),
+  }).format(amount / 100);
+};
 
-      const response = await fetch(`/api/admin/payments?${params}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch payments");
-      }
+const formatDate = (dateString: string | Date) => {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
-      const data: PaymentsResponse = await response.json();
-      const paymentsWithDates = data.payments.map((payment) => ({
-        ...payment,
-        createdAt: new Date(payment.createdAt),
-      }));
-      setPayments(paymentsWithDates);
-      setCurrentPage(data.pagination.page);
-      setTotalPages(data.pagination.totalPages);
-      setTotalPayments(data.pagination.total);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+const openProviderPayment = (paymentId: string) => {
+  window.open(`https://www.creem.io/dashboard/payments/${paymentId}`, "_blank");
+};
+
+const getPaymentMethodLabel = (paymentType: string) => {
+  const map: Record<string, string> = {
+    subscription: "Subscription",
+    one_time: "One-time Payment",
+    card: "Credit Card",
+    bank_transfer: "Bank Transfer",
+    paypal: "PayPal",
   };
+  return map[paymentType] || "Unknown";
+};
 
-  useEffect(() => {
-    fetchPayments(currentPage, searchTerm, statusFilter);
-  }, [currentPage, searchTerm, statusFilter]);
+const columns: Array<{
+  key: keyof PaymentWithUser | string;
+  label: string;
+  render?: (item: PaymentWithUser) => ReactNode;
+}> = [
+  {
+    key: "user",
+    label: "User",
+    render: (payment) => (
+      <UserAvatarCell name={payment.user?.name} email={payment.user?.email} />
+    ),
+  },
+  {
+    key: "amount",
+    label: "Amount",
+    render: (payment) => (
+      <div className="font-medium">
+        {formatCurrency(payment.amount, payment.currency)}
+      </div>
+    ),
+  },
+  {
+    key: "status",
+    label: "Status",
+    render: (payment) => (
+      <Badge
+        variant={getStatusBadgeVariant(payment.status)}
+        className="capitalize"
+      >
+        {payment.status}
+      </Badge>
+    ),
+  },
+  {
+    key: "method",
+    label: "Method",
+    render: (payment) => (
+      <div className="text-sm">
+        {getPaymentMethodLabel(payment.paymentType)}
+      </div>
+    ),
+  },
+  {
+    key: "created",
+    label: "Created",
+    render: (payment) => formatDate(payment.createdAt),
+  },
+  {
+    key: "actions",
+    label: "Actions",
+    render: (payment) => (
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => openProviderPayment(payment.paymentId)}
+        title="View in Creem Dashboard"
+      >
+        <ExternalLink className="h-4 w-4" />
+      </Button>
+    ),
+  },
+];
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
-  };
+const statusFilterOptions = [
+  { value: "all", label: "All Statuses" },
+  { value: "succeeded", label: "Succeeded" },
+  { value: "pending", label: "Pending" },
+  { value: "failed", label: "Failed" },
+  { value: "canceled", label: "Canceled" },
+];
 
-  const handleStatusFilter = (value: string) => {
-    setStatusFilter(value);
-    setCurrentPage(1);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "secondary";
-      case "pending":
-        return "secondary";
-      case "failed":
-        return "destructive";
-      case "cancelled":
-        return "outline";
-      default:
-        return "secondary";
-    }
-  };
-
-  const formatCurrency = (amount: number, currency: string) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency.toUpperCase(),
-    }).format(amount / 100); // Assuming amounts are in cents
-  };
-
-  const formatDate = (dateString: string | Date) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const openStripePayment = (paymentIntentId: string) => {
-    // This would open the Stripe dashboard for the specific payment
-    // In a real implementation, you'd construct the proper Stripe dashboard URL
-    window.open(
-      `https://www.creem.io/dashboard/payments/${paymentIntentId}`,
-      "_blank",
-    );
-  };
-
-  const columns: Array<{
-    key: keyof PaymentWithUser | string;
-    label: string;
-    render?: (item: PaymentWithUser) => ReactNode;
-  }> = [
-    {
-      key: "user",
-      label: "User",
-      render: (payment: PaymentWithUser) => (
-        <UserAvatarCell name={payment.user?.name} email={payment.user?.email} />
-      ),
-    },
-    {
-      key: "amount",
-      label: "Amount",
-      render: (payment: PaymentWithUser) => (
-        <div className="font-medium">
-          {formatCurrency(payment.amount, payment.currency)}
-        </div>
-      ),
-    },
-    {
-      key: "status",
-      label: "Status",
-      render: (payment: PaymentWithUser) => (
-        <Badge
-          variant={getStatusBadgeVariant(payment.status)}
-          className="capitalize"
-        >
-          {payment.status}
-        </Badge>
-      ),
-    },
-    {
-      key: "method",
-      label: "Method",
-      render: (payment: PaymentWithUser) => (
-        <div className="text-sm">{payment.paymentMethod || "N/A"}</div>
-      ),
-    },
-    {
-      key: "created",
-      label: "Created",
-      render: (payment: PaymentWithUser) => formatDate(payment.createdAt),
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (payment: PaymentWithUser) =>
-        payment.stripePaymentIntentId && (
-          <button
-            onClick={() => openStripePayment(payment.stripePaymentIntentId!)}
-            className="text-blue-600 hover:text-blue-800"
-            title="View in Stripe Dashboard"
-          >
-            <ExternalLink className="h-4 w-4" />
-          </button>
-        ),
-    },
-  ];
-
-  const statusFilterOptions = [
-    { value: "all", label: "All Statuses" },
-    { value: "completed", label: "Completed" },
-    { value: "pending", label: "Pending" },
-    { value: "failed", label: "Failed" },
-    { value: "cancelled", label: "Cancelled" },
-  ];
+export function PaymentManagementTable({
+  initialData,
+  initialPagination,
+}: PaymentManagementTableProps) {
+  const {
+    data: payments,
+    loading,
+    error,
+    pagination,
+    searchTerm,
+    filter: statusFilter,
+    setSearchTerm: handleSearch,
+    setFilter: handleStatusFilter,
+    setCurrentPage: handlePageChange,
+  } = useAdminTable<PaymentWithUser>({
+    apiEndpoint: "/api/admin/payments",
+    dataKey: "payments",
+    filterKey: "status",
+    initialData,
+    initialPagination,
+  });
 
   return (
-    <div className="space-y-4">
-      <AdminTableBase<PaymentWithUser>
-        data={payments}
-        columns={columns}
-        loading={loading}
-        error={error}
-        searchTerm={searchTerm}
-        onSearchChange={handleSearch}
-        searchPlaceholder="Search by user name, email, or payment ID..."
-        filterValue={statusFilter}
-        onFilterChange={handleStatusFilter}
-        filterOptions={statusFilterOptions}
-        filterPlaceholder="Filter by status"
-        pagination={{
-          page: currentPage,
-          limit: 20, // Assuming a default limit, adjust if necessary
-          total: totalPayments,
-          totalPages: totalPages,
-        }}
-        onPageChange={handlePageChange}
-        emptyMessage="No payments found"
-      />
-    </div>
+    <AdminTableBase<PaymentWithUser>
+      data={payments}
+      columns={columns}
+      loading={loading}
+      error={error}
+      searchTerm={searchTerm}
+      onSearchChange={handleSearch}
+      searchPlaceholder="Search by user name, email, or payment ID..."
+      filterValue={statusFilter}
+      onFilterChange={handleStatusFilter}
+      filterOptions={statusFilterOptions}
+      filterPlaceholder="Filter by status"
+      pagination={pagination}
+      onPageChange={handlePageChange}
+      emptyMessage="No payments found"
+    />
   );
 }

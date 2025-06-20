@@ -11,6 +11,8 @@ import { createMetadata } from "@/lib/metadata";
 import { Suspense } from "react";
 import { SubscriptionStatsCards } from "./_components/subscription-stats-cards";
 import { SubscriptionManagementTable } from "./_components/subscription-management-table";
+import { StatsCardsSkeleton } from "../_components/stats-cards-skeleton";
+import { getSubscriptions } from "@/lib/actions/admin";
 
 export const metadata = createMetadata({
   title: "Subscription Management",
@@ -19,6 +21,7 @@ export const metadata = createMetadata({
 
 export default async function SubscriptionsPage() {
   await requireAdmin();
+  const initialTableData = await getSubscriptions({});
 
   return (
     <DashboardPageWrapper
@@ -26,44 +29,22 @@ export default async function SubscriptionsPage() {
       parentTitle="Admin Dashboard"
       parentUrl="/dashboard/admin"
     >
-      {/* Subscription Stats */}
-      <Suspense fallback={<SubscriptionStatsCardsSkeleton />}>
+      <Suspense fallback={<StatsCardsSkeleton />}>
         <SubscriptionStatsCards />
       </Suspense>
 
-      {/* Subscription Management Table */}
       <Card>
         <CardHeader>
           <CardTitle>All Subscriptions</CardTitle>
           <CardDescription>View and manage user subscriptions</CardDescription>
         </CardHeader>
         <CardContent>
-          <Suspense
-            fallback={<div className="bg-muted h-96 animate-pulse rounded" />}
-          >
-            <SubscriptionManagementTable />
-          </Suspense>
+          <SubscriptionManagementTable
+            initialData={initialTableData.subscriptions}
+            initialPagination={initialTableData.pagination}
+          />
         </CardContent>
       </Card>
     </DashboardPageWrapper>
-  );
-}
-
-function SubscriptionStatsCardsSkeleton() {
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Card key={i}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <div className="bg-muted h-4 w-20 animate-pulse rounded" />
-            <div className="bg-muted h-4 w-4 animate-pulse rounded" />
-          </CardHeader>
-          <CardContent>
-            <div className="bg-muted mb-1 h-8 w-16 animate-pulse rounded" />
-            <div className="bg-muted h-3 w-32 animate-pulse rounded" />
-          </CardContent>
-        </Card>
-      ))}
-    </div>
   );
 }

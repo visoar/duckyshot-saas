@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, ReactNode } from "react";
+import { useState, ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,15 +12,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Calendar, X } from "lucide-react";
+import { Calendar, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminTableBase } from "@/components/admin/admin-table-base";
 import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
 import type { SubscriptionWithUser } from "@/types/billing";
+import { useAdminTable } from "@/hooks/use-admin-table";
 
-interface SubscriptionsResponse {
-  subscriptions: SubscriptionWithUser[];
-  pagination: {
+interface SubscriptionManagementTableProps {
+  initialData: SubscriptionWithUser[];
+  initialPagination: {
     page: number;
     limit: number;
     total: number;
@@ -27,116 +29,82 @@ interface SubscriptionsResponse {
   };
 }
 
-export function SubscriptionManagementTable() {
-  const [subscriptions, setSubscriptions] = useState<SubscriptionWithUser[]>(
-    [],
-  );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalSubscriptions, setTotalSubscriptions] = useState(0);
+export function SubscriptionManagementTable({
+  initialData,
+  initialPagination,
+}: SubscriptionManagementTableProps) {
+  const router = useRouter();
+  const {
+    data: subscriptions,
+    loading,
+    error,
+    pagination,
+    searchTerm,
+    filter: statusFilter,
+    setSearchTerm: handleSearch,
+    setFilter: handleStatusFilter,
+    setCurrentPage: handlePageChange,
+  } = useAdminTable<SubscriptionWithUser>({
+    apiEndpoint: "/api/admin/subscriptions",
+    dataKey: "subscriptions",
+    filterKey: "status",
+    initialData,
+    initialPagination,
+  });
+
+  const [isCancelling, setIsCancelling] = useState(false);
   const [cancellingSubscription, setCancellingSubscription] =
     useState<SubscriptionWithUser | null>(null);
-  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
-  const fetchSubscriptions = async (page = 1, search = "", status = "all") => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: "20",
-        ...(search && { search }),
-        ...(status !== "all" && { status }),
-      });
-
-      const response = await fetch(`/api/admin/subscriptions?${params}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch subscriptions");
-      }
-
-      const data: SubscriptionsResponse = await response.json();
-      const subscriptionsWithDates = data.subscriptions.map((sub) => ({
-        ...sub,
-        createdAt: new Date(sub.createdAt),
-        currentPeriodStart: sub.currentPeriodStart
-          ? new Date(sub.currentPeriodStart)
-          : null,
-        currentPeriodEnd: sub.currentPeriodEnd
-          ? new Date(sub.currentPeriodEnd)
-          : null,
-      }));
-      setSubscriptions(subscriptionsWithDates);
-      setCurrentPage(data.pagination.page);
-      setTotalPages(data.pagination.totalPages);
-      setTotalSubscriptions(data.pagination.total);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSubscriptions(currentPage, searchTerm, statusFilter);
-  }, [currentPage, searchTerm, statusFilter]);
-
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
-  };
-
-  const handleStatusFilter = (value: string) => {
-    setStatusFilter(value);
-    setCurrentPage(1);
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  const handleCancelSubscription = (subscription: SubscriptionWithUser) => {
+  const handleCancelClick = (subscription: SubscriptionWithUser) => {
     setCancellingSubscription(subscription);
-    setIsCancelDialogOpen(true);
   };
 
   const confirmCancelSubscription = async () => {
     if (!cancellingSubscription) return;
+    setIsCancelling(true);
 
     try {
-      // In a real implementation, you would call your subscription cancellation API
-      // For now, we'll just show a toast
-      toast.success(
-        `Subscription for ${cancellingSubscription.user?.name || cancellingSubscription.user?.email} has been cancelled`,
+      const response = await fetch(
+        `/api/admin/subscriptions/${cancellingSubscription.subscriptionId}`,
+        {
+          method: "DELETE",
+        },
       );
-      setIsCancelDialogOpen(false);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to cancel subscription");
+      }
+      toast.success(
+        `Subscription for ${cancellingSubscription.user?.name || "user"
+        } cancellation initiated.`,
+      );
+      router.refresh(); // Refresh page data to update table status
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to cancel subscription",
+      );
+    } finally {
+      setIsCancelling(false);
       setCancellingSubscription(null);
-      fetchSubscriptions(currentPage, searchTerm, statusFilter);
-    } catch {
-      toast.error("Failed to cancel subscription");
     }
   };
 
   const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case "active":
-        return "default";
-      case "trialing":
-        return "secondary";
-      case "canceled":
-        return "outline";
-      case "past_due":
-        return "destructive";
-      case "incomplete":
-        return "destructive";
-      default:
-        return "secondary";
-    }
+    const variants: {
+      [key: string]: "default" | "secondary" | "destructive" | "outline";
+    } = {
+      active: "default",
+      trialing: "secondary",
+      canceled: "outline",
+      past_due: "destructive",
+      incomplete: "destructive",
+      unpaid: "destructive",
+    };
+    return variants[status] || "secondary";
   };
 
-  const formatDate = (dateString: string | Date | null | undefined) => {
+  const formatDate = (dateString?: Date | string | null) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -150,75 +118,63 @@ export function SubscriptionManagementTable() {
     label: string;
     render?: (item: SubscriptionWithUser) => ReactNode;
   }> = [
-    {
-      key: "user",
-      label: "User",
-      render: (subscription: SubscriptionWithUser) => (
-        <UserAvatarCell
-          name={subscription.user?.name}
-          email={subscription.user?.email}
-          image={subscription.user?.image}
-        />
-      ),
-    },
-    {
-      key: "plan",
-      label: "Plan",
-      render: (subscription: SubscriptionWithUser) => (
-        <div>
-          <div className="font-medium">{subscription.planName}</div>
-        </div>
-      ),
-    },
-    {
-      key: "status",
-      label: "Status",
-      render: (subscription: SubscriptionWithUser) => (
-        <Badge
-          variant={getStatusBadgeVariant(subscription.status)}
-          className="capitalize"
-        >
-          {subscription.status}
-        </Badge>
-      ),
-    },
-    {
-      key: "period",
-      label: "Period",
-      render: (subscription: SubscriptionWithUser) => (
-        <div className="text-sm">
-          <div className="flex items-center gap-1">
+      {
+        key: "user",
+        label: "User",
+        render: (sub) => (
+          <UserAvatarCell
+            name={sub.user?.name}
+            email={sub.user?.email}
+            image={sub.user?.image}
+          />
+        ),
+      },
+      {
+        key: "plan",
+        label: "Plan",
+        render: (sub) => <div className="font-medium">{sub.planName}</div>,
+      },
+      {
+        key: "status",
+        label: "Status",
+        render: (sub) => (
+          <Badge
+            variant={getStatusBadgeVariant(sub.status)}
+            className="capitalize"
+          >
+            {sub.status}
+          </Badge>
+        ),
+      },
+      {
+        key: "period",
+        label: "Current Period",
+        render: (sub) => (
+          <div className="flex items-center gap-1 text-sm">
             <Calendar className="h-3 w-3" />
-            {formatDate(subscription.currentPeriodStart)}
+            <span>
+              {formatDate(sub.currentPeriodStart)} -{" "}
+              {formatDate(sub.currentPeriodEnd)}
+            </span>
           </div>
-          <div className="text-muted-foreground">
-            to {formatDate(subscription.currentPeriodEnd)}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "created",
-      label: "Created",
-      render: (subscription: SubscriptionWithUser) =>
-        formatDate(subscription.createdAt),
-    },
-    {
-      key: "actions",
-      label: "Actions",
-      render: (subscription: SubscriptionWithUser) => (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleCancelSubscription(subscription)}
-          disabled={subscription.status === "canceled"}
-        >
-          <X className="mr-1 h-4 w-4" />
-          Cancel
-        </Button>
-      ),
-    },
-  ];
+        ),
+      },
+      {
+        key: "actions",
+        label: "Actions",
+        render: (sub) => (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleCancelClick(sub)}
+            disabled={sub.status === "canceled" || isCancelling}
+          >
+            <X className="mr-1 h-4 w-4" />
+            Cancel
+          </Button>
+        ),
+      },
+    ];
 
   const statusFilterOptions = [
     { value: "all", label: "All Statuses" },
@@ -226,11 +182,10 @@ export function SubscriptionManagementTable() {
     { value: "trialing", label: "Trialing" },
     { value: "canceled", label: "Canceled" },
     { value: "past_due", label: "Past Due" },
-    { value: "incomplete", label: "Incomplete" },
   ];
 
   return (
-    <div className="space-y-4">
+    <>
       <AdminTableBase<SubscriptionWithUser>
         data={subscriptions}
         columns={columns}
@@ -243,41 +198,44 @@ export function SubscriptionManagementTable() {
         onFilterChange={handleStatusFilter}
         filterOptions={statusFilterOptions}
         filterPlaceholder="Filter by status"
-        pagination={{
-          page: currentPage,
-          limit: 20, // Assuming a default limit, adjust if necessary
-          total: totalSubscriptions,
-          totalPages: totalPages,
-        }}
+        pagination={pagination}
         onPageChange={handlePageChange}
         emptyMessage="No subscriptions found"
       />
-
-      {/* Cancel Subscription Dialog */}
-      <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+      <Dialog
+        open={!!cancellingSubscription}
+        onOpenChange={(isOpen) => !isOpen && setCancellingSubscription(null)}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Cancel Subscription</DialogTitle>
             <DialogDescription>
               Are you sure you want to cancel the subscription for{" "}
-              {cancellingSubscription?.user?.name}? This action cannot be undone
-              and the user will lose access at the end of their current billing
-              period.
+              <strong>{cancellingSubscription?.user?.name}</strong>? This action
+              is irreversible.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setIsCancelDialogOpen(false)}
+              onClick={() => setCancellingSubscription(null)}
+              disabled={isCancelling}
             >
-              Cancel
+              Back
             </Button>
-            <Button variant="destructive" onClick={confirmCancelSubscription}>
-              Cancel Subscription
+            <Button
+              variant="destructive"
+              onClick={confirmCancelSubscription}
+              disabled={isCancelling}
+            >
+              {isCancelling && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Confirm Cancellation
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

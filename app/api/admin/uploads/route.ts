@@ -2,11 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/database";
 import { uploads, users } from "@/database/schema";
 import { requireAdmin } from "@/lib/auth/permissions";
-import { eq, desc, ilike, or, and, sql, like, not } from "drizzle-orm";
+import { eq, desc, ilike, or, and, like, not, count } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {
-    // Require admin authentication
     await requireAdmin();
 
     const { searchParams } = new URL(request.url);
@@ -17,10 +16,7 @@ export async function GET(request: NextRequest) {
 
     const offset = (page - 1) * limit;
 
-    // Build where conditions
     const conditions = [];
-
-    // Search condition
     if (search) {
       conditions.push(
         or(
@@ -31,56 +27,45 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // File type filter
     if (fileType !== "all") {
-      switch (fileType) {
-        case "image":
-          conditions.push(like(uploads.contentType, "image/%"));
-          break;
-        case "video":
-          conditions.push(like(uploads.contentType, "video/%"));
-          break;
-        case "audio":
-          conditions.push(like(uploads.contentType, "audio/%"));
-          break;
-        case "pdf":
-          conditions.push(like(uploads.contentType, "%pdf%"));
-          break;
-        case "text":
-          conditions.push(like(uploads.contentType, "text/%"));
-          break;
-        case "archive":
-          conditions.push(
-            or(
-              like(uploads.contentType, "%zip%"),
-              like(uploads.contentType, "%rar%"),
-              like(uploads.contentType, "%tar%"),
-              like(uploads.contentType, "%7z%"),
-            ),
-          );
-          break;
-        case "other":
-          conditions.push(
-            and(
-              not(like(uploads.contentType, "image/%")),
-              not(like(uploads.contentType, "video/%")),
-              not(like(uploads.contentType, "audio/%")),
-              not(like(uploads.contentType, "%pdf%")),
-              not(like(uploads.contentType, "text/%")),
-              not(like(uploads.contentType, "%zip%")),
-              not(like(uploads.contentType, "%rar%")),
-              not(like(uploads.contentType, "%tar%")),
-              not(like(uploads.contentType, "%7z%")),
-            ),
-          );
-          break;
+      const typeConditions = {
+        image: like(uploads.contentType, "image/%"),
+        video: like(uploads.contentType, "video/%"),
+        audio: like(uploads.contentType, "audio/%"),
+        pdf: eq(uploads.contentType, "application/pdf"),
+        text: like(uploads.contentType, "text/%"),
+        archive: or(
+          like(uploads.contentType, "%zip%"),
+          like(uploads.contentType, "%rar%"),
+          like(uploads.contentType, "%tar%"),
+          like(uploads.contentType, "%7z%"),
+        ),
+      };
+
+      if (fileType in typeConditions) {
+        conditions.push(
+          typeConditions[fileType as keyof typeof typeConditions],
+        );
+      } else if (fileType === "other") {
+        conditions.push(
+          and(
+            not(like(uploads.contentType, "image/%")),
+            not(like(uploads.contentType, "video/%")),
+            not(like(uploads.contentType, "audio/%")),
+            not(eq(uploads.contentType, "application/pdf")),
+            not(like(uploads.contentType, "text/%")),
+            not(like(uploads.contentType, "%zip%")),
+            not(like(uploads.contentType, "%rar%")),
+            not(like(uploads.contentType, "%tar%")),
+            not(like(uploads.contentType, "%7z%")),
+          ),
+        );
       }
     }
 
     const whereCondition =
       conditions.length > 0 ? and(...conditions) : undefined;
 
-    // Get uploads with user information
     const uploadsData = await db
       .select({
         id: uploads.id,
@@ -105,9 +90,8 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .offset(offset);
 
-    // Get total count for pagination
-    const [{ count: totalCount }] = await db
-      .select({ count: sql<number>`count(*)` })
+    const [{ total: totalCount }] = await db
+      .select({ total: count() })
       .from(uploads)
       .innerJoin(users, eq(uploads.userId, users.id))
       .where(whereCondition);

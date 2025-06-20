@@ -2,20 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/permissions";
 import { db } from "@/database";
 import { payments, users } from "@/database/schema";
-import {
-  eq,
-  desc,
-  asc,
-  sql,
-  count,
-  and,
-  or,
-  gte,
-  lte,
-  ilike,
-} from "drizzle-orm";
+import { eq, desc, asc, count, and, or, gte, lte, ilike } from "drizzle-orm";
 import { z } from "zod";
 import type { PaymentWithUser } from "@/types/billing";
+import {
+  getProductTierById,
+  getProductTierByProductId,
+} from "@/lib/config/products";
 
 const getPaymentsSchema = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -30,7 +23,6 @@ const getPaymentsSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    // Require admin authentication
     await requireAdmin();
 
     const { searchParams } = new URL(request.url);
@@ -40,9 +32,7 @@ export async function GET(request: NextRequest) {
       params;
     const offset = (page - 1) * limit;
 
-    // Build where conditions
     const whereConditions = [];
-
     if (search) {
       whereConditions.push(
         or(
@@ -52,59 +42,36 @@ export async function GET(request: NextRequest) {
         ),
       );
     }
-
-    if (status) {
-      whereConditions.push(eq(payments.status, status));
-    }
-
-    if (dateFrom) {
+    if (status) whereConditions.push(eq(payments.status, status));
+    if (dateFrom)
       whereConditions.push(gte(payments.createdAt, new Date(dateFrom)));
-    }
-
-    if (dateTo) {
-      whereConditions.push(lte(payments.createdAt, new Date(dateTo)));
-    }
+    if (dateTo) whereConditions.push(lte(payments.createdAt, new Date(dateTo)));
 
     const whereClause =
       whereConditions.length > 0 ? and(...whereConditions) : undefined;
 
-    // Build order by
     const orderByClause =
       sortOrder === "asc" ? asc(payments[sortBy]) : desc(payments[sortBy]);
 
-    // Get payments with user info
     const paymentsQuery = db
       .select({
         id: payments.id,
         userId: payments.userId,
+        paymentId: payments.paymentId,
+        amount: payments.amount,
+        currency: payments.currency,
+        status: payments.status,
+        paymentType: payments.paymentType,
+        productId: payments.productId,
+        subscriptionId: payments.subscriptionId,
+        createdAt: payments.createdAt,
+        updatedAt: payments.updatedAt,
         user: {
           id: users.id,
           name: users.name,
           email: users.email,
           image: users.image,
         },
-        paymentId: payments.paymentId,
-        amount: payments.amount,
-        currency: payments.currency,
-        status: sql<string>`case 
-          when ${payments.status} = 'succeeded' then 'completed'
-          when ${payments.status} = 'canceled' then 'cancelled'
-          else ${payments.status}
-        end`,
-        paymentType: payments.paymentType,
-        paymentMethod: sql<string>`case 
-          when ${payments.paymentType} = 'subscription' then 'Subscription'
-          when ${payments.paymentType} = 'one_time' then 'One-time Payment'
-          when ${payments.paymentType} = 'card' then 'Credit Card'
-          when ${payments.paymentType} = 'bank_transfer' then 'Bank Transfer'
-          when ${payments.paymentType} = 'paypal' then 'PayPal'
-          else coalesce(${payments.paymentType}, 'Unknown')
-        end`,
-        productId: payments.productId,
-        stripePaymentIntentId: payments.paymentId,
-        subscriptionId: payments.subscriptionId,
-        createdAt: payments.createdAt,
-        updatedAt: payments.updatedAt,
       })
       .from(payments)
       .leftJoin(users, eq(payments.userId, users.id))
@@ -113,54 +80,29 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .offset(offset);
 
-    const rawPayments = await paymentsQuery;
-
-    // Transform payments to match PaymentWithUser type
-    const paymentsList: PaymentWithUser[] = rawPayments.map((payment) => ({
-      id: payment.id,
-      paymentId: payment.paymentId,
-      amount: payment.amount,
-      currency: payment.currency,
-      status: payment.status,
-      paymentType: payment.paymentType,
-      tierId: payment.productId || "",
-      tierName: "Unknown", // This would need to be fetched from product config if needed
-      createdAt: payment.createdAt,
-      subscriptionId: payment.subscriptionId,
-      paymentMethod: payment.paymentMethod,
-      stripePaymentIntentId: payment.stripePaymentIntentId,
-      user: {
-        id: payment.user?.id || "",
-        name: payment.user?.name || null,
-        email: payment.user?.email || null,
-        image: payment.user?.image || null,
-      },
-    }));
-
-    // Get total count
-    const [{ total }] = await db
+    const totalQuery = db
       .select({ total: count() })
       .from(payments)
       .leftJoin(users, eq(payments.userId, users.id))
       .where(whereClause);
 
-    // Get summary stats
-    const [summaryStats] = await db
-      .select({
-        totalAmount: sql<number>`coalesce(sum(${payments.amount}), 0)`,
-        successfulPayments: count(
-          sql`case when ${payments.status} = 'succeeded' then 1 end`,
-        ),
-        failedPayments: count(
-          sql`case when ${payments.status} = 'failed' then 1 end`,
-        ),
-        pendingPayments: count(
-          sql`case when ${payments.status} = 'pending' then 1 end`,
-        ),
-      })
-      .from(payments)
-      .leftJoin(users, eq(payments.userId, users.id))
-      .where(whereClause);
+    const [rawPayments, [{ total }]] = await Promise.all([
+      paymentsQuery,
+      totalQuery,
+    ]);
+
+    const paymentsList: PaymentWithUser[] = rawPayments
+      .filter((p) => p.user) // Ensure user is not null
+      .map((payment) => {
+        const tier =
+          getProductTierByProductId(payment.productId) ||
+          getProductTierById(payment.productId);
+        return {
+          ...payment,
+          user: payment.user!, // Assert non-null after filtering
+          tierName: tier?.name || "Unknown Product",
+        };
+      });
 
     return NextResponse.json({
       payments: paymentsList,
@@ -170,10 +112,12 @@ export async function GET(request: NextRequest) {
         total,
         totalPages: Math.ceil(total / limit),
       },
-      summary: summaryStats,
     });
   } catch (error) {
     console.error("Get payments error:", error);
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.issues }, { status: 400 });
+    }
     return NextResponse.json(
       { error: "Failed to fetch payments" },
       { status: 500 },

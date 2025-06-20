@@ -114,16 +114,23 @@ export interface PaymentRecord {
   currency: string;
   status: string;
   paymentType: string;
-  tierId: string;
-  tierName: string;
+  productId: string; // Changed from tierId to productId to match db
+  tierName: string; // Added missing tierName
   createdAt: Date;
   subscriptionId: string | null;
 }
 
-export interface SubscriptionWithUser extends Subscription {
+export interface SubscriptionWithUser {
+  id: string;
+  userId: string;
+  customerId: string;
+  subscriptionId: string;
+  status: SubscriptionStatus;
+  tierId: string;
+  currentPeriodStart: Date | null;
+  currentPeriodEnd: Date | null;
+  canceledAt: Date | null;
   planName: string;
-  planPrice: number;
-  currency: string;
   user: {
     id: string;
     name: string | null;
@@ -135,8 +142,6 @@ export interface SubscriptionWithUser extends Subscription {
 }
 
 export interface PaymentWithUser extends PaymentRecord {
-  paymentMethod: string;
-  stripePaymentIntentId: string;
   user: {
     id: string;
     name: string | null;

@@ -11,6 +11,8 @@ import { DashboardPageWrapper } from "../../_components/dashboard-page-wrapper";
 import { createMetadata } from "@/lib/metadata";
 import { UserManagementTable } from "./_components/user-management-table";
 import { UserStatsCards } from "./_components/user-stats-cards";
+import { StatsCardsSkeleton } from "../_components/stats-cards-skeleton";
+import { getUsers } from "@/lib/actions/admin";
 
 export const metadata = createMetadata({
   title: "User Management",
@@ -18,8 +20,10 @@ export const metadata = createMetadata({
 });
 
 export default async function UserManagementPage() {
-  // Require admin authentication
   await requireAdmin();
+
+  // Fetch initial table data
+  const initialTableData = await getUsers({});
 
   return (
     <DashboardPageWrapper
@@ -27,12 +31,10 @@ export default async function UserManagementPage() {
       parentTitle="Admin Dashboard"
       parentUrl="/dashboard/admin"
     >
-      {/* User Stats */}
-      <Suspense fallback={<UserStatsCardsSkeleton />}>
+      <Suspense fallback={<StatsCardsSkeleton />}>
         <UserStatsCards />
       </Suspense>
 
-      {/* User Management Table */}
       <Card>
         <CardHeader>
           <CardTitle>All Users</CardTitle>
@@ -41,32 +43,12 @@ export default async function UserManagementPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Suspense
-            fallback={<div className="bg-muted h-96 animate-pulse rounded" />}
-          >
-            <UserManagementTable />
-          </Suspense>
+          <UserManagementTable
+            initialData={initialTableData.users}
+            initialPagination={initialTableData.pagination}
+          />
         </CardContent>
       </Card>
     </DashboardPageWrapper>
-  );
-}
-
-function UserStatsCardsSkeleton() {
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Card key={i}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <div className="bg-muted h-4 w-20 animate-pulse rounded" />
-            <div className="bg-muted h-4 w-4 animate-pulse rounded" />
-          </CardHeader>
-          <CardContent>
-            <div className="bg-muted mb-1 h-8 w-16 animate-pulse rounded" />
-            <div className="bg-muted h-3 w-32 animate-pulse rounded" />
-          </CardContent>
-        </Card>
-      ))}
-    </div>
   );
 }
