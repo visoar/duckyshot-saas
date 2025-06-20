@@ -28,24 +28,22 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updatedAt").notNull(),
 });
 
-export const sessions = pgTable(
-  "sessions",
-  {
-    id: text("id").primaryKey(),
-    expiresAt: timestamp("expiresAt").notNull(),
-    token: text("token").notNull().unique(),
-    createdAt: timestamp("createdAt").notNull(),
-    updatedAt: timestamp("updatedAt").notNull(),
-    userId: text("userId")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-  },
-  (table) => {
-    return {
-      userIdx: index("sessions_userId_idx").on(table.userId),
-    };
-  },
-);
+export const sessions = pgTable("sessions", {
+  id: text("id").primaryKey(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: timestamp("createdAt").notNull(),
+  updatedAt: timestamp("updatedAt").notNull(),
+  ipAddress: text("ipAddress"),
+  userAgent: text("userAgent"),
+  // Pre-parsed userAgent fields for performance optimization
+  os: text("os"),
+  browser: text("browser"),
+  deviceType: text("deviceType"),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+});
 
 export const accounts = pgTable(
   "accounts",

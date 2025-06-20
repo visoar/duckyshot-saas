@@ -37,6 +37,11 @@ CREATE TABLE "sessions" (
 	"token" text NOT NULL,
 	"createdAt" timestamp NOT NULL,
 	"updatedAt" timestamp NOT NULL,
+	"ipAddress" text,
+	"userAgent" text,
+	"os" text,
+	"browser" text,
+	"deviceType" text,
 	"userId" text NOT NULL,
 	CONSTRAINT "sessions_token_unique" UNIQUE("token")
 );
@@ -109,7 +114,6 @@ ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_userId_users_id_fk" FO
 ALTER TABLE "uploads" ADD CONSTRAINT "uploads_userId_users_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "accounts_userId_idx" ON "accounts" USING btree ("userId");--> statement-breakpoint
 CREATE INDEX "payments_userId_idx" ON "payments" USING btree ("userId");--> statement-breakpoint
-CREATE INDEX "sessions_userId_idx" ON "sessions" USING btree ("userId");--> statement-breakpoint
 CREATE INDEX "subscriptions_userId_idx" ON "subscriptions" USING btree ("userId");--> statement-breakpoint
 CREATE INDEX "subscriptions_customerId_idx" ON "subscriptions" USING btree ("customerId");--> statement-breakpoint
 CREATE INDEX "uploads_userId_idx" ON "uploads" USING btree ("userId");--> statement-breakpoint

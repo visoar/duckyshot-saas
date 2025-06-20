@@ -1,5 +1,5 @@
 {
-  "id": "cb3aa2fa-87e8-4190-9c38-766dd9656222",
+  "id": "0c3af88e-790f-4d7f-90aa-d9fc7ec82a2d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -109,8 +109,12 @@
           "name": "accounts_userId_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
-          "columnsFrom": ["userId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -224,8 +228,12 @@
           "name": "payments_userId_users_id_fk",
           "tableFrom": "payments",
           "tableTo": "users",
-          "columnsFrom": ["userId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -235,7 +243,9 @@
         "payments_paymentId_unique": {
           "name": "payments_paymentId_unique",
           "nullsNotDistinct": false,
-          "columns": ["paymentId"]
+          "columns": [
+            "paymentId"
+          ]
         }
       },
       "policies": {},
@@ -276,6 +286,36 @@
           "primaryKey": false,
           "notNull": true
         },
+        "ipAddress": {
+          "name": "ipAddress",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "userAgent": {
+          "name": "userAgent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "os": {
+          "name": "os",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "browser": {
+          "name": "browser",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deviceType": {
+          "name": "deviceType",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "userId": {
           "name": "userId",
           "type": "text",
@@ -283,30 +323,18 @@
           "notNull": true
         }
       },
-      "indexes": {
-        "sessions_userId_idx": {
-          "name": "sessions_userId_idx",
-          "columns": [
-            {
-              "expression": "userId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {
         "sessions_userId_users_id_fk": {
           "name": "sessions_userId_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": ["userId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -316,7 +344,9 @@
         "sessions_token_unique": {
           "name": "sessions_token_unique",
           "nullsNotDistinct": false,
-          "columns": ["token"]
+          "columns": [
+            "token"
+          ]
         }
       },
       "policies": {},
@@ -434,8 +464,12 @@
           "name": "subscriptions_userId_users_id_fk",
           "tableFrom": "subscriptions",
           "tableTo": "users",
-          "columnsFrom": ["userId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -445,7 +479,9 @@
         "subscriptions_subscriptionId_unique": {
           "name": "subscriptions_subscriptionId_unique",
           "nullsNotDistinct": false,
-          "columns": ["subscriptionId"]
+          "columns": [
+            "subscriptionId"
+          ]
         }
       },
       "policies": {},
@@ -544,8 +580,12 @@
           "name": "uploads_userId_users_id_fk",
           "tableFrom": "uploads",
           "tableTo": "users",
-          "columnsFrom": ["userId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -624,12 +664,16 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": ["email"]
+          "columns": [
+            "email"
+          ]
         },
         "users_paymentProviderCustomerId_unique": {
           "name": "users_paymentProviderCustomerId_unique",
           "nullsNotDistinct": false,
-          "columns": ["paymentProviderCustomerId"]
+          "columns": [
+            "paymentProviderCustomerId"
+          ]
         }
       },
       "policies": {},
@@ -781,7 +825,9 @@
         "webhook_events_eventId_unique": {
           "name": "webhook_events_eventId_unique",
           "nullsNotDistinct": false,
-          "columns": ["eventId"]
+          "columns": [
+            "eventId"
+          ]
         }
       },
       "policies": {},
@@ -793,7 +839,11 @@
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": ["user", "admin", "super_admin"]
+      "values": [
+        "user",
+        "admin",
+        "super_admin"
+      ]
     }
   },
   "schemas": {},
