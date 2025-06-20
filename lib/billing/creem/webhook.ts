@@ -123,6 +123,8 @@ export async function handleCreemWebhook(payload: string, signature: string) {
       case "subscription.active":
       case "subscription.updated":
       case "subscription.canceled":
+      case "subscription.expired":
+      case "subscription.past_due":
         if (isSubscriptionObject(eventObject))
           await processSubscriptionEvent(eventObject, tx);
         break;
