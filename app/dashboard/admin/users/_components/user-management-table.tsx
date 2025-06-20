@@ -240,22 +240,22 @@ export function UserManagementTable() {
       render: (user: UserWithSubscription) =>
         user.subscriptions.length > 0 ? (
           <div className="flex flex-wrap gap-1">
-             {user.subscriptions.map((subscription) => (
-               <Badge
-                 key={subscription.subscriptionId}
-                 variant={
-                   subscription.status === "active"
-                     ? "default"
-                     : subscription.status === "past_due"
-                       ? "destructive"
-                       : "secondary"
-                 }
-                 className="text-xs"
-               >
-                 {subscription.status.toUpperCase()}
-               </Badge>
-             ))}
-           </div>
+            {user.subscriptions.map((subscription) => (
+              <Badge
+                key={subscription.subscriptionId}
+                variant={
+                  subscription.status === "active"
+                    ? "default"
+                    : subscription.status === "past_due"
+                      ? "destructive"
+                      : "secondary"
+                }
+                className="text-xs"
+              >
+                {subscription.status.toUpperCase()}
+              </Badge>
+            ))}
+          </div>
         ) : (
           <span className="text-muted-foreground text-sm">None</span>
         ),

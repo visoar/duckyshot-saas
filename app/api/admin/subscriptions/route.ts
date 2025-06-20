@@ -92,36 +92,39 @@ export async function GET(request: NextRequest) {
     const rawSubscriptions = await subscriptionsQuery;
 
     // Transform subscriptions to include plan info
-    const subscriptionsList: SubscriptionWithUser[] = rawSubscriptions.map((sub) => {
-      // Try to get product tier by internal ID first, then by Creem product ID
-      let productTier = getProductTierById(sub.productId);
-      if (!productTier) {
-        productTier = getProductTierByProductId(sub.productId);
-      }
+    const subscriptionsList: SubscriptionWithUser[] = rawSubscriptions.map(
+      (sub) => {
+        // Try to get product tier by internal ID first, then by Creem product ID
+        let productTier = getProductTierById(sub.productId);
+        if (!productTier) {
+          productTier = getProductTierByProductId(sub.productId);
+        }
 
-      return {
-        id: sub.id,
-        userId: sub.userId,
-        customerId: sub.subscriptionId, // Using subscriptionId as customerId for compatibility
-        subscriptionId: sub.subscriptionId,
-        status: sub.status as SubscriptionStatus,
-        tierId: sub.productId,
-        currentPeriodStart: sub.currentPeriodStart,
-        currentPeriodEnd: sub.currentPeriodEnd,
-        canceledAt: sub.canceledAt,
-        planName: productTier?.name || "Unknown Plan",
-        planPrice: productTier?.prices.monthly || productTier?.prices.yearly || 0,
-        currency: productTier?.currency || "USD",
-        user: {
-          id: sub.user?.id || "",
-          name: sub.user?.name || null,
-          email: sub.user?.email || null,
-          image: sub.user?.image || null,
-        },
-        createdAt: sub.createdAt,
-        updatedAt: sub.updatedAt,
-      };
-    });
+        return {
+          id: sub.id,
+          userId: sub.userId,
+          customerId: sub.subscriptionId, // Using subscriptionId as customerId for compatibility
+          subscriptionId: sub.subscriptionId,
+          status: sub.status as SubscriptionStatus,
+          tierId: sub.productId,
+          currentPeriodStart: sub.currentPeriodStart,
+          currentPeriodEnd: sub.currentPeriodEnd,
+          canceledAt: sub.canceledAt,
+          planName: productTier?.name || "Unknown Plan",
+          planPrice:
+            productTier?.prices.monthly || productTier?.prices.yearly || 0,
+          currency: productTier?.currency || "USD",
+          user: {
+            id: sub.user?.id || "",
+            name: sub.user?.name || null,
+            email: sub.user?.email || null,
+            image: sub.user?.image || null,
+          },
+          createdAt: sub.createdAt,
+          updatedAt: sub.updatedAt,
+        };
+      },
+    );
 
     // Get total count
     const [{ total }] = await db

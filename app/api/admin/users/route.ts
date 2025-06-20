@@ -71,10 +71,10 @@ export async function GET(request: NextRequest) {
 
     // Group users and collect all their subscriptions
     const usersMap = new Map<string, UserWithSubscription>();
-    
+
     rawUsers.forEach((user) => {
       const existingUser = usersMap.get(user.id);
-      
+
       if (!existingUser) {
         // First occurrence of this user
         const subscriptions = [];
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
             status: user.subscriptionStatus,
           });
         }
-        
+
         usersMap.set(user.id, {
           id: user.id,
           name: user.name,
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
       } else if (user.subscriptionId && user.subscriptionStatus) {
         // Add subscription to existing user if not already present
         const subscriptionExists = existingUser.subscriptions.some(
-          sub => sub.subscriptionId === user.subscriptionId
+          (sub) => sub.subscriptionId === user.subscriptionId,
         );
         if (!subscriptionExists) {
           existingUser.subscriptions.push({
