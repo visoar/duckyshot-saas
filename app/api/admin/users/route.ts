@@ -4,6 +4,7 @@ import { db } from "@/database";
 import { users, subscriptions, userRoleEnum } from "@/database/schema";
 import { eq, desc, asc, count, and, or, ilike } from "drizzle-orm";
 import { z } from "zod";
+import type { UserWithSubscription } from "@/types/billing";
 
 const getUsersSchema = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -66,7 +67,51 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .offset(offset);
 
-    const usersList = await usersQuery;
+    const rawUsers = await usersQuery;
+
+    // Group users and collect all their subscriptions
+    const usersMap = new Map<string, UserWithSubscription>();
+    
+    rawUsers.forEach((user) => {
+      const existingUser = usersMap.get(user.id);
+      
+      if (!existingUser) {
+        // First occurrence of this user
+        const subscriptions = [];
+        if (user.subscriptionId && user.subscriptionStatus) {
+          subscriptions.push({
+            subscriptionId: user.subscriptionId,
+            status: user.subscriptionStatus,
+          });
+        }
+        
+        usersMap.set(user.id, {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          emailVerified: user.emailVerified,
+          image: user.image,
+          role: user.role,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+          subscriptions,
+        });
+      } else if (user.subscriptionId && user.subscriptionStatus) {
+        // Add subscription to existing user if not already present
+        const subscriptionExists = existingUser.subscriptions.some(
+          sub => sub.subscriptionId === user.subscriptionId
+        );
+        if (!subscriptionExists) {
+          existingUser.subscriptions.push({
+            subscriptionId: user.subscriptionId,
+            status: user.subscriptionStatus,
+          });
+        }
+      }
+    });
+
+    // Convert map back to array
+    const usersList: UserWithSubscription[] = Array.from(usersMap.values());
 
     // Get total count
     const [{ total }] = await db

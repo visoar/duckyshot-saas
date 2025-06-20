@@ -38,8 +38,10 @@ interface UserWithSubscription extends User {
   emailVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
-  subscriptionStatus?: string;
-  subscriptionId?: string;
+  subscriptions: {
+    subscriptionId: string;
+    status: string;
+  }[];
 }
 
 interface UsersResponse {
@@ -234,16 +236,26 @@ export function UserManagementTable() {
     },
     {
       key: "subscription",
-      label: "Subscription",
+      label: "Subscriptions",
       render: (user: UserWithSubscription) =>
-        user.subscriptionStatus ? (
-          <Badge
-            variant={
-              user.subscriptionStatus === "active" ? "default" : "secondary"
-            }
-          >
-            {user.subscriptionStatus.toUpperCase()}
-          </Badge>
+        user.subscriptions.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+             {user.subscriptions.map((subscription) => (
+               <Badge
+                 key={subscription.subscriptionId}
+                 variant={
+                   subscription.status === "active"
+                     ? "default"
+                     : subscription.status === "past_due"
+                       ? "destructive"
+                       : "secondary"
+                 }
+                 className="text-xs"
+               >
+                 {subscription.status.toUpperCase()}
+               </Badge>
+             ))}
+           </div>
         ) : (
           <span className="text-muted-foreground text-sm">None</span>
         ),
@@ -259,7 +271,7 @@ export function UserManagementTable() {
       key: "actions",
       label: "Actions",
       render: (user: UserWithSubscription) => (
-        <div className="flex items-center justify-end space-x-2">
+        <div className="flex items-center justify-start space-x-2">
           <Button
             variant="ghost"
             size="sm"

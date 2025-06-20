@@ -15,6 +15,7 @@ import {
   ilike,
 } from "drizzle-orm";
 import { z } from "zod";
+import type { PaymentWithUser } from "@/types/billing";
 
 const getPaymentsSchema = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -112,7 +113,29 @@ export async function GET(request: NextRequest) {
       .limit(limit)
       .offset(offset);
 
-    const paymentsList = await paymentsQuery;
+    const rawPayments = await paymentsQuery;
+
+    // Transform payments to match PaymentWithUser type
+    const paymentsList: PaymentWithUser[] = rawPayments.map((payment) => ({
+      id: payment.id,
+      paymentId: payment.paymentId,
+      amount: payment.amount,
+      currency: payment.currency,
+      status: payment.status,
+      paymentType: payment.paymentType,
+      tierId: payment.productId || "",
+      tierName: "Unknown", // This would need to be fetched from product config if needed
+      createdAt: payment.createdAt,
+      subscriptionId: payment.subscriptionId,
+      paymentMethod: payment.paymentMethod,
+      stripePaymentIntentId: payment.stripePaymentIntentId,
+      user: {
+        id: payment.user?.id || "",
+        name: payment.user?.name || null,
+        email: payment.user?.email || null,
+        image: payment.user?.image || null,
+      },
+    }));
 
     // Get total count
     const [{ total }] = await db

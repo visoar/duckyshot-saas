@@ -144,3 +144,18 @@ export interface PaymentWithUser extends PaymentRecord {
     image: string | null;
   };
 }
+
+export interface UserWithSubscription {
+  id: string;
+  name: string | null;
+  email: string | null;
+  emailVerified: boolean | null;
+  image: string | null;
+  role: string;
+  createdAt: Date;
+  updatedAt: Date;
+  subscriptions: {
+    subscriptionId: string;
+    status: string;
+  }[];
+}
