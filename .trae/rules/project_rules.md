@@ -1,0 +1,5 @@
+- 本项目使用 tailwind v4/ better auth 等库，如果对版本或者使用的库有疑问记得参考 package.json。
+- 注意代码规范，绝对不要用 any type 之类的写法，以符合 @typescript-eslint/no-explicit-any 要求。
+- 单个代码文件不要超过 400 行，超过 400 行的代码文件需要拆分，拆分组件时尽可能考虑可复用性。
+- 项目界面语言使用英文为主，文案需要 SEO 友好
+- 新增或者大幅度修改核心功能或组件，需要执行`pnpm tsc --noEmit`验证代码

@@ -1,0 +1,371 @@
+"use client";
+import React, { useState, useEffect } from "react";
+import { Link } from "next-view-transitions";
+import { usePathname } from "next/navigation";
+import { useSession } from "@/lib/auth/client";
+import { Session } from "@/types/auth";
+import { cn } from "@/lib/utils";
+import { Logo } from "@/components/logo";
+import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/mode-toggle";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  ChevronDown,
+  Menu,
+  UserCircle,
+  ExternalLink,
+} from "lucide-react";
+import { APP_NAME } from "@/constants";
+
+interface NavItem {
+  title: string;
+  href?: string;
+  description?: string;
+  items?: NavItem[];
+  icon?: React.ComponentType<{ className?: string }>;
+  badge?: string;
+  external?: boolean;
+}
+
+const navigationItems: NavItem[] = [
+  {
+    title: "Features",
+    items: [
+      {
+        title: "Authentication",
+        href: "/features/auth",
+        description: "Secure user authentication with magic links",
+      },
+      {
+        title: "Billing",
+        href: "/features/billing",
+        description: "Subscription management and payments",
+      },
+      {
+        title: "Dashboard",
+        href: "/features/dashboard",
+        description: "User dashboard and settings",
+      },
+    ],
+  },
+  {
+    title: "Pricing",
+    href: "/pricing",
+  },
+  {
+    title: "About",
+    href: "/about",
+  },
+  {
+    title: "Contact",
+    href: "/contact",
+  },
+];
+
+const mobileNavItems: NavItem[] = [
+  {
+    title: "Features",
+    href: "/features",
+  },
+  {
+    title: "Pricing",
+    href: "/pricing",
+  },
+  {
+    title: "About",
+    href: "/about",
+  },
+  {
+    title: "Contact",
+    href: "/contact",
+  },
+];
+
+function NavigationDropdown({ item }: { item: NavItem }) {
+  if (!item.items) return null;
+  
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button 
+          variant="ghost" 
+          className="h-9 px-3 text-sm font-medium text-muted-foreground data-[state=open]:text-foreground"
+        >
+          {item.title}
+          <ChevronDown className="ml-1 h-3 w-3 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent 
+        align="start" 
+        className="w-72 p-2"
+        sideOffset={8}
+      >
+        {item.items.map((subItem, index) => {
+          const IconComponent = subItem.icon;
+          
+          return (
+            <DropdownMenuItem key={index} asChild>
+              {subItem.href ? (
+                <Link 
+                  href={subItem.href}
+                  className="flex items-start gap-3 p-3 rounded-md transition-colors hover:bg-accent"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      {IconComponent && <IconComponent className="h-4 w-4 text-primary" />}
+                      <span className="font-medium text-sm">{subItem.title}</span>
+                      {subItem.badge && (
+                        <span className="px-1.5 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded">
+                          {subItem.badge}
+                        </span>
+                      )}
+                      {subItem.external && <ExternalLink className="h-3 w-3 text-muted-foreground" />}
+                    </div>
+                    {subItem.description && (
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        {subItem.description}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              ) : (
+                <div className="flex items-start gap-3 p-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      {IconComponent && <IconComponent className="h-4 w-4 text-primary" />}
+                      <span className="font-medium text-sm">{subItem.title}</span>
+                      {subItem.badge && (
+                        <span className="px-1.5 py-0.5 text-xs font-medium bg-primary/10 text-primary rounded">
+                          {subItem.badge}
+                        </span>
+                      )}
+                    </div>
+                    {subItem.description && (
+                      <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                        {subItem.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+// Auth buttons component to handle loading state
+function AuthButtons({ session, isPending }: { session: Session | null; isPending: boolean }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || isPending) {
+    return (
+      <div className="hidden md:flex items-center gap-2">
+        {/* <Skeleton className="h-8 w-16" /> */}
+        <Skeleton className="h-8 w-24" />
+      </div>
+    );
+  }
+
+  if (session?.user && session?.session) {
+    return (
+      <div className="hidden md:flex items-center gap-2">
+        <Button asChild size="sm">
+          <Link href="/dashboard">
+            <UserCircle className="mr-2 h-4 w-4" />
+            Dashboard
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="hidden md:flex items-center gap-2">
+      <Button asChild variant="ghost" size="sm">
+        <Link href="/login">Sign In</Link>
+      </Button>
+      <Button asChild size="sm">
+        <Link href="/signup">Get Started</Link>
+      </Button>
+    </div>
+  );
+}
+
+// Mobile auth buttons component
+function MobileAuthButtons({ session, isPending }: { session: Session | null; isPending: boolean }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || isPending) {
+    return (
+      <div className="mt-8 space-y-3">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
+
+  if (session?.user && session?.session) {
+    return (
+      <div className="mt-8 space-y-3">
+        <Button asChild className="w-full">
+          <Link href="/dashboard">
+            <UserCircle className="mr-2 h-4 w-4" />
+            Dashboard
+          </Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-8 space-y-3">
+      <Button asChild className="w-full">
+        <Link href="/login">Sign In</Link>
+      </Button>
+      <Button asChild variant="outline" className="w-full">
+        <Link href="/signup">Get Started</Link>
+      </Button>
+    </div>
+  );
+}
+
+function MobileNavigation({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const { data: session, isPending } = useSession();
+  
+  return (
+    <Sheet open={isOpen} onOpenChange={onClose}>
+      <SheetContent side="right" className="w-80 p-0">
+        <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+        <div className="flex items-center gap-2 p-6 border-b border-border">
+          <Logo className="h-6 w-6 text-primary" variant="icon-only" />
+          <span className="text-lg font-bold">{APP_NAME}</span>
+        </div>
+        
+        <div className="flex flex-col p-6">
+          <nav className="space-y-4">
+            {mobileNavItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.href!}
+                className="block py-2 text-sm font-medium text-foreground transition-colors hover:text-primary"
+                onClick={onClose}
+              >
+                {item.title}
+              </Link>
+            ))}
+          </nav>
+          
+          <MobileAuthButtons session={session} isPending={isPending} />
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+export function Header() {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const { data: session, isPending } = useSession();
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+  
+  return (
+    <>
+      <header 
+        className={cn(
+          "sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 transition-all duration-200",
+          isScrolled && "border-border/80 bg-background/80 shadow-sm"
+        )}
+      >
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2">
+              <Logo className="h-6 w-6 text-primary" variant="icon-only" />
+              <span className="text-xl font-bold text-foreground">{APP_NAME}</span>
+            </Link>
+            
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-1">
+              {navigationItems.map((item, index) => (
+                <div key={index}>
+                  {item.items ? (
+                    <NavigationDropdown item={item} />
+                  ) : (
+                    <Button asChild variant="ghost" className="h-9 px-3 text-sm font-medium">
+                      <Link 
+                        href={item.href!}
+                        className={cn(
+                          "text-muted-foreground transition-colors",
+                          pathname === item.href && "text-foreground"
+                        )}
+                      >
+                        {item.title}
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </nav>
+            
+            {/* Right side actions */}
+            <div className="flex items-center gap-3">
+              {/* Theme toggle */}
+              <ModeToggle variant="ghost" size="icon" />
+
+              {/* Desktop CTA buttons */}
+              <AuthButtons session={session} isPending={isPending} />
+              
+              {/* Mobile menu trigger */}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="md:hidden"
+                onClick={() => setIsMobileMenuOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      {/* Mobile Navigation */}
+      <MobileNavigation 
+        isOpen={isMobileMenuOpen} 
+        onClose={() => setIsMobileMenuOpen(false)} 
+      />
+    </>
+  );
+}
