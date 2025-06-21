@@ -43,6 +43,8 @@ const creemProvider: PaymentProvider = {
       const checkoutRequestData = {
         productId: creemProductId,
         successUrl: options.successUrl,
+        // Note: Creem may not support cancelUrl directly, but we include it in metadata
+        // for potential future use or custom handling
         customer: {
           email: options.userEmail,
           name: options.userName ?? undefined,
@@ -52,6 +54,8 @@ const creemProvider: PaymentProvider = {
           tierId: options.tierId,
           paymentMode: options.paymentMode,
           billingCycle: options.billingCycle ?? null,
+          cancelUrl: options.cancelUrl ?? null,
+          failureUrl: options.failureUrl ?? null,
         },
       };
 

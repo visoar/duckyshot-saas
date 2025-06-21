@@ -43,6 +43,8 @@ export interface CreateCheckoutOptions {
   paymentMode: PaymentMode;
   billingCycle?: BillingCycle;
   successUrl: string;
+  cancelUrl?: string;
+  failureUrl?: string;
 }
 
 // --- Creem Webhook 事件对象详细类型定义 ---

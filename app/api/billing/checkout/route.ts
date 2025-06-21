@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 使用 URL 对象构建 successUrl，更安全健壮
+    // 使用 URL 对象构建各种状态的 URL，更安全健壮
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     if (!appUrl) {
       throw new Error(
@@ -67,9 +67,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const successUrl = new URL("/dashboard/settings", appUrl);
-    successUrl.searchParams.set("page", "billing");
+    const successUrl = new URL("/payment-status", appUrl);
     successUrl.searchParams.set("status", "success");
+
+    const cancelUrl = new URL("/payment-status", appUrl);
+    cancelUrl.searchParams.set("status", "cancelled");
+
+    const failureUrl = new URL("/payment-status", appUrl);
+    failureUrl.searchParams.set("status", "failed");
 
     // 构建传递给 billing provider 的选项
     const checkoutOptions = {
@@ -80,6 +85,8 @@ export async function POST(request: NextRequest) {
       paymentMode,
       billingCycle,
       successUrl: successUrl.toString(),
+      cancelUrl: cancelUrl.toString(),
+      failureUrl: failureUrl.toString(),
     };
 
     const { checkoutUrl } =
