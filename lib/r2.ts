@@ -3,6 +3,7 @@ import {
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
+  DeleteObjectsCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import env from "@/env";
@@ -213,6 +214,34 @@ export async function deleteFile(
     return {
       success: false,
       error: error instanceof Error ? error.message : "Failed to delete file",
+    };
+  }
+}
+
+/**
+ * Delete multiple files from R2
+ */
+export async function deleteFiles(
+  keys: string[],
+): Promise<{ success: boolean; error?: string }> {
+  if (keys.length === 0) {
+    return { success: true };
+  }
+  try {
+    const command = new DeleteObjectsCommand({
+      Bucket: env.R2_BUCKET_NAME,
+      Delete: {
+        Objects: keys.map((key) => ({ Key: key })),
+        Quiet: false, // 设置为 false 以在响应中获取已删除对象的信息
+      },
+    });
+    await r2Client.send(command);
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting files in batch:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete files",
     };
   }
 }

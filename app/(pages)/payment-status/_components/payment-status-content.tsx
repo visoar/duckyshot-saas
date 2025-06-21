@@ -3,6 +3,8 @@
 import { useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   ArrowRight,
   CheckCircle,
@@ -10,8 +12,12 @@ import {
   Clock,
   AlertCircle,
   Loader2,
+  Home,
+  CreditCard,
+  Mail,
+  Settings,
+  Sparkles,
 } from "lucide-react";
-import { BackgroundPattern } from "@/components/ui/background-pattern";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -36,27 +42,27 @@ interface StatusConfig {
 
 const statusConfigs: Record<PaymentStatus, StatusConfig> = {
   success: {
-    icon: <CheckCircle className="h-16 w-16 text-green-500" />,
-    title: "Payment Successful! 🎉",
+    icon: <CheckCircle className="h-20 w-20 text-emerald-500" />,
+    title: "Payment Successful!",
     description:
       "Thank you for your purchase! Your subscription has been activated and you now have access to all premium features.",
     badgeVariant: "default",
     badgeText: "Payment Completed",
     primaryAction: {
-      text: "Go to Dashboard",
+      text: "Access Dashboard",
       href: "/dashboard",
       variant: "default",
     },
     secondaryAction: {
-      text: "View Billing Settings",
+      text: "Manage Billing",
       href: "/dashboard/settings?page=billing",
     },
   },
   failed: {
-    icon: <XCircle className="h-16 w-16 text-red-500" />,
+    icon: <XCircle className="h-20 w-20 text-red-500" />,
     title: "Payment Failed",
     description:
-      "We couldn't process your payment. Please check your payment method and try again.",
+      "We couldn't process your payment. Please check your payment method and try again, or contact our support team for assistance.",
     badgeVariant: "destructive",
     badgeText: "Payment Failed",
     primaryAction: {
@@ -70,10 +76,10 @@ const statusConfigs: Record<PaymentStatus, StatusConfig> = {
     },
   },
   pending: {
-    icon: <Clock className="h-16 w-16 text-yellow-500" />,
-    title: "Payment Pending",
+    icon: <Clock className="h-20 w-20 text-amber-500" />,
+    title: "Payment Processing",
     description:
-      "Your payment is being processed. This may take a few minutes. You'll receive an email confirmation once it's complete.",
+      "Your payment is being processed. This may take a few minutes. The page will automatically refresh to show the latest status.",
     badgeVariant: "secondary",
     badgeText: "Processing",
     primaryAction: {
@@ -87,10 +93,10 @@ const statusConfigs: Record<PaymentStatus, StatusConfig> = {
     },
   },
   cancelled: {
-    icon: <XCircle className="h-16 w-16 text-gray-500" />,
+    icon: <AlertCircle className="h-20 w-20 text-slate-500" />,
     title: "Payment Cancelled",
     description:
-      "You cancelled the payment process. No charges have been made to your account.",
+      "You cancelled the payment process. No charges have been made to your account. You can try again anytime.",
     badgeVariant: "outline",
     badgeText: "Cancelled",
     primaryAction: {
@@ -116,28 +122,39 @@ export function PaymentStatusContent() {
     const checkPaymentStatus = async () => {
       try {
         const statusParam = searchParams.get("status") as PaymentStatus;
-        const sessionIdParam = searchParams.get("session_id");
+        const sessionIdParam =
+          searchParams.get("session_id") || searchParams.get("checkout_id");
 
         setSessionId(sessionIdParam);
 
-        // If we have a clear status from URL and it's not pending, use it directly
+        // If we have a clear status from URL and it's success or failed, use it directly
         if (
           statusParam &&
           statusParam in statusConfigs &&
-          statusParam !== "pending"
+          (statusParam === "success" || statusParam === "failed")
         ) {
           setStatus(statusParam);
           setIsLoading(false);
           return;
         }
 
-        // For pending status or no status, check with the API
+        // For pending, cancelled, or no status, check with the API
+        const paramName = sessionIdParam?.startsWith("ch_")
+          ? "checkout_id"
+          : "sessionId";
         const response = await fetch(
-          `/api/payment-status?sessionId=${sessionIdParam || ""}`,
+          `/api/payment-status?${sessionIdParam ? `${paramName}=${sessionIdParam}` : ""}`,
         );
         if (response.ok) {
           const data = await response.json();
           setStatus(data.status as PaymentStatus);
+
+          // Only set up auto-refresh for pending status
+          if (data.status === "pending" && sessionIdParam) {
+            setTimeout(() => {
+              checkPaymentStatus();
+            }, 5000); // Check again in 5 seconds
+          }
         } else {
           // Fallback to URL parameter or default to pending
           setStatus(
@@ -160,32 +177,44 @@ export function PaymentStatusContent() {
     };
 
     checkPaymentStatus();
-  }, [searchParams]);
+  }, [searchParams]); // Re-run when search params change
 
   // Show loading state while checking status
   if (isLoading || status === null) {
     return (
-      <section className="flex min-h-screen flex-col">
-        <div className="bg-background relative grow overflow-hidden">
-          <BackgroundPattern />
-          <div className="relative px-4 py-16">
-            <div className="mx-auto max-w-2xl">
-              <div className="bg-background/80 border-border rounded-lg border p-8 text-center shadow-lg backdrop-blur-sm">
-                <div className="mb-4 flex justify-center">
+      <section className="bg-background relative flex min-h-screen items-center justify-center overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.03),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20" />
+        </div>
+
+        <div className="relative mx-auto max-w-md px-6">
+          <Card className="text-center">
+            <CardContent className="pt-6">
+              <div className="mb-6 flex justify-center">
+                <div className="relative">
                   <Loader2 className="text-primary h-16 w-16 animate-spin" />
+                  <div className="bg-primary/10 absolute inset-0 animate-pulse rounded-full" />
                 </div>
-                <div className="mb-2 flex justify-center">
-                  <Badge variant="secondary">Checking Payment Status</Badge>
-                </div>
-                <h1 className="mb-4 text-2xl font-bold">
-                  Verifying Your Payment
-                </h1>
-                <p className="text-muted-foreground mb-8 leading-relaxed">
-                  Please wait while we confirm your payment status...
-                </p>
               </div>
-            </div>
-          </div>
+
+              <div className="mb-4 flex justify-center">
+                <Badge variant="secondary" className="gap-2">
+                  <Clock className="h-3 w-3" />
+                  Verifying Payment
+                </Badge>
+              </div>
+
+              <h1 className="mb-3 text-xl font-semibold">
+                Checking Payment Status
+              </h1>
+
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Please wait while we confirm your payment...
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </section>
     );
@@ -194,111 +223,113 @@ export function PaymentStatusContent() {
   const config = statusConfigs[status];
 
   return (
-    <section className="flex min-h-screen flex-col">
-      <div className="bg-background relative grow overflow-hidden">
-        <BackgroundPattern />
-        <div className="relative px-4 py-16">
-          <div className="mx-auto max-w-2xl">
-            {/* Status Badge */}
-            <div className="mb-6 text-center">
-              <div className="border-border bg-background/50 mb-6 inline-flex items-center rounded-full border px-3 py-1 text-sm backdrop-blur-sm">
-                <Badge variant={config.badgeVariant} className="border-0">
-                  {config.badgeText}
-                </Badge>
+    <section className="bg-background relative flex min-h-screen items-center justify-center overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(120,119,198,0.03),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20" />
+      </div>
+
+      <div className="relative mx-auto max-w-2xl px-6">
+        {/* Status Badge */}
+        <div className="mb-8 text-center">
+          <Badge variant={config.badgeVariant} className="">
+            {status === "success" && <Sparkles className="h-3 w-3" />}
+            {status === "failed" && <AlertCircle className="h-3 w-3" />}
+            {status === "pending" && <Clock className="h-3 w-3" />}
+            {status === "cancelled" && <XCircle className="h-3 w-3" />}
+            {config.badgeText}
+          </Badge>
+        </div>
+
+        {/* Main Content Card */}
+        <Card className="text-center">
+          <CardContent className="pt-8">
+            {/* Icon with animation */}
+            <div className="mb-8 flex justify-center">
+              <div className="relative">
+                {config.icon}
+                {status === "success" && (
+                  <div className="absolute -inset-2 rounded-full" />
+                )}
               </div>
             </div>
 
-            {/* Main Content Card */}
-            <div className="bg-background/80 border-border rounded-lg border p-8 text-center shadow-lg backdrop-blur-sm">
-              <div className="mb-6 flex justify-center">{config.icon}</div>
+            {/* Title */}
+            <h1 className="text-foreground mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
+              {config.title}
+            </h1>
 
-              <h1 className="text-foreground mb-6 text-3xl font-bold tracking-tight sm:text-4xl">
-                {config.title}
-              </h1>
+            {/* Description */}
+            <p className="text-muted-foreground mx-auto mb-8 max-w-lg text-lg leading-relaxed">
+              {config.description}
+            </p>
 
-              <p className="text-muted-foreground mx-auto mb-8 max-w-lg text-lg leading-relaxed">
-                {config.description}
-              </p>
-
-              {sessionId && (
-                <div className="bg-muted/50 border-border mb-8 rounded-lg border p-4">
-                  <p className="text-muted-foreground text-sm">
-                    Session ID:{" "}
-                    <code className="bg-background rounded px-2 py-1 font-mono text-xs">
+            {/* Session ID */}
+            {sessionId && (
+              <Alert className="mb-8">
+                <CreditCard className="h-4 w-4" />
+                <AlertDescription>
+                  <span className="text-muted-foreground text-sm">
+                    Transaction ID:{" "}
+                    <code className="bg-muted rounded px-2 py-1 font-mono text-xs">
                       {sessionId}
                     </code>
-                  </p>
-                </div>
-              )}
+                  </span>
+                </AlertDescription>
+              </Alert>
+            )}
 
-              {error && (
-                <div className="mb-8 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950/20">
-                  <p className="text-sm text-red-700 dark:text-red-300">
-                    {error}
-                  </p>
-                </div>
-              )}
+            {/* Error Message */}
+            {error && (
+              <Alert variant="destructive" className="mb-8">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
 
-              <div className="space-y-4">
+            {/* Action Buttons */}
+            <div className="space-x-3">
+              <Button
+                asChild
+                variant={config.primaryAction.variant}
+                size="lg"
+                className="w-full min-w-[200px] sm:w-auto"
+              >
+                <Link
+                  href={config.primaryAction.href}
+                  className="flex items-center justify-center gap-2"
+                >
+                  {status === "success" && <Home className="h-4 w-4" />}
+                  {status === "failed" && <ArrowRight className="h-4 w-4" />}
+                  {status === "pending" && <Home className="h-4 w-4" />}
+                  {status === "cancelled" && <ArrowRight className="h-4 w-4" />}
+                  {config.primaryAction.text}
+                </Link>
+              </Button>
+
+              {config.secondaryAction && (
                 <Button
                   asChild
-                  variant={config.primaryAction.variant}
+                  variant="ghost"
                   size="lg"
                   className="w-full min-w-[200px] sm:w-auto"
                 >
                   <Link
-                    href={config.primaryAction.href}
+                    href={config.secondaryAction.href}
                     className="flex items-center justify-center gap-2"
                   >
-                    {config.primaryAction.text}
-                    <ArrowRight className="h-4 w-4" />
+                    {status === "success" && <Settings className="h-4 w-4" />}
+                    {status === "failed" && <Mail className="h-4 w-4" />}
+                    {status === "pending" && <CreditCard className="h-4 w-4" />}
+                    {status === "cancelled" && <Home className="h-4 w-4" />}
+                    {config.secondaryAction.text}
                   </Link>
                 </Button>
-
-                {config.secondaryAction && (
-                  <Button
-                    asChild
-                    variant="ghost"
-                    size="lg"
-                    className="w-full min-w-[200px] sm:w-auto"
-                  >
-                    <Link href={config.secondaryAction.href}>
-                      {config.secondaryAction.text}
-                    </Link>
-                  </Button>
-                )}
-              </div>
-
-              {status === "success" && (
-                <div className="mt-8 rounded-lg border border-green-200 bg-green-50 p-6 dark:border-green-800 dark:bg-green-950/20">
-                  <h3 className="mb-4 text-lg font-semibold text-green-800 dark:text-green-200">
-                    🎉 What's Next?
-                  </h3>
-                  <div className="grid gap-3 text-left">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-green-500"></div>
-                      <p className="text-sm text-green-700 dark:text-green-300">
-                        Access all premium features in your dashboard
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-green-500"></div>
-                      <p className="text-sm text-green-700 dark:text-green-300">
-                        Check your email for the receipt and welcome guide
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-green-500"></div>
-                      <p className="text-sm text-green-700 dark:text-green-300">
-                        Manage your subscription in billing settings
-                      </p>
-                    </div>
-                  </div>
-                </div>
               )}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );

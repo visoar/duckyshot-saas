@@ -1,25 +1,26 @@
 import { auth } from "@/lib/auth/server";
 import { getUserSubscription } from "@/lib/database/subscription";
-import { billing } from "@/lib/billing";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
-
-const paymentStatusSchema = z.object({
-  sessionId: z.string().optional(),
-});
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { searchParams } = new URL(request.url);
+    const sessionId =
+      searchParams.get("sessionId") || searchParams.get("checkout_id");
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { error: "Session ID is required" },
+        { status: 400 },
+      );
     }
 
-    const { searchParams } = new URL(request.url);
-    const sessionId = searchParams.get("sessionId");
+    // Try to get user session, but don't require it for payment status check
+    const session = await auth.api.getSession({ headers: request.headers });
+    const userId = session?.user?.id;
 
-    // Check user's current subscription status
-    const subscription = await getUserSubscription(session.user.id);
+    // Check user's current subscription status if user is logged in
+    const subscription = userId ? await getUserSubscription(userId) : null;
 
     if (subscription) {
       // User has a subscription, check its status
@@ -42,6 +43,15 @@ export async function GET(request: NextRequest) {
           message: "Payment failed or subscription is past due",
         });
       } else if (subscription.status === "canceled") {
+        // If there's a sessionId, it means this is a payment flow
+        // Don't treat existing canceled subscription as payment cancellation
+        if (sessionId) {
+          return NextResponse.json({
+            status: "pending",
+            message: "Payment is being processed",
+            sessionId,
+          });
+        }
         return NextResponse.json({
           status: "cancelled",
           subscription,
@@ -53,23 +63,68 @@ export async function GET(request: NextRequest) {
     // If no subscription found or status is unclear, check with payment provider
     if (sessionId) {
       try {
-        // Note: This would require implementing a method to check session status
-        // with the payment provider. For now, we'll return pending status.
+        // Check checkout status with Creem
+        const { creemClient, creemApiKey } = await import(
+          "@/lib/billing/creem/client"
+        );
+
+        const checkoutResponse = await creemClient.retrieveCheckout({
+          xApiKey: creemApiKey,
+          checkoutId: sessionId,
+        });
+
+        if (checkoutResponse?.status) {
+          // Map Creem checkout status to our payment status
+          switch (checkoutResponse.status) {
+            case "completed":
+              return NextResponse.json({
+                status: "success",
+                message: "Payment completed successfully",
+                sessionId,
+              });
+            case "failed":
+              return NextResponse.json({
+                status: "failed",
+                message: "Payment failed",
+                sessionId,
+              });
+            case "canceled":
+              return NextResponse.json({
+                status: "cancelled",
+                message: "Payment was cancelled",
+                sessionId,
+              });
+            case "pending":
+            case "processing":
+            default:
+              return NextResponse.json({
+                status: "pending",
+                message:
+                  "Payment is being processed. This may take a few minutes.",
+                sessionId,
+              });
+          }
+        }
+
+        // Fallback if no status available
         return NextResponse.json({
           status: "pending",
-          message: "Payment is being processed",
+          message: "Payment is being processed. This may take a few minutes.",
           sessionId,
         });
       } catch (error) {
-        console.error("Error checking payment provider status:", error);
+        console.error("Error checking Creem payment status:", error);
+        // If we can't check with Creem, return pending to avoid false negatives
         return NextResponse.json({
-          status: "failed",
-          message: "Unable to verify payment status",
+          status: "pending",
+          message: "Payment status is being verified. Please wait a moment.",
+          sessionId,
         });
       }
     }
 
-    // Default to pending if we can't determine status
+    // If no sessionId and no subscription, user might be checking status without context
+    // Default to pending to avoid showing incorrect cancelled status
     return NextResponse.json({
       status: "pending",
       message: "Payment status is being verified",

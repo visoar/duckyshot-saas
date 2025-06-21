@@ -39,7 +39,10 @@ import { requireAdmin, requireSuperAdmin } from "../auth/permissions";
 import { revalidatePath } from "next/cache";
 import { creemClient } from "../billing/creem/client";
 import env from "@/env";
-import { deleteFile as deleteFileFromR2 } from "../r2";
+import {
+  deleteFiles as deleteFilesFromR2,
+  deleteFile as deleteFileFromR2,
+} from "../r2";
 import type { UserRole } from "../config/roles";
 
 // --- 安全的 Action Client ---
@@ -569,21 +572,20 @@ export const batchDeleteUploadsAction = adminAction
       throw new Error("No uploads found to delete.");
     }
 
-    const successfulDeletions: string[] = [];
-    for (const record of records) {
-      const result = await deleteFileFromR2(record.fileKey);
-      if (result.success) {
-        successfulDeletions.push(record.id);
-      }
+    const fileKeysToDelete = records.map((r) => r.fileKey);
+    const deleteResult = await deleteFilesFromR2(fileKeysToDelete);
+
+    if (!deleteResult.success) {
+      // 如果批量删除失败，可以抛出错误或返回部分成功的消息
+      throw new Error(deleteResult.error || "Failed to delete files from R2.");
     }
 
-    if (successfulDeletions.length > 0) {
-      await db.delete(uploads).where(inArray(uploads.id, successfulDeletions));
-    }
+    // 只有在 R2 删除成功后，才从数据库中删除记录
+    await db.delete(uploads).where(inArray(uploads.id, uploadIds));
 
     revalidatePath("/dashboard/admin/uploads");
     return {
       success: true,
-      message: `Deleted ${successfulDeletions.length} of ${records.length} files.`,
+      message: `Successfully deleted ${records.length} file(s).`,
     };
   });

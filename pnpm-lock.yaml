@@ -28,9 +28,6 @@ importers:
       "@markdoc/markdoc":
         specifier: ^0.5.2
         version: 0.5.2(@types/react@19.1.8)(react@19.1.0)
-      "@next/bundle-analyzer":
-        specifier: ^15.3.4
-        version: 15.3.4
       "@radix-ui/react-accordion":
         specifier: ^1.2.11
         version: 1.2.11(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -221,6 +218,9 @@ importers:
       "@jest/globals":
         specifier: ^30.0.2
         version: 30.0.2
+      "@next/bundle-analyzer":
+        specifier: ^15.3.4
+        version: 15.3.4
       "@tailwindcss/postcss":
         specifier: ^4.1.10
         version: 4.1.10
