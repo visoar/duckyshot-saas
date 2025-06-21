@@ -15,12 +15,13 @@ import {
   count,
   and,
   or,
-  ilike,
   gte,
   lte,
+  ilike,
   like,
   not,
   SQLWrapper,
+  inArray,
 } from "drizzle-orm";
 import type {
   UserWithSubscription,
@@ -32,13 +33,36 @@ import {
   getProductTierById,
   getProductTierByProductId,
 } from "@/lib/config/products";
+import { createSafeActionClient } from "next-safe-action";
+import { z } from "zod";
+import { requireAdmin, requireSuperAdmin } from "../auth/permissions";
+import { revalidatePath } from "next/cache";
+import { creemClient } from "../billing/creem/client";
+import env from "@/env";
+import { deleteFile as deleteFileFromR2 } from "../r2";
+import type { UserRole } from "../config/roles";
 
-// --- getUsers (已完成) ---
+// --- 安全的 Action Client ---
+const actionClient = createSafeActionClient();
+
+const adminAction = actionClient.use(async ({ next }) => {
+  const user = await requireAdmin();
+  return next({ ctx: { user } });
+});
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const superAdminAction = actionClient.use(async ({ next }) => {
+  const user = await requireSuperAdmin();
+  return next({ ctx: { user } });
+});
+
+// --- 数据查询函数 ---
+// (此部分代码保持不变，为简洁起见省略)
 interface GetUsersParams {
   page?: number;
   limit?: number;
   search?: string;
-  role?: (typeof userRoleEnum.enumValues)[number] | "all";
+  role?: UserRole | "all";
   sortBy?: "createdAt" | "name" | "email";
   sortOrder?: "asc" | "desc";
 }
@@ -99,9 +123,9 @@ export async function getUsers({
   rawUsers.forEach((user) => {
     const existingUser = usersMap.get(user.id);
     if (!existingUser) {
-      const subscriptions = [];
+      const userSubscriptions = [];
       if (user.subscriptionId && user.subscriptionStatus) {
-        subscriptions.push({
+        userSubscriptions.push({
           subscriptionId: user.subscriptionId,
           status: user.subscriptionStatus,
         });
@@ -115,7 +139,7 @@ export async function getUsers({
         role: user.role,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
-        subscriptions,
+        subscriptions: userSubscriptions,
       });
     } else if (user.subscriptionId && user.subscriptionStatus) {
       const subscriptionExists = existingUser.subscriptions.some(
@@ -133,7 +157,7 @@ export async function getUsers({
   const usersList = Array.from(usersMap.values());
 
   return {
-    users: usersList,
+    data: usersList,
     pagination: {
       page,
       limit,
@@ -143,7 +167,6 @@ export async function getUsers({
   };
 }
 
-// --- getPayments ---
 interface GetPaymentsParams {
   page?: number;
   limit?: number;
@@ -236,12 +259,11 @@ export async function getPayments({
     }));
 
   return {
-    payments: paymentsList,
+    data: paymentsList,
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   };
 }
 
-// --- getSubscriptions ---
 interface GetSubscriptionsParams {
   page?: number;
   limit?: number;
@@ -335,12 +357,10 @@ export async function getSubscriptions({
     });
 
   return {
-    subscriptions: subscriptionsList,
+    data: subscriptionsList,
     pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
   };
 }
-
-// --- getUploads ---
 interface GetUploadsParams {
   page?: number;
   limit?: number;
@@ -355,7 +375,7 @@ export async function getUploads({
   fileType = "all",
 }: GetUploadsParams) {
   const offset = (page - 1) * limit;
-  const conditions = [];
+  const conditions: (SQLWrapper | undefined)[] = [];
 
   if (search) {
     conditions.push(
@@ -391,7 +411,10 @@ export async function getUploads({
     }
   }
 
-  const whereCondition = conditions.length > 0 ? and(...conditions) : undefined;
+  const whereCondition =
+    conditions.length > 0
+      ? and(...(conditions.filter(Boolean) as SQLWrapper[]))
+      : undefined;
 
   const uploadsDataQuery = db
     .select({
@@ -429,7 +452,7 @@ export async function getUploads({
   ]);
 
   return {
-    uploads: uploadsData,
+    data: uploadsData,
     pagination: {
       page,
       limit,
@@ -438,3 +461,129 @@ export async function getUploads({
     },
   };
 }
+
+// --- Server Actions ---
+
+const updateUserSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1).optional(),
+  role: z.enum(userRoleEnum.enumValues).optional(),
+});
+
+export const updateUserAction = adminAction
+  .schema(updateUserSchema)
+  .action(async ({ parsedInput: input, ctx }) => {
+    const [targetUser] = await db
+      .select({ role: users.role })
+      .from(users)
+      .where(eq(users.id, input.id))
+      .limit(1);
+
+    if (!targetUser) {
+      throw new Error("User not found");
+    }
+
+    if (
+      (targetUser.role === "super_admin" || input.role === "super_admin") &&
+      ctx.user.role !== "super_admin"
+    ) {
+      throw new Error("Insufficient permissions to modify super_admin");
+    }
+
+    if (
+      input.id === ctx.user.id &&
+      input.role &&
+      input.role !== ctx.user.role
+    ) {
+      throw new Error("Cannot modify your own role");
+    }
+
+    await db.update(users).set(input).where(eq(users.id, input.id));
+    revalidatePath("/dashboard/admin/users");
+    return { success: true, message: "User updated successfully." };
+  });
+
+const cancelSubscriptionSchema = z.object({
+  subscriptionId: z.string(),
+});
+
+export const cancelSubscriptionAction = adminAction
+  .schema(cancelSubscriptionSchema)
+  .action(async ({ parsedInput: { subscriptionId } }) => {
+    const [subscription] = await db
+      .select()
+      .from(subscriptions)
+      .where(eq(subscriptions.subscriptionId, subscriptionId))
+      .limit(1);
+
+    if (!subscription) {
+      throw new Error("Subscription not found");
+    }
+
+    await creemClient.cancelSubscription({
+      xApiKey: env.CREEM_API_KEY,
+      id: subscription.subscriptionId,
+    });
+
+    revalidatePath("/dashboard/admin/subscriptions");
+    return { success: true, message: "Subscription cancellation initiated." };
+  });
+
+const deleteUploadSchema = z.object({
+  uploadId: z.string(),
+});
+
+export const deleteUploadAction = adminAction
+  .schema(deleteUploadSchema)
+  .action(async ({ parsedInput: { uploadId } }) => {
+    const [upload] = await db
+      .select({ fileKey: uploads.fileKey })
+      .from(uploads)
+      .where(eq(uploads.id, uploadId))
+      .limit(1);
+
+    if (!upload) {
+      throw new Error("Upload not found");
+    }
+
+    await deleteFileFromR2(upload.fileKey);
+    await db.delete(uploads).where(eq(uploads.id, uploadId));
+
+    revalidatePath("/dashboard/admin/uploads");
+    return { success: true, message: "Upload deleted successfully." };
+  });
+
+const batchDeleteUploadsSchema = z.object({
+  uploadIds: z.array(z.string()).min(1),
+});
+
+export const batchDeleteUploadsAction = adminAction
+  .schema(batchDeleteUploadsSchema)
+  .action(async ({ parsedInput: { uploadIds } }) => {
+    const records = await db
+      .select({ id: uploads.id, fileKey: uploads.fileKey })
+      .from(uploads)
+      .where(inArray(uploads.id, uploadIds));
+
+    if (records.length === 0) {
+      throw new Error("No uploads found to delete.");
+    }
+
+    const successfulDeletions: string[] = [];
+    for (const record of records) {
+      const result = await deleteFileFromR2(record.fileKey);
+      if (result.success) {
+        successfulDeletions.push(record.id);
+      }
+    }
+
+    if (successfulDeletions.length > 0) {
+      await db.delete(uploads).where(inArray(uploads.id, successfulDeletions));
+    }
+
+    revalidatePath("/dashboard/admin/uploads");
+    return {
+      success: true,
+      message: `Deleted ${successfulDeletions.length} of ${records.length} files.`,
+    };
+  });

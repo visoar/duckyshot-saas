@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useState, ReactNode, useTransition, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -19,6 +18,12 @@ import { AdminTableBase } from "@/components/admin/admin-table-base";
 import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
 import { formatFileSize } from "@/lib/config/upload";
 import { useAdminTable } from "@/hooks/use-admin-table";
+import {
+  getUploads,
+  deleteUploadAction,
+  batchDeleteUploadsAction,
+} from "@/lib/actions/admin";
+import Image from "next/image";
 
 interface Upload {
   id: string;
@@ -31,8 +36,8 @@ interface Upload {
   createdAt: Date;
   user: {
     id: string;
-    name: string;
-    email: string;
+    name: string | null;
+    email: string | null;
     image?: string | null;
   };
 }
@@ -51,7 +56,31 @@ export function UploadManagementTable({
   initialData,
   initialPagination,
 }: UploadManagementTableProps) {
-  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [selectedUpload, setSelectedUpload] = useState<Upload | null>(null);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [uploadToDelete, setUploadToDelete] = useState<Upload | null>(null);
+  const [selectedUploads, setSelectedUploads] = useState<Set<string>>(
+    new Set(),
+  );
+  const [isBatchDeleteConfirmOpen, setIsBatchDeleteConfirmOpen] =
+    useState(false);
+
+  const queryUploads = useCallback(
+    async ({
+      page,
+      limit,
+      search,
+      filter,
+    }: {
+      page: number;
+      limit: number;
+      search?: string;
+      filter?: string;
+    }) => getUploads({ page, limit, search, fileType: filter }),
+    [],
+  );
+
   const {
     data: uploads,
     loading,
@@ -62,73 +91,43 @@ export function UploadManagementTable({
     setSearchTerm: handleSearch,
     setFilter: handleFileTypeFilter,
     setCurrentPage,
+    refresh,
   } = useAdminTable<Upload>({
-    apiEndpoint: "/api/admin/uploads",
-    dataKey: "uploads",
-    filterKey: "fileType",
+    queryAction: queryUploads,
     initialData,
     initialPagination,
   });
 
-  const [selectedUpload, setSelectedUpload] = useState<Upload | null>(null);
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [uploadToDelete, setUploadToDelete] = useState<Upload | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [selectedUploads, setSelectedUploads] = useState<Set<string>>(
-    new Set(),
-  );
-  const [isBatchDeleteConfirmOpen, setIsBatchDeleteConfirmOpen] =
-    useState(false);
-
   const confirmDeleteUpload = async () => {
     if (!uploadToDelete) return;
-    setIsDeleting(true);
-    try {
-      const response = await fetch(`/api/admin/uploads/${uploadToDelete.id}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) throw new Error("Failed to delete upload");
-      toast.success("Upload deleted successfully");
-      setUploadToDelete(null);
-      router.refresh(); // Refresh page data to update stats
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to delete upload",
-      );
-    } finally {
-      setIsDeleting(false);
-    }
+    startTransition(async () => {
+      const result = await deleteUploadAction({ uploadId: uploadToDelete.id });
+      if (result.data) {
+        toast.success(result.data.message);
+        setUploadToDelete(null);
+        refresh();
+      } else if (result.serverError) {
+        toast.error(result.serverError);
+      }
+    });
   };
 
   const handleBatchDelete = async () => {
     if (selectedUploads.size === 0) return;
-    setIsDeleting(true);
-    try {
-      const response = await fetch("/api/admin/uploads/batch-delete", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uploadIds: Array.from(selectedUploads) }),
+    startTransition(async () => {
+      const result = await batchDeleteUploadsAction({
+        uploadIds: Array.from(selectedUploads),
       });
-      if (!response.ok) throw new Error("Failed to delete uploads");
 
-      const result = await response.json();
-      if (result.failedDeletions > 0) {
-        toast.warning(
-          `Deleted ${result.deletedCount} files, ${result.failedDeletions} failed.`,
-        );
-      } else {
-        toast.success(`Successfully deleted ${result.deletedCount} files`);
+      if (result.data) {
+        toast.success(result.data.message);
+        setSelectedUploads(new Set());
+        setIsBatchDeleteConfirmOpen(false);
+        refresh();
+      } else if (result.serverError) {
+        toast.error(result.serverError);
       }
-      setSelectedUploads(new Set());
-      setIsBatchDeleteConfirmOpen(false);
-      router.refresh(); // Refresh page data to update stats
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to delete uploads",
-      );
-    } finally {
-      setIsDeleting(false);
-    }
+    });
   };
 
   const handleSelectUpload = (uploadId: string, checked: boolean) => {
@@ -219,18 +218,16 @@ export function UploadManagementTable({
           >
             <Eye className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => window.open(upload.url, "_blank")}
-          >
-            <ExternalLink className="h-4 w-4" />
+          <Button variant="ghost" size="icon" asChild>
+            <a href={upload.url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink className="h-4 w-4" />
+            </a>
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setUploadToDelete(upload)}
-            disabled={isDeleting}
+            disabled={isPending}
           >
             <Trash2 className="text-destructive h-4 w-4" />
           </Button>
@@ -261,9 +258,13 @@ export function UploadManagementTable({
             variant="destructive"
             size="sm"
             onClick={() => setIsBatchDeleteConfirmOpen(true)}
-            disabled={isDeleting}
+            disabled={isPending}
           >
-            <Trash2 className="mr-2 h-4 w-4" />
+            {isPending && selectedUploads.size > 1 ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="mr-2 h-4 w-4" />
+            )}
             Delete Selected
           </Button>
         </div>
@@ -294,9 +295,11 @@ export function UploadManagementTable({
           {selectedUpload && (
             <div className="space-y-4 py-4">
               {selectedUpload.contentType.startsWith("image/") && (
-                <img
+                <Image
                   src={selectedUpload.url}
                   alt={selectedUpload.fileName}
+                  width={400}
+                  height={300}
                   className="max-h-64 w-full rounded-md object-contain"
                 />
               )}
@@ -326,27 +329,28 @@ export function UploadManagementTable({
             <DialogDescription>
               Are you sure you want to delete this file? This action is
               irreversible.
-              <div className="group cursor-pointer rounded-md hover:bg-gray-100">
-                <p className="mt-2 max-w-md truncate font-medium group-hover:overflow-visible group-hover:text-clip group-hover:whitespace-normal">
-                  this-is-another-super-long-file-name-that-will-be-truncated-by-default.zip
-                </p>
-              </div>
             </DialogDescription>
+            <div className="bg-muted mt-2 rounded border p-2">
+              <p className="text-muted-foreground mb-1 text-sm">File name:</p>
+              <p className="text-sm font-medium break-all">
+                {uploadToDelete?.fileName}
+              </p>
+            </div>
           </DialogHeader>
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setUploadToDelete(null)}
-              disabled={isDeleting}
+              disabled={isPending}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={confirmDeleteUpload}
-              disabled={isDeleting}
+              disabled={isPending}
             >
-              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete
             </Button>
           </DialogFooter>
@@ -370,16 +374,16 @@ export function UploadManagementTable({
             <Button
               variant="outline"
               onClick={() => setIsBatchDeleteConfirmOpen(false)}
-              disabled={isDeleting}
+              disabled={isPending}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={handleBatchDelete}
-              disabled={isDeleting}
+              disabled={isPending}
             >
-              {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete
             </Button>
           </DialogFooter>

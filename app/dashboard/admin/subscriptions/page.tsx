@@ -40,7 +40,7 @@ export default async function SubscriptionsPage() {
         </CardHeader>
         <CardContent>
           <SubscriptionManagementTable
-            initialData={initialTableData.subscriptions}
+            initialData={initialTableData.data}
             initialPagination={initialTableData.pagination}
           />
         </CardContent>

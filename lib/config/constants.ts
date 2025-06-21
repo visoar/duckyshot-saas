@@ -18,7 +18,7 @@ export const AVATAR_STYLE = "adventurer-neutral";
 export const CONTACT_EMAIL = "support@ullrai.com";
 export const LEGAL_EMAIL = "legal@ullrai.com";
 export const PRIVACY_EMAIL = "privacy@ullrai.com";
-export const DEFAULT_EMAIL = "noreply@mail.ullrai.com";
+export const RESEND_EMAIL_FROM = "noreply@mail.ullrai.com";
 
 // External Links
 export const GITHUB_URL = "https://github.com/ullrai/saas-starter";

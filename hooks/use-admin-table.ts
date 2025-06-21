@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+"use client";
+
+import { useState, useEffect, useCallback, useRef, useTransition } from "react";
 import { useDebounce } from "use-debounce";
 
 interface Pagination {
@@ -8,16 +10,23 @@ interface Pagination {
   totalPages: number;
 }
 
+interface AdminTableQueryArgs {
+  page: number;
+  limit: number;
+  search?: string;
+  filter?: string;
+  [key: string]: any;
+}
+
 interface UseAdminTableProps<T> {
-  apiEndpoint: string;
-  dataKey: string;
-  filterKey?: string;
-  initialPage?: number;
-  initialLimit?: number;
-  initialSearch?: string;
-  initialFilter?: string;
+  queryAction: (
+    args: AdminTableQueryArgs,
+  ) => Promise<{ data: T[]; pagination: Pagination }>;
   initialData?: T[];
   initialPagination?: Pagination;
+  initialSearch?: string;
+  initialFilter?: string;
+  debounceDelay?: number;
 }
 
 interface UseAdminTableReturn<T> {
@@ -34,100 +43,100 @@ interface UseAdminTableReturn<T> {
 }
 
 export function useAdminTable<T>({
-  apiEndpoint,
-  dataKey,
-  filterKey = "status",
-  initialPage = 1,
-  initialLimit = 20,
+  queryAction,
+  initialData = [],
+  initialPagination = { page: 1, limit: 20, total: 0, totalPages: 1 },
   initialSearch = "",
   initialFilter = "all",
-  initialData,
-  initialPagination,
+  debounceDelay = 500,
 }: UseAdminTableProps<T>): UseAdminTableReturn<T> {
-  const [data, setData] = useState<T[]>(initialData || []);
-  const [pagination, setPagination] = useState<Pagination>(
-    initialPagination || {
-      page: initialPage,
-      limit: initialLimit,
-      total: 0,
-      totalPages: 1,
-    },
-  );
-  const [loading, setLoading] = useState(!initialData); // Only load initially if no initialData
+  const [data, setData] = useState<T[]>(initialData);
+  const [pagination, setPagination] = useState<Pagination>(initialPagination);
   const [error, setError] = useState<string | null>(null);
+
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [filter, setFilter] = useState(initialFilter);
-  const [currentPage, setCurrentPage] = useState(initialPage);
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
+  const [currentPage, setCurrentPage] = useState(initialPagination.page);
+
+  const [debouncedSearchTerm] = useDebounce(searchTerm, debounceDelay);
+  const [isPending, startTransition] = useTransition();
 
   const isInitialMount = useRef(true);
 
-  const fetchData = useCallback(
-    async (isRefetch = false) => {
-      // Don't fetch on initial mount if initialData is provided
-      if (isInitialMount.current && initialData && !isRefetch) {
-        isInitialMount.current = false;
-        return;
-      }
+  // FIX: Store queryAction in a ref to maintain a stable reference
+  const queryActionRef = useRef(queryAction);
+  useEffect(() => {
+    queryActionRef.current = queryAction;
+  }, [queryAction]);
 
-      setLoading(true);
+  // FIX: Major change here to fix the infinite loop
+  useEffect(() => {
+    // Skip fetch on initial mount if we already have data
+    if (isInitialMount.current && initialData.length > 0) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    // Set initial mount to false after the first run
+    isInitialMount.current = false;
+
+    startTransition(async () => {
       setError(null);
       try {
-        const params = new URLSearchParams({
-          page: currentPage.toString(),
-          limit: initialLimit.toString(),
+        const result = await queryActionRef.current({
+          page: currentPage,
+          limit: initialPagination.limit,
+          search: debouncedSearchTerm,
+          filter: filter,
         });
-        if (debouncedSearchTerm) params.set("search", debouncedSearchTerm);
-        if (filter !== "all") params.set(filterKey, filter);
-
-        const response = await fetch(`${apiEndpoint}?${params.toString()}`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch data from ${apiEndpoint}`);
-        }
-        const result = await response.json();
-        setData(result[dataKey] || []);
+        setData(result.data);
         setPagination(result.pagination);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "An unknown error occurred",
         );
-      } finally {
-        setLoading(false);
       }
-    },
-    [
-      apiEndpoint,
-      dataKey,
-      currentPage,
-      initialLimit,
-      debouncedSearchTerm,
-      filter,
-      filterKey,
-      initialData, // Add initialData to dependency array
-    ],
-  );
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    });
+    // FIX: The dependency array is now stable and correct.
+  }, [currentPage, debouncedSearchTerm, filter, initialPagination.limit]);
 
   // Reset page to 1 when search or filter changes
   useEffect(() => {
-    if (currentPage !== 1) {
+    if (!isInitialMount.current) {
       setCurrentPage(1);
     }
   }, [debouncedSearchTerm, filter]);
 
+  const refresh = useCallback(() => {
+    startTransition(async () => {
+      setError(null);
+      try {
+        const result = await queryActionRef.current({
+          page: currentPage,
+          limit: initialPagination.limit,
+          search: debouncedSearchTerm,
+          filter: filter,
+        });
+        setData(result.data);
+        setPagination(result.pagination);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "An unknown error occurred",
+        );
+      }
+    });
+  }, [currentPage, debouncedSearchTerm, filter, initialPagination.limit]);
+
   return {
     data,
     pagination,
-    loading,
+    loading: isPending,
     error,
     searchTerm,
     filter,
     setSearchTerm,
     setFilter,
     setCurrentPage,
-    refresh: () => fetchData(true), // Pass true to force a refetch
+    refresh,
   };
 }

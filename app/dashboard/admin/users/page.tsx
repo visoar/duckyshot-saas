@@ -22,7 +22,6 @@ export const metadata = createMetadata({
 export default async function UserManagementPage() {
   await requireAdmin();
 
-  // Fetch initial table data
   const initialTableData = await getUsers({});
 
   return (
@@ -44,7 +43,7 @@ export default async function UserManagementPage() {
         </CardHeader>
         <CardContent>
           <UserManagementTable
-            initialData={initialTableData.users}
+            initialData={initialTableData.data}
             initialPagination={initialTableData.pagination}
           />
         </CardContent>

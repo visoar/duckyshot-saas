@@ -42,7 +42,7 @@ export default async function UploadManagementPage() {
         </CardHeader>
         <CardContent>
           <UploadManagementTable
-            initialData={initialTableData.uploads}
+            initialData={initialTableData.data}
             initialPagination={initialTableData.pagination}
           />
         </CardContent>

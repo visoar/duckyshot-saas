@@ -42,7 +42,7 @@ export default async function PaymentsPage() {
         </CardHeader>
         <CardContent>
           <PaymentManagementTable
-            initialData={initialTableData.payments}
+            initialData={initialTableData.data}
             initialPagination={initialTableData.pagination}
           />
         </CardContent>

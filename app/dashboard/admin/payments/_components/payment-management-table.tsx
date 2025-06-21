@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ExternalLink } from "lucide-react";
 import { AdminTableBase } from "@/components/admin/admin-table-base";
@@ -8,6 +8,7 @@ import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
 import { PaymentWithUser } from "@/types/billing";
 import { useAdminTable } from "@/hooks/use-admin-table";
 import { Button } from "@/components/ui/button";
+import { getPayments } from "@/lib/actions/admin";
 
 interface PaymentManagementTableProps {
   initialData: PaymentWithUser[];
@@ -75,7 +76,11 @@ const columns: Array<{
     key: "user",
     label: "User",
     render: (payment) => (
-      <UserAvatarCell name={payment.user?.name} email={payment.user?.email} />
+      <UserAvatarCell
+        name={payment.user?.name}
+        email={payment.user?.email}
+        image={payment.user?.image}
+      />
     ),
   },
   {
@@ -141,6 +146,33 @@ export function PaymentManagementTable({
   initialData,
   initialPagination,
 }: PaymentManagementTableProps) {
+  // FIX: Wrap queryAction with useCallback
+  const queryPayments = useCallback(
+    async ({
+      page,
+      limit,
+      search,
+      filter,
+    }: {
+      page: number;
+      limit: number;
+      search?: string;
+      filter?: string;
+    }) =>
+      getPayments({
+        page,
+        limit,
+        search,
+        status: filter as
+          | "succeeded"
+          | "failed"
+          | "pending"
+          | "canceled"
+          | "all",
+      }),
+    [],
+  );
+
   const {
     data: payments,
     loading,
@@ -152,9 +184,7 @@ export function PaymentManagementTable({
     setFilter: handleStatusFilter,
     setCurrentPage: handlePageChange,
   } = useAdminTable<PaymentWithUser>({
-    apiEndpoint: "/api/admin/payments",
-    dataKey: "payments",
-    filterKey: "status",
+    queryAction: queryPayments, // Use the wrapped function
     initialData,
     initialPagination,
   });

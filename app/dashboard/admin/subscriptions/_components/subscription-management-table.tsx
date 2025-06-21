@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useState, ReactNode, useTransition, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,6 +17,11 @@ import { AdminTableBase } from "@/components/admin/admin-table-base";
 import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
 import type { SubscriptionWithUser } from "@/types/billing";
 import { useAdminTable } from "@/hooks/use-admin-table";
+import {
+  getSubscriptions,
+  cancelSubscriptionAction,
+} from "@/lib/actions/admin";
+import { SubscriptionStatus } from "@/types/billing";
 
 interface SubscriptionManagementTableProps {
   initialData: SubscriptionWithUser[];
@@ -33,7 +37,30 @@ export function SubscriptionManagementTable({
   initialData,
   initialPagination,
 }: SubscriptionManagementTableProps) {
-  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [cancellingSubscription, setCancellingSubscription] =
+    useState<SubscriptionWithUser | null>(null);
+  const querySubscriptions = useCallback(
+    async ({
+      page,
+      limit,
+      search,
+      filter,
+    }: {
+      page: number;
+      limit: number;
+      search?: string;
+      filter?: string;
+    }) =>
+      getSubscriptions({
+        page,
+        limit,
+        search,
+        status: filter as SubscriptionStatus | "all",
+      }),
+    [],
+  );
+
   const {
     data: subscriptions,
     loading,
@@ -44,17 +71,12 @@ export function SubscriptionManagementTable({
     setSearchTerm: handleSearch,
     setFilter: handleStatusFilter,
     setCurrentPage: handlePageChange,
+    refresh,
   } = useAdminTable<SubscriptionWithUser>({
-    apiEndpoint: "/api/admin/subscriptions",
-    dataKey: "subscriptions",
-    filterKey: "status",
+    queryAction: querySubscriptions, // Use the wrapped function
     initialData,
     initialPagination,
   });
-
-  const [isCancelling, setIsCancelling] = useState(false);
-  const [cancellingSubscription, setCancellingSubscription] =
-    useState<SubscriptionWithUser | null>(null);
 
   const handleCancelClick = (subscription: SubscriptionWithUser) => {
     setCancellingSubscription(subscription);
@@ -62,33 +84,21 @@ export function SubscriptionManagementTable({
 
   const confirmCancelSubscription = async () => {
     if (!cancellingSubscription) return;
-    setIsCancelling(true);
 
-    try {
-      const response = await fetch(
-        `/api/admin/subscriptions/${cancellingSubscription.subscriptionId}`,
-        {
-          method: "DELETE",
-        },
-      );
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to cancel subscription");
+    startTransition(async () => {
+      const result = await cancelSubscriptionAction({
+        subscriptionId: cancellingSubscription.subscriptionId,
+      });
+
+      // FIX: Correctly handle next-safe-action result
+      if (result.data) {
+        toast.success(result.data.message);
+        setCancellingSubscription(null);
+        refresh();
+      } else if (result.serverError) {
+        toast.error(result.serverError);
       }
-      toast.success(
-        `Subscription for ${
-          cancellingSubscription.user?.name || "user"
-        } cancellation initiated.`,
-      );
-      router.refresh(); // Refresh page data to update table status
-    } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Failed to cancel subscription",
-      );
-    } finally {
-      setIsCancelling(false);
-      setCancellingSubscription(null);
-    }
+    });
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -168,7 +178,7 @@ export function SubscriptionManagementTable({
           variant="outline"
           size="sm"
           onClick={() => handleCancelClick(sub)}
-          disabled={sub.status === "canceled" || isCancelling}
+          disabled={sub.status === "canceled" || isPending}
         >
           <X className="mr-1 h-4 w-4" />
           Cancel
@@ -220,18 +230,16 @@ export function SubscriptionManagementTable({
             <Button
               variant="outline"
               onClick={() => setCancellingSubscription(null)}
-              disabled={isCancelling}
+              disabled={isPending}
             >
               Back
             </Button>
             <Button
               variant="destructive"
               onClick={confirmCancelSubscription}
-              disabled={isCancelling}
+              disabled={isPending}
             >
-              {isCancelling && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Confirm Cancellation
             </Button>
           </DialogFooter>

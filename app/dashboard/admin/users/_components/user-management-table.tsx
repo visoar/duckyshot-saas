@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { useState, ReactNode, useTransition, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -18,17 +17,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Edit, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AdminTableBase } from "@/components/admin/admin-table-base";
 import { UserAvatarCell } from "@/components/admin/user-avatar-cell";
 import { userRoleEnum } from "@/database/schema";
-import type { UserRole } from "@/lib/auth/permissions";
+import type { UserRole } from "@/lib/config/roles";
 import { useAdminTable } from "@/hooks/use-admin-table";
 import type { UserWithSubscription } from "@/types/billing";
+import { getUsers, updateUserAction } from "@/lib/actions/admin";
 
 interface UserManagementTableProps {
   initialData: UserWithSubscription[];
@@ -44,7 +44,27 @@ export function UserManagementTable({
   initialData,
   initialPagination,
 }: UserManagementTableProps) {
-  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [editingUser, setEditingUser] = useState<UserWithSubscription | null>(
+    null,
+  );
+
+  // FIX: Wrap queryAction with useCallback to stabilize its reference
+  const queryUsers = useCallback(
+    async ({
+      page,
+      limit,
+      search,
+      filter,
+    }: {
+      page: number;
+      limit: number;
+      search?: string;
+      filter?: string;
+    }) => getUsers({ page, limit, search, role: filter as UserRole | "all" }),
+    [],
+  );
+
   const {
     data: users,
     loading,
@@ -55,19 +75,13 @@ export function UserManagementTable({
     setSearchTerm: handleSearch,
     setFilter: handleRoleFilter,
     setCurrentPage: handlePageChange,
+    refresh,
   } = useAdminTable<UserWithSubscription>({
-    apiEndpoint: "/api/admin/users",
-    dataKey: "users",
-    filterKey: "role",
-    initialFilter: "all",
+    queryAction: queryUsers,
     initialData,
     initialPagination,
+    initialFilter: "all",
   });
-
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [editingUser, setEditingUser] = useState<UserWithSubscription | null>(
-    null,
-  );
 
   const handleEditUser = (user: UserWithSubscription) => {
     setEditingUser({ ...user });
@@ -75,31 +89,22 @@ export function UserManagementTable({
 
   const handleUpdateUser = async () => {
     if (!editingUser) return;
-    setIsUpdating(true);
 
-    try {
-      const response = await fetch(`/api/admin/users/${editingUser.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: editingUser.name,
-          role: editingUser.role,
-          emailVerified: editingUser.emailVerified,
-        }),
+    startTransition(async () => {
+      const result = await updateUserAction({
+        id: editingUser.id,
+        name: editingUser.name || undefined,
+        role: editingUser.role as UserRole,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update user");
+      if (result.data) {
+        toast.success(result.data.message);
+        setEditingUser(null);
+        refresh();
+      } else if (result.serverError || result.validationErrors) {
+        toast.error(result.serverError || "Validation failed.");
       }
-      toast.success("User updated successfully");
-      setEditingUser(null);
-      router.refresh(); // Refresh page data to update stats
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update user");
-    } finally {
-      setIsUpdating(false);
-    }
+    });
   };
 
   const formatDate = (dateString: Date) => {
@@ -122,7 +127,7 @@ export function UserManagementTable({
         <UserAvatarCell
           name={user.name}
           email={user.email}
-          image={user.image ?? undefined}
+          image={user.image}
         />
       ),
     },
@@ -200,6 +205,7 @@ export function UserManagementTable({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>Modify user details and role.</DialogDescription>
           </DialogHeader>
           {editingUser && (
             <div className="grid gap-4 py-4">
@@ -238,24 +244,18 @@ export function UserManagementTable({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="verified"
-                  checked={!!editingUser.emailVerified}
-                  onCheckedChange={(checked) =>
-                    setEditingUser({ ...editingUser, emailVerified: checked })
-                  }
-                />
-                <Label htmlFor="verified">Email Verified</Label>
-              </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingUser(null)}>
+            <Button
+              variant="outline"
+              onClick={() => setEditingUser(null)}
+              disabled={isPending}
+            >
               Cancel
             </Button>
-            <Button onClick={handleUpdateUser} disabled={isUpdating}>
-              {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button onClick={handleUpdateUser} disabled={isPending}>
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Changes
             </Button>
           </DialogFooter>
