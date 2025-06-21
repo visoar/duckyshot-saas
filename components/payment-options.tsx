@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // 引入 useEffect
 import {
   Card,
   CardContent,
@@ -28,6 +28,7 @@ import { useSession } from "@/lib/auth/client";
 import { useRouter } from "nextjs-toploader/app";
 import type { PaymentMode, BillingCycle } from "@/types/billing";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "./ui/skeleton"; // 引入骨架屏
 
 // 辅助函数：格式化价格
 const formatPrice = (price: number, currency: string = "USD") => {
@@ -49,6 +50,12 @@ export function PricingSection({ className }: { className?: string }) {
   const { data: session, isPending: isSessionLoading } = useSession();
   const router = useRouter();
 
+  // **修正点 1: 引入 mounted 状态来处理水合问题**
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const handleCheckout = async (
     tier: PricingTier,
     mode: PaymentMode,
@@ -68,6 +75,8 @@ export function PricingSection({ className }: { className?: string }) {
     setLoadingState({ tierId: tier.id, mode, cycle });
     toast.info("Preparing your secure checkout...");
 
+    let isRedirecting = false;
+
     try {
       const response = await fetch("/api/billing/checkout", {
         method: "POST",
@@ -81,7 +90,22 @@ export function PricingSection({ className }: { className?: string }) {
 
       const data = await response.json();
 
+      if (response.status === 409) {
+        toast.error(data.error || "You already have an active subscription.", {
+          action: {
+            label: "Manage Plan",
+            onClick: () => {
+              if (data.managementUrl) {
+                window.location.href = data.managementUrl;
+              }
+            },
+          },
+        });
+        return;
+      }
+
       if (response.ok && data.checkoutUrl) {
+        isRedirecting = true;
         window.location.href = data.checkoutUrl;
       } else {
         throw new Error(data.error || "Failed to create checkout session.");
@@ -94,7 +118,9 @@ export function PricingSection({ className }: { className?: string }) {
           : "An unexpected error occurred.",
       );
     } finally {
-      setLoadingState(null);
+      if (!isRedirecting) {
+        setLoadingState(null);
+      }
     }
   };
 
@@ -187,15 +213,18 @@ export function PricingSection({ className }: { className?: string }) {
             loadingState.mode === paymentMode &&
             (paymentMode === "one_time" || loadingState.cycle === billingCycle);
 
+          // **修正点 2: 决定按钮是否禁用的逻辑**
+          const isDisabled = !mounted || isLoading || isSessionLoading;
+
           return (
             <Card
               key={tier.id}
               className={cn(
                 "group relative transition-all duration-300 ease-out",
                 "hover:border-primary/30 hover:-translate-y-1 hover:shadow-xl",
-                "transform-gpu will-change-transform", // 减少CLS
+                "transform-gpu will-change-transform",
                 tier.isPopular &&
-                  "border-primary/50 ring-primary/20 from-primary/5 via-background to-background bg-gradient-to-br shadow-lg ring-1",
+                "border-primary/50 ring-primary/20 from-primary/5 via-background to-background bg-gradient-to-br shadow-lg ring-1",
               )}
             >
               {tier.isPopular && (
@@ -281,34 +310,39 @@ export function PricingSection({ className }: { className?: string }) {
                     </div>
                   ))}
                 </div>
-                <Button
-                  className={cn(
-                    "h-12 w-full cursor-pointer text-base font-semibold transition-all duration-200",
-                    "hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]",
-                    "disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none",
-                    tier.isPopular &&
+                {/* **修正点 3: 使用骨架屏处理未挂载或会话加载中的状态** */}
+                {!mounted || isSessionLoading ? (
+                  <Skeleton className="h-12 w-full" />
+                ) : (
+                  <Button
+                    className={cn(
+                      "h-12 w-full cursor-pointer text-base font-semibold transition-all duration-200",
+                      "hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]",
+                      "disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none",
+                      tier.isPopular &&
                       "bg-primary hover:bg-primary/90 shadow-lg",
-                  )}
-                  onClick={() =>
-                    handleCheckout(tier, paymentMode, billingCycle)
-                  }
-                  variant={tier.isPopular ? "default" : "outline"}
-                  disabled={isLoading || isSessionLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : !session?.user && !isSessionLoading ? (
-                    <>
-                      <LogIn className="mr-2 h-4 w-4" />
-                      Login to Get {tier.name}
-                    </>
-                  ) : (
-                    `Get ${tier.name}`
-                  )}
-                </Button>
+                    )}
+                    onClick={() =>
+                      handleCheckout(tier, paymentMode, billingCycle)
+                    }
+                    variant={tier.isPopular ? "default" : "outline"}
+                    disabled={isDisabled}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : !session?.user ? (
+                      <>
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Login to Get {tier.name}
+                      </>
+                    ) : (
+                      `Get ${tier.name}`
+                    )}
+                  </Button>
+                )}
               </CardContent>
             </Card>
           );

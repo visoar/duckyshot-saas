@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth/server";
 import { billing } from "@/lib/billing";
 import { Session } from "@/types/auth";
 import { z } from "zod";
+import { getUserSubscription } from "@/lib/database/subscription";
 
 const checkoutSchema = z.object({
   tierId: z.string(),
@@ -30,7 +31,34 @@ export async function POST(request: NextRequest) {
 
     const { tierId, paymentMode, billingCycle } = parsedBody.data;
 
-    // 1. 使用 URL 对象构建 successUrl，更安全健壮
+    // 仅在用户尝试购买新订阅时检查
+    if (paymentMode === "subscription") {
+      const existingSubscription = await getUserSubscription(session.user.id);
+
+      // --- 修正点: 移除了 `&& existingSubscription.tierId !== tierId` ---
+      // 只要存在任何有效的订阅，就阻止创建新的订阅。
+      if (
+        existingSubscription &&
+        (existingSubscription.status === "active" || existingSubscription.status === "trialing")
+      ) {
+        // 创建客户门户URL，以便前端可以引导用户去管理订阅
+        const { portalUrl } = await billing.createCustomerPortalUrl(
+          existingSubscription.customerId,
+        );
+
+        // 返回 409 Conflict 状态码，并附带管理链接
+        return NextResponse.json(
+          {
+            error: "You already have an active subscription. Please manage your plan from the billing portal.",
+            managementUrl: portalUrl,
+          },
+          { status: 409 },
+        );
+      }
+    }
+
+
+    // 使用 URL 对象构建 successUrl，更安全健壮
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     if (!appUrl) {
       throw new Error(
@@ -42,7 +70,7 @@ export async function POST(request: NextRequest) {
     successUrl.searchParams.set("page", "billing");
     successUrl.searchParams.set("status", "success");
 
-    // 2. 构建传递给 billing provider 的选项
+    // 构建传递给 billing provider 的选项
     const checkoutOptions = {
       userId: session.user.id,
       userEmail: session.user.email,
@@ -51,7 +79,6 @@ export async function POST(request: NextRequest) {
       paymentMode,
       billingCycle,
       successUrl: successUrl.toString(),
-      // 移除了 cancelUrl，因为它不被 CreemProvider 使用
     };
 
     const { checkoutUrl } =
@@ -59,7 +86,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ checkoutUrl });
   } catch (error) {
-    // Log detailed error information for debugging (server-side only)
     console.error("[Checkout API Error]", {
       message: error instanceof Error ? error.message : "Unknown error",
       stack: error instanceof Error ? error.stack : undefined,
@@ -67,7 +93,6 @@ export async function POST(request: NextRequest) {
       userId: session?.user?.id,
     });
 
-    // Return generic error message to client to prevent information leakage
     return NextResponse.json(
       { error: "Failed to create checkout session. Please try again later." },
       { status: 500 },

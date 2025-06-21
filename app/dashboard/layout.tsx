@@ -13,9 +13,9 @@ export default async function AppLayout({ children }: DashboardLayoutProps) {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="flex flex-col">
-          <SessionGuard>
-            <Suspense fallback={<Loading />}>{children}</Suspense>
-          </SessionGuard>
+        <SessionGuard>
+          <Suspense fallback={<Loading />}>{children}</Suspense>
+        </SessionGuard>
       </SidebarInset>
     </SidebarProvider>
   );
