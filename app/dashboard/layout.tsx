@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Loading from "@/app/loading";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "./_components/app-sidebar";
+import { SessionGuard } from "./_components/session-guard"; // 导入守卫组件
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -12,9 +13,9 @@ export default async function AppLayout({ children }: DashboardLayoutProps) {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="flex flex-col">
-        <div className="flex flex-1 flex-col">
-          <Suspense fallback={<Loading />}>{children}</Suspense>
-        </div>
+          <SessionGuard>
+            <Suspense fallback={<Loading />}>{children}</Suspense>
+          </SessionGuard>
       </SidebarInset>
     </SidebarProvider>
   );
