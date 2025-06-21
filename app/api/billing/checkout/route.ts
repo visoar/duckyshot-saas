@@ -39,7 +39,8 @@ export async function POST(request: NextRequest) {
       // 只要存在任何有效的订阅，就阻止创建新的订阅。
       if (
         existingSubscription &&
-        (existingSubscription.status === "active" || existingSubscription.status === "trialing")
+        (existingSubscription.status === "active" ||
+          existingSubscription.status === "trialing")
       ) {
         // 创建客户门户URL，以便前端可以引导用户去管理订阅
         const { portalUrl } = await billing.createCustomerPortalUrl(
@@ -49,14 +50,14 @@ export async function POST(request: NextRequest) {
         // 返回 409 Conflict 状态码，并附带管理链接
         return NextResponse.json(
           {
-            error: "You already have an active subscription. Please manage your plan from the billing portal.",
+            error:
+              "You already have an active subscription. Please manage your plan from the billing portal.",
             managementUrl: portalUrl,
           },
           { status: 409 },
         );
       }
     }
-
 
     // 使用 URL 对象构建 successUrl，更安全健壮
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;

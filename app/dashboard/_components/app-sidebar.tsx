@@ -42,7 +42,7 @@ const navigation: {
 }[] = [
   {
     title: "Home",
-    url: "/dashboard/home",
+    url: "/dashboard",
     icon: Home,
   },
   {

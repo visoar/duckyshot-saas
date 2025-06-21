@@ -224,7 +224,7 @@ export function PricingSection({ className }: { className?: string }) {
                 "hover:border-primary/30 hover:-translate-y-1 hover:shadow-xl",
                 "transform-gpu will-change-transform",
                 tier.isPopular &&
-                "border-primary/50 ring-primary/20 from-primary/5 via-background to-background bg-gradient-to-br shadow-lg ring-1",
+                  "border-primary/50 ring-primary/20 from-primary/5 via-background to-background bg-gradient-to-br shadow-lg ring-1",
               )}
             >
               {tier.isPopular && (
@@ -320,7 +320,7 @@ export function PricingSection({ className }: { className?: string }) {
                       "hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]",
                       "disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none",
                       tier.isPopular &&
-                      "bg-primary hover:bg-primary/90 shadow-lg",
+                        "bg-primary hover:bg-primary/90 shadow-lg",
                     )}
                     onClick={() =>
                       handleCheckout(tier, paymentMode, billingCycle)

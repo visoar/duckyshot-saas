@@ -19,7 +19,7 @@ export default async function authMiddleware(request: NextRequest) {
 
   // 如果用户已登录但尝试访问认证页面，则重定向到仪表盘主页
   if (hasSession && isAuthPage) {
-    return NextResponse.redirect(new URL("/dashboard/home", request.url));
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   // 如果用户未登录但尝试访问仪表盘，则重定向到登录页，并附带回调URL
