@@ -10,9 +10,11 @@ import {
   CreditCard,
   BarChart3,
   LucideIcon,
+  Database,
 } from "lucide-react";
 import { APP_NAME } from "@/lib/config/constants";
 import { isAdminRole, UserRole } from "@/lib/config/roles";
+import { enabledTablesMap } from "@/lib/config/admin-tables";
 
 import {
   Sidebar,
@@ -40,54 +42,60 @@ const navigation: {
   url: string;
   icon: LucideIcon;
 }[] = [
-  {
-    title: "Home",
-    url: "/dashboard",
-    icon: Home,
-  },
-  {
-    title: "Upload",
-    url: "/dashboard/upload",
-    icon: Upload,
-  },
-  {
-    title: "Settings",
-    url: "/dashboard/settings",
-    icon: Settings,
-  },
-];
+    {
+      title: "Home",
+      url: "/dashboard/home",
+      icon: Home,
+    },
+    {
+      title: "Upload",
+      url: "/dashboard/upload",
+      icon: Upload,
+    },
+    {
+      title: "Settings",
+      url: "/dashboard/settings",
+      icon: Settings,
+    },
+  ];
 
 const adminNavigation: {
   title: string;
   url: string;
   icon: LucideIcon;
 }[] = [
-  {
-    title: "Admin Dashboard",
-    url: "/dashboard/admin",
-    icon: BarChart3,
-  },
-  {
-    title: "User Management",
-    url: "/dashboard/admin/users",
-    icon: Users,
-  },
-  {
-    title: "Payments",
-    url: "/dashboard/admin/payments",
-    icon: CreditCard,
-  },
-  {
-    title: "Subscriptions",
-    url: "/dashboard/admin/subscriptions",
-    icon: Shield,
-  },
-  {
-    title: "Uploads Managements",
-    url: "/dashboard/admin/uploads",
-    icon: Upload,
-  },
-];
+    {
+      title: "Admin Dashboard",
+      url: "/dashboard/admin",
+      icon: BarChart3,
+    },
+    {
+      title: "User Management",
+      url: "/dashboard/admin/users",
+      icon: Users,
+    },
+    {
+      title: "Payments",
+      url: "/dashboard/admin/payments",
+      icon: CreditCard,
+    },
+    {
+      title: "Subscriptions",
+      url: "/dashboard/admin/subscriptions",
+      icon: Shield,
+    },
+    {
+      title: "Uploads Managements",
+      url: "/dashboard/admin/uploads",
+      icon: Upload,
+    },
+  ];
+
+const genericTableNavigation = Object.keys(enabledTablesMap).map((key) => ({
+  title: key.charAt(0).toUpperCase() + key.slice(1),
+  url: `/dashboard/admin/tables/${key}`,
+  icon: Database,
+}));
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -150,37 +158,74 @@ export function AppSidebar() {
 
         {/* Admin Navigation */}
         {isAdmin && (
-          <SidebarGroup>
-            <SidebarGroupContent className="flex flex-col gap-2">
-              {open && (
-                <div className="text-muted-foreground px-2 py-1 text-xs font-semibold">
-                  Admin
-                </div>
-              )}
-              <SidebarMenu>
-                {adminNavigation.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <div
-                      onClick={handleNavigation(item.url)}
-                      onDoubleClick={() => {
-                        handleNavigation(item.url)();
-                        toggleSidebar();
-                      }}
-                    >
-                      <SidebarMenuButton
-                        isActive={item.url === pathname}
-                        tooltip={item.title}
-                        className="cursor-pointer"
+          <>
+            <SidebarGroup>
+              <SidebarGroupContent className="flex flex-col gap-2">
+                {open && (
+                  <div className="text-muted-foreground px-2 py-1 text-xs font-semibold">
+                    Admin
+                  </div>
+                )}
+                <SidebarMenu>
+                  {adminNavigation.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <div
+                        onClick={handleNavigation(item.url)}
+                        onDoubleClick={() => {
+                          handleNavigation(item.url)();
+                          toggleSidebar();
+                        }}
                       >
-                        <item.icon className="size-4" />
-                        <span>{item.title}</span>
-                      </SidebarMenuButton>
+                        <SidebarMenuButton
+                          isActive={item.url === pathname}
+                          tooltip={item.title}
+                          className="cursor-pointer"
+                        >
+                          <item.icon className="size-4" />
+                          <span>{item.title}</span>
+                        </SidebarMenuButton>
+                      </div>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            {/* 新增：通用表格管理菜单 */}
+            {genericTableNavigation.length > 0 && (
+              <SidebarGroup>
+                <SidebarGroupContent className="flex flex-col gap-2">
+                  {open && (
+                    <div className="text-muted-foreground px-2 py-1 text-xs font-semibold">
+                      Manage Tables
                     </div>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
+                  )}
+                  <SidebarMenu>
+                    {genericTableNavigation.map((item) => (
+                      <SidebarMenuItem key={item.title}>
+                        <div
+                          onClick={handleNavigation(item.url)}
+                          onDoubleClick={() => {
+                            handleNavigation(item.url)();
+                            toggleSidebar();
+                          }}
+                        >
+                          <SidebarMenuButton
+                            isActive={pathname.startsWith(item.url)}
+                            tooltip={item.title}
+                            className="cursor-pointer"
+                          >
+                            <item.icon className="size-4" />
+                            <span>{item.title}</span>
+                          </SidebarMenuButton>
+                        </div>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            )}
+          </>
         )}
       </SidebarContent>
       <SidebarFooter className="border-sidebar-divider border-t p-2">
