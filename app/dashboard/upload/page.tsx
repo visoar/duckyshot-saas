@@ -158,7 +158,7 @@ export default function UploadPage() {
               </CardTitle>
               <CardDescription>
                 Upload images with automatic compression. Maximum 10MB per file,
-                up to 3 files.
+                up to 5 files.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -169,9 +169,12 @@ export default function UploadPage() {
                   "image/png",
                   "image/gif",
                   "image/webp",
+                  "image/bmp",
+                  "image/tiff",
+                  "image/svg+xml",
                 ]}
                 maxFileSize={10 * 1024 * 1024} // 10MB
-                maxFiles={3}
+                maxFiles={5}
                 enableImageCompression={true}
                 imageCompressionQuality={0.8}
                 imageCompressionMaxWidth={1920}
@@ -201,6 +204,9 @@ export default function UploadPage() {
                   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                   "text/plain",
                   "text/csv",
+                  "text/markdown",
+                  "text/x-markdown",
+                  "text/html",
                 ]}
                 maxFileSize={10 * 1024 * 1024} // 10MB
                 maxFiles={1}
@@ -258,7 +264,7 @@ export default function UploadPage() {
                     isServerUploading ? "cursor-not-allowed opacity-50" : ""
                   }`}
                 >
-                  <Server className="h-12 w-12 text-gray-400" />
+                  <Server className="h-12 w-12 text-muted-foreground" />
                   <p className="text-lg font-medium">
                     {isServerUploading
                       ? "Uploading..."
@@ -322,7 +328,7 @@ export default function UploadPage() {
               />
               <div className="mt-4 rounded-lg border bg-gray-50 p-4">
                 <h4 className="mb-2 font-medium">Compression Settings:</h4>
-                <ul className="space-y-1 text-sm text-gray-600">
+                <ul className="space-y-1 text-sm text-muted-foreground">
                   <li>• Quality: 60%</li>
                   <li>• Max Width: 1280px</li>
                   <li>• Max Height: 720px</li>

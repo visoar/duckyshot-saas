@@ -293,7 +293,7 @@ export function PricingSection({ className }: { className?: string }) {
                             "h-3 w-3 transition-all duration-200",
                             feature.included
                               ? "text-emerald-600 dark:text-emerald-400"
-                              : "text-gray-400",
+                              : "text-muted-foreground/80",
                           )}
                         />
                       </div>
