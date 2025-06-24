@@ -39,7 +39,7 @@ export function BlogPostHeader({
       <>
         {/* Hero Image Layout */}
         <section className="bg-background relative overflow-hidden">
-          <div className="relative h-[40vh] overflow-hidden lg:h-[50vh]">
+          <div className="relative h-[50vh] overflow-hidden lg:h-[60vh]">
             <Image
               src={heroImage}
               alt={title}
