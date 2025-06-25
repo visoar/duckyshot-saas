@@ -2,36 +2,25 @@ import { auth } from "@/lib/auth/server";
 import { getUserSubscription } from "@/lib/database/subscription";
 import { NextRequest, NextResponse } from "next/server";
 import { rateLimiters } from "@/lib/rate-limit";
+import {
+  createRateLimitError,
+  createApiError,
+  handleApiError,
+  addRateLimitHeaders,
+  API_ERROR_CODES,
+  type ErrorLogContext,
+} from "@/lib/api-error-handler";
 
 export async function GET(request: NextRequest) {
   // Rate limiting check (more lenient for payment status checks)
   const rateLimitResult = await rateLimiters.paymentStatus(request);
   if (!rateLimitResult.success) {
-    return new NextResponse(
-      JSON.stringify({
-        error: 'Rate limit exceeded',
-        message: 'Too many payment status requests, please try again later.',
-        retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000),
-      }),
-      {
-        status: 429,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-          'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-          'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
-        },
-      }
-    );
+    return createRateLimitError(rateLimitResult, 'Too many payment status requests, please try again later.');
   }
 
   // Helper function to add rate limit headers to responses
-  const addRateLimitHeaders = (response: NextResponse) => {
-    response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString());
-    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
-    response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString());
-    return response;
+  const addHeaders = (response: NextResponse) => {
+    return addRateLimitHeaders(response, rateLimitResult);
   };
 
   try {
@@ -41,9 +30,10 @@ export async function GET(request: NextRequest) {
       searchParams.get("sessionId") || searchParams.get("checkout_id");
 
     if (!sessionId) {
-      return addRateLimitHeaders(NextResponse.json(
-        { error: "Session ID is required" },
-        { status: 400 },
+      return addHeaders(createApiError(
+        API_ERROR_CODES.MISSING_REQUIRED_FIELD,
+        "Session ID is required",
+        400
       ));
     }
 
@@ -60,7 +50,7 @@ export async function GET(request: NextRequest) {
         subscription.status === "active" ||
         subscription.status === "trialing"
       ) {
-        return addRateLimitHeaders(NextResponse.json({
+        return addHeaders(NextResponse.json({
           status: "success",
           subscription,
           message: "Payment successful and subscription is active",
@@ -69,7 +59,7 @@ export async function GET(request: NextRequest) {
         subscription.status === "past_due" ||
         subscription.status === "unpaid"
       ) {
-        return addRateLimitHeaders(NextResponse.json({
+        return addHeaders(NextResponse.json({
           status: "failed",
           subscription,
           message: "Payment failed or subscription is past due",
@@ -78,13 +68,13 @@ export async function GET(request: NextRequest) {
         // If there's a sessionId, it means this is a payment flow
         // Don't treat existing canceled subscription as payment cancellation
         if (sessionId) {
-          return addRateLimitHeaders(NextResponse.json({
+          return addHeaders(NextResponse.json({
             status: "pending",
             message: "Payment is being processed",
             sessionId,
           }));
         }
-        return addRateLimitHeaders(NextResponse.json({
+        return addHeaders(NextResponse.json({
           status: "cancelled",
           subscription,
           message: "Subscription has been cancelled",
@@ -109,19 +99,19 @@ export async function GET(request: NextRequest) {
           // Map Creem checkout status to our payment status
           switch (checkoutResponse.status) {
             case "completed":
-              return addRateLimitHeaders(NextResponse.json({
+              return addHeaders(NextResponse.json({
                 status: "success",
                 message: "Payment completed successfully",
                 sessionId,
               }));
             case "failed":
-              return addRateLimitHeaders(NextResponse.json({
+              return addHeaders(NextResponse.json({
                 status: "failed",
                 message: "Payment failed",
                 sessionId,
               }));
             case "canceled":
-              return addRateLimitHeaders(NextResponse.json({
+              return addHeaders(NextResponse.json({
                 status: "cancelled",
                 message: "Payment was cancelled",
                 sessionId,
@@ -129,7 +119,7 @@ export async function GET(request: NextRequest) {
             case "pending":
             case "processing":
             default:
-              return addRateLimitHeaders(NextResponse.json({
+              return addHeaders(NextResponse.json({
                 status: "pending",
                 message:
                   "Payment is being processed. This may take a few minutes.",
@@ -139,7 +129,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Fallback if no status available
-        return addRateLimitHeaders(NextResponse.json({
+        return addHeaders(NextResponse.json({
           status: "pending",
           message: "Payment is being processed. This may take a few minutes.",
           sessionId,
@@ -147,7 +137,7 @@ export async function GET(request: NextRequest) {
       } catch (error) {
         console.error("Error checking Creem payment status:", error);
         // If we can't check with Creem, return pending to avoid false negatives
-        return addRateLimitHeaders(NextResponse.json({
+        return addHeaders(NextResponse.json({
           status: "pending",
           message: "Payment status is being verified. Please wait a moment.",
           sessionId,
@@ -157,15 +147,18 @@ export async function GET(request: NextRequest) {
 
     // If no sessionId and no subscription, user might be checking status without context
     // Default to pending to avoid showing incorrect cancelled status
-    return addRateLimitHeaders(NextResponse.json({
+    return addHeaders(NextResponse.json({
       status: "pending",
       message: "Payment status is being verified",
     }));
   } catch (error) {
-    console.error("[Payment Status API Error]", error);
-    return addRateLimitHeaders(NextResponse.json(
-      { error: "Failed to check payment status" },
-      { status: 500 },
-    ));
+    const context: ErrorLogContext = {
+      endpoint: '/api/payment-status',
+      method: 'GET',
+      userId: undefined, // session might not be available in catch block
+      error,
+    };
+    
+    return addHeaders(handleApiError(error, context));
   }
 }

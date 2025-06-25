@@ -11,35 +11,29 @@ import {
   presignedUrlRequestSchema, // 导入 Zod schema
 } from "@/lib/config/upload";
 import { rateLimiters } from "@/lib/rate-limit";
+import {
+  createRateLimitError,
+  createAuthError,
+  createValidationError,
+  createApiError,
+  handleApiError,
+  addRateLimitHeaders,
+  API_ERROR_CODES,
+  type ErrorLogContext,
+} from "@/lib/api-error-handler";
 
 export async function POST(request: NextRequest) {
   try {
     // 1. Rate limiting check
     const rateLimitResult = await rateLimiters.upload(request);
     if (!rateLimitResult.success) {
-      return new NextResponse(
-        JSON.stringify({
-          error: 'Rate limit exceeded',
-          message: 'Too many upload requests, please try again later.',
-          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000),
-        }),
-        {
-          status: 429,
-          headers: {
-            'Content-Type': 'application/json',
-            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
-            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
-            'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
-            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
-          },
-        }
-      );
+      return createRateLimitError(rateLimitResult, 'Too many upload requests, please try again later.');
     }
 
     // 2. 认证检查
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return createAuthError();
     }
 
     // 3. 解析和验证请求体
@@ -47,31 +41,25 @@ export async function POST(request: NextRequest) {
     const validation = presignedUrlRequestSchema.safeParse(body);
 
     if (!validation.success) {
-      return NextResponse.json(
-        {
-          error: "Invalid request data",
-          details: validation.error.flatten().fieldErrors,
-        },
-        { status: 400 },
-      );
+      return createValidationError(validation.error, "Invalid request data");
     }
 
     const { fileName, contentType, size } = validation.data;
 
     // 4. 服务器端文件规则验证 (关键安全修复)
     if (!isFileTypeAllowed(contentType)) {
-      return NextResponse.json(
-        { error: `File type '${contentType}' is not allowed.` },
-        { status: 400 },
+      return createApiError(
+        API_ERROR_CODES.INVALID_FILE_TYPE,
+        `File type '${contentType}' is not allowed.`,
+        400
       );
     }
 
     if (!isFileSizeAllowed(size)) {
-      return NextResponse.json(
-        {
-          error: `File size of ${formatFileSize(size)} exceeds the limit of ${formatFileSize(UPLOAD_CONFIG.MAX_FILE_SIZE)}.`,
-        },
-        { status: 400 },
+      return createApiError(
+        API_ERROR_CODES.FILE_TOO_LARGE,
+        `File size of ${formatFileSize(size)} exceeds the limit of ${formatFileSize(UPLOAD_CONFIG.MAX_FILE_SIZE)}.`,
+        400
       );
     }
 
@@ -85,7 +73,11 @@ export async function POST(request: NextRequest) {
 
     if (!result.success) {
       // createPresignedUrl 内部已经包含了验证，但我们在这里再次捕获以防万一
-      return NextResponse.json({ error: result.error }, { status: 400 });
+      return createApiError(
+        API_ERROR_CODES.FILE_UPLOAD_FAILED,
+        result.error || 'Failed to create presigned URL',
+        400
+      );
     }
 
     // 6. 在数据库中存储待上传记录 (pending status)
@@ -111,16 +103,15 @@ export async function POST(request: NextRequest) {
     });
 
     // Add rate limit headers to response
-    response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString());
-    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
-    response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString());
-
-    return response;
+    return addRateLimitHeaders(response, rateLimitResult);
   } catch (error) {
-    console.error("Error creating presigned URL:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error. Please try again later." },
-      { status: 500 },
-    );
+    const context: ErrorLogContext = {
+      endpoint: '/api/upload/presigned-url',
+      method: 'POST',
+      userId: undefined, // session might not be available in catch block
+      error,
+    };
+    
+    return handleApiError(error, context);
   }
 }
