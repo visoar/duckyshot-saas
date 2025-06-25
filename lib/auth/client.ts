@@ -9,6 +9,20 @@ import type { auth } from "./server";
 export const authClient = createAuthClient({
   baseURL: env.NEXT_PUBLIC_APP_URL,
   plugins: [magicLinkClient(), inferAdditionalFields<typeof auth>()],
+  fetchOptions: {
+    onError: async (context) => {
+      const { response } = context;
+      if (response.status === 429) {
+        const retryAfter = response.headers.get("X-Retry-After");
+        if (retryAfter) {
+          console.warn(`Rate limit exceeded. Retry after ${retryAfter} seconds`);
+          throw new Error(`请求过于频繁，请在 ${retryAfter} 秒后重试`);
+        } else {
+          throw new Error("请求过于频繁，请稍后重试");
+        }
+      }
+    },
+  },
 });
 
 export const {
