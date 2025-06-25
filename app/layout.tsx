@@ -2,9 +2,8 @@ import "@/styles/globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { Oxanium, Merriweather, Fira_Code } from "next/font/google";
-
 import { Toaster } from "@/components/ui/sonner";
-
+import Script from "next/script";
 import { createMetadata } from "@/lib/metadata";
 import {
   APP_NAME,
@@ -78,6 +77,11 @@ export default function RootLayout({
             <CookieConsent />
           </ThemeProvider>
         </NuqsAdapter>
+        <Script
+            src="https://track.pixmiller.com/script.js"
+            data-website-id="9315890d-80ba-455a-b624-ab2ab48595f4"
+            strategy="lazyOnload"
+          />
       </body>
     </html>
   );
