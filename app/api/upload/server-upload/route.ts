@@ -13,7 +13,7 @@ import {
   getFileExtension,
 } from "@/lib/config/upload";
 import { rateLimiters } from "@/lib/rate-limit";
-import { validateFileSecurely } from "@/lib/file-security";
+import { validateFileForR2 } from "@/lib/file-security";
 
 // Initialize S3 client for Cloudflare R2
 const r2Client = new S3Client({
@@ -90,16 +90,24 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        // Enhanced security validation - magic number and content scanning
-        const securityValidation = await validateFileSecurely(file);
-        if (!securityValidation.isValid || !securityValidation.isSafe) {
-          const errors = securityValidation.errors.join(', ');
-          throw new Error(`File security validation failed: ${errors}`);
+        // Lightweight security validation for R2 hosting
+        const securityCheck = await validateFileForR2(file);
+        if (!securityCheck.allowUpload) {
+          throw new Error(`File upload blocked: ${securityCheck.securityLog.risks.join(', ')}`);
         }
 
-        // Log warnings but allow upload
-        if (securityValidation.warnings.length > 0) {
-          console.warn(`File upload warnings for ${file.name}:`, securityValidation.warnings);
+        // Log security findings for monitoring (non-blocking)
+        if (securityCheck.securityLog.risks.length > 0 || securityCheck.securityLog.warnings.length > 0) {
+          console.warn(`File security log for ${file.name}:`, {
+            risks: securityCheck.securityLog.risks,
+            warnings: securityCheck.securityLog.warnings,
+            fileInfo: {
+              size: file.size,
+              type: file.type,
+              name: file.name
+            },
+            timestamp: securityCheck.securityLog.timestamp
+          });
         }
 
         // Generate unique key for the file

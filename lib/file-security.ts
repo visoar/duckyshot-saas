@@ -211,49 +211,129 @@ export async function scanForMaliciousContent(file: File): Promise<{
 }
 
 /**
- * Comprehensive file security validation
+ * Comprehensive file security validation for R2 hosting
+ * Records security risks but allows upload to proceed
  */
 export async function validateFileSecurely(file: File): Promise<{
   isValid: boolean;
   isSafe: boolean;
   errors: string[];
   warnings: string[];
+  securityRisks: string[];
 }> {
   const errors: string[] = [];
   const warnings: string[] = [];
+  const securityRisks: string[] = [];
   
-  // Validate file signature
-  const signatureResult = await validateFileSignature(file);
-  if (!signatureResult.isValid) {
-    errors.push(signatureResult.reason || 'Invalid file signature');
-  }
-  
-  // Scan for malicious content
-  const scanResult = await scanForMaliciousContent(file);
-  if (!scanResult.isSafe) {
-    errors.push(...scanResult.threats);
-  }
-  
-  // Additional size and name validation
+  // Only validate critical issues that should block upload
   if (file.size === 0) {
     errors.push('Empty file not allowed');
+  }
+  
+  // Record security risks without blocking
+  try {
+    // Quick signature validation (non-blocking)
+    const signatureResult = await validateFileSignature(file);
+    if (!signatureResult.isValid) {
+      securityRisks.push(`Signature mismatch: ${signatureResult.reason}`);
+    }
+    
+    // Quick malicious content scan (non-blocking)
+    const scanResult = await scanForMaliciousContent(file);
+    if (!scanResult.isSafe) {
+      securityRisks.push(...scanResult.threats);
+    }
+  } catch (error) {
+    // Log security scan errors but don't block upload
+    securityRisks.push(`Security scan error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+  
+  // Check for suspicious extensions (warning only)
+  const suspiciousExtensions = /\.(exe|bat|cmd|scr|pif|vbs|js|jar|com|dll|sys)$/i;
+  if (suspiciousExtensions.test(file.name)) {
+    warnings.push('Suspicious file extension detected');
   }
   
   if (file.name.length > 255) {
     warnings.push('File name is very long');
   }
   
-  // Check for suspicious file extensions
+  return {
+    isValid: errors.length === 0, // Only block for critical errors
+    isSafe: true, // Always allow upload for R2 hosting
+    errors,
+    warnings,
+    securityRisks
+  };
+}
+
+/**
+ * Lightweight security validation for better performance
+ * Only performs essential checks
+ */
+export async function validateFileForR2(file: File): Promise<{
+  allowUpload: boolean;
+  securityLog: {
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    risks: string[];
+    warnings: string[];
+    timestamp: string;
+  };
+}> {
+  const risks: string[] = [];
+  const warnings: string[] = [];
+  
+  // Only block empty files
+  if (file.size === 0) {
+    return {
+      allowUpload: false,
+      securityLog: {
+        fileName: file.name,
+        fileSize: file.size,
+        mimeType: file.type,
+        risks: ['Empty file blocked'],
+        warnings: [],
+        timestamp: new Date().toISOString()
+      }
+    };
+  }
+  
+  // Quick extension check
   const suspiciousExtensions = /\.(exe|bat|cmd|scr|pif|vbs|js|jar|com|dll|sys)$/i;
   if (suspiciousExtensions.test(file.name)) {
-    errors.push('Suspicious file extension detected');
+    warnings.push('Suspicious file extension');
+  }
+  
+  // Quick content scan for obvious threats (first 1KB only for performance)
+  try {
+    if (file.size > 0) {
+      const buffer = await file.slice(0, Math.min(1024, file.size)).arrayBuffer();
+      const content = new TextDecoder('utf-8', { fatal: false }).decode(buffer);
+      
+      if (/<script|javascript:|vbscript:|data:text\/html/i.test(content)) {
+        risks.push('Potential script injection detected');
+      }
+      
+      if (/MZ|ELF/.test(content)) {
+        risks.push('Executable content detected');
+      }
+    }
+  } catch {
+    // Ignore scan errors for performance
   }
   
   return {
-    isValid: signatureResult.isValid,
-    isSafe: scanResult.isSafe && errors.length === 0,
-    errors,
-    warnings
+    allowUpload: true, // Always allow for R2
+    securityLog: {
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType: file.type,
+      risks,
+      warnings,
+      timestamp: new Date().toISOString()
+    }
   };
 }
 

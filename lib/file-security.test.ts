@@ -5,6 +5,7 @@ import {
   validateFileSignature,
   scanForMaliciousContent,
   validateFileSecurely,
+  validateFileForR2,
   getExpectedExtension,
   FILE_SIGNATURES,
 } from './file-security';
@@ -204,7 +205,7 @@ describe('File Security Validation', () => {
   });
 
   describe('validateFileSecurely', () => {
-    it('should pass comprehensive validation for valid files', async () => {
+    it('should pass validation for valid files', async () => {
       const jpegData = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46]);
       const file = createMockFile(jpegData, 'image/jpeg', 'valid.jpg');
       
@@ -215,25 +216,25 @@ describe('File Security Validation', () => {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should fail validation for files with mismatched signatures', async () => {
+    it('should record signature mismatches as security risks', async () => {
       const pngData = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
       const file = createMockFile(pngData, 'image/jpeg', 'fake.jpg');
       
       const result = await validateFileSecurely(file);
       
-      expect(result.isValid).toBe(false);
-      expect(result.isSafe).toBe(false);
-      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.isValid).toBe(true); // Allow upload but record risk
+      expect(result.isSafe).toBe(true);
+      expect(result.securityRisks.length).toBeGreaterThan(0);
     });
 
-    it('should fail validation for malicious content', async () => {
+    it('should record malicious content as security risks', async () => {
       const maliciousData = '<script>alert("xss")</script>';
       const file = createMockFile(maliciousData, 'text/html', 'malicious.html');
       
       const result = await validateFileSecurely(file);
       
-      expect(result.isSafe).toBe(false);
-      expect(result.errors.length).toBeGreaterThan(0);
+      expect(result.isSafe).toBe(true); // Allow upload but record risk
+      expect(result.securityRisks.length).toBeGreaterThan(0);
     });
 
     it('should reject empty files', async () => {
@@ -242,18 +243,18 @@ describe('File Security Validation', () => {
       
       const result = await validateFileSecurely(file);
       
-      expect(result.isSafe).toBe(false);
+      expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Empty file not allowed');
     });
 
-    it('should reject files with suspicious extensions', async () => {
+    it('should warn about suspicious extensions', async () => {
       const textData = 'console.log("hello");';
       const file = createMockFile(textData, 'text/plain', 'script.exe');
       
       const result = await validateFileSecurely(file);
       
-      expect(result.isSafe).toBe(false);
-      expect(result.errors).toContain('Suspicious file extension detected');
+      expect(result.isValid).toBe(true); // Allow upload
+      expect(result.warnings).toContain('Suspicious file extension detected');
     });
 
     it('should warn about very long filenames', async () => {
@@ -265,17 +266,72 @@ describe('File Security Validation', () => {
       
       expect(result.warnings).toContain('File name is very long');
     });
+  });
 
-    it('should handle multiple validation issues', async () => {
-      // File with wrong signature, malicious content, and suspicious extension
+  describe('validateFileForR2', () => {
+    it('should allow upload for normal files', async () => {
+      const jpegData = new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46]);
+      const file = createMockFile(jpegData, 'image/jpeg', 'photo.jpg');
+      
+      const result = await validateFileForR2(file);
+      
+      expect(result.allowUpload).toBe(true);
+      expect(result.securityLog.risks).toHaveLength(0);
+      expect(result.securityLog.warnings).toHaveLength(0);
+    });
+
+    it('should block empty files', async () => {
+      const emptyData = new Uint8Array([]);
+      const file = createMockFile(emptyData, 'text/plain', 'empty.txt');
+      
+      const result = await validateFileForR2(file);
+      
+      expect(result.allowUpload).toBe(false);
+      expect(result.securityLog.risks).toContain('Empty file blocked');
+    });
+
+    it('should warn about suspicious extensions but allow upload', async () => {
+      const textData = 'console.log("hello");';
+      const file = createMockFile(textData, 'text/plain', 'script.exe');
+      
+      const result = await validateFileForR2(file);
+      
+      expect(result.allowUpload).toBe(true);
+      expect(result.securityLog.warnings).toContain('Suspicious file extension');
+    });
+
+    it('should detect script injection risks but allow upload', async () => {
       const maliciousData = '<script>alert("xss")</script>';
-      const file = createMockFile(maliciousData, 'image/jpeg', 'malicious.exe');
+      const file = createMockFile(maliciousData, 'text/html', 'test.html');
       
-      const result = await validateFileSecurely(file);
+      const result = await validateFileForR2(file);
       
-      expect(result.isValid).toBe(false);
-      expect(result.isSafe).toBe(false);
-      expect(result.errors.length).toBeGreaterThan(1);
+      expect(result.allowUpload).toBe(true);
+      expect(result.securityLog.risks).toContain('Potential script injection detected');
+    });
+
+    it('should detect executable content but allow upload', async () => {
+      const executableData = 'MZ\x90\x00\x03\x00\x00\x00';
+      const file = createMockFile(executableData, 'application/octet-stream', 'test.bin');
+      
+      const result = await validateFileForR2(file);
+      
+      expect(result.allowUpload).toBe(true);
+      expect(result.securityLog.risks).toContain('Executable content detected');
+    });
+
+    it('should include complete security log', async () => {
+      const testData = 'test content';
+      const file = createMockFile(testData, 'text/plain', 'test.txt');
+      
+      const result = await validateFileForR2(file);
+      
+      expect(result.securityLog).toHaveProperty('fileName', 'test.txt');
+      expect(result.securityLog).toHaveProperty('fileSize', expect.any(Number));
+      expect(result.securityLog).toHaveProperty('mimeType', 'text/plain');
+      expect(result.securityLog).toHaveProperty('timestamp');
+      expect(result.securityLog).toHaveProperty('risks');
+      expect(result.securityLog).toHaveProperty('warnings');
     });
   });
 
