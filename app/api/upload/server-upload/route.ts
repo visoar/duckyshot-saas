@@ -13,6 +13,7 @@ import {
   getFileExtension,
 } from "@/lib/config/upload";
 import { rateLimiters } from "@/lib/rate-limit";
+import { validateFileSecurely } from "@/lib/file-security";
 
 // Initialize S3 client for Cloudflare R2
 const r2Client = new S3Client({
@@ -87,6 +88,18 @@ export async function POST(request: NextRequest) {
           throw new Error(
             `File size ${file.size} bytes exceeds maximum allowed size of ${UPLOAD_CONFIG.MAX_FILE_SIZE} bytes`,
           );
+        }
+
+        // Enhanced security validation - magic number and content scanning
+        const securityValidation = await validateFileSecurely(file);
+        if (!securityValidation.isValid || !securityValidation.isSafe) {
+          const errors = securityValidation.errors.join(', ');
+          throw new Error(`File security validation failed: ${errors}`);
+        }
+
+        // Log warnings but allow upload
+        if (securityValidation.warnings.length > 0) {
+          console.warn(`File upload warnings for ${file.name}:`, securityValidation.warnings);
         }
 
         // Generate unique key for the file
