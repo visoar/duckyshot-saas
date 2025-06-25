@@ -12,6 +12,7 @@ import {
   isFileSizeAllowed,
   getFileExtension,
 } from "@/lib/config/upload";
+import { rateLimiters } from "@/lib/rate-limit";
 
 // Initialize S3 client for Cloudflare R2
 const r2Client = new S3Client({
@@ -25,6 +26,28 @@ const r2Client = new S3Client({
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limiting check
+    const rateLimitResult = await rateLimiters.fileUpload(request);
+    if (!rateLimitResult.success) {
+      return new NextResponse(
+        JSON.stringify({
+          error: 'Rate limit exceeded',
+          message: 'Too many file upload requests, please try again later.',
+          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000),
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
+          },
+        }
+      );
+    }
+
     // Check authentication
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id) {
@@ -128,7 +151,7 @@ export async function POST(request: NextRequest) {
     const successCount = uploadResults.filter((r) => r.success).length;
     const failureCount = uploadResults.length - successCount;
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       message: `Uploaded ${successCount} file(s) successfully${failureCount > 0 ? `, ${failureCount} failed` : ""}`,
       results: uploadResults,
       summary: {
@@ -137,6 +160,13 @@ export async function POST(request: NextRequest) {
         failed: failureCount,
       },
     });
+
+    // Add rate limit headers to response
+    response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString());
+    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
+    response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString());
+
+    return response;
   } catch (error) {
     console.error("Error in server upload:", error);
     return NextResponse.json(

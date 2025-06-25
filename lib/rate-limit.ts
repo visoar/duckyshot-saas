@@ -112,7 +112,7 @@ function getDefaultKey(req: NextRequest): string {
   // Try to get real IP from headers (for production behind proxy)
   const forwarded = req.headers.get('x-forwarded-for');
   const realIp = req.headers.get('x-real-ip');
-  const ip = forwarded?.split(',')[0] || realIp || req.ip || 'unknown';
+  const ip = forwarded?.split(',')[0] || realIp || 'unknown';
   
   return `${ip}:${req.nextUrl.pathname}`;
 }
@@ -121,7 +121,7 @@ function getDefaultKey(req: NextRequest): string {
 export function getClientIP(req: NextRequest): string {
   const forwarded = req.headers.get('x-forwarded-for');
   const realIp = req.headers.get('x-real-ip');
-  return forwarded?.split(',')[0] || realIp || req.ip || 'unknown';
+  return forwarded?.split(',')[0] || realIp || 'unknown';
 }
 
 // Predefined rate limiters for common use cases
@@ -196,7 +196,7 @@ export function createRateLimitErrorResponse(result: {
 }
 
 // Utility to add rate limiting to API routes
-export function withRateLimit<T extends any[]>(
+export function withRateLimit<T extends unknown[]>(
   handler: (req: NextRequest, ...args: T) => Promise<Response>,
   rateLimiter: ReturnType<typeof createRateLimit>
 ) {

@@ -12,7 +12,6 @@ import {
 
 // Mock NextRequest for testing
 function createMockRequest(options: {
-  ip?: string;
   xForwardedFor?: string;
   xRealIp?: string;
   pathname?: string;
@@ -29,12 +28,6 @@ function createMockRequest(options: {
   const url = `https://example.com${options.pathname || '/test'}`;
   
   const req = new NextRequest(url, { headers });
-  
-  // Mock the ip property
-  Object.defineProperty(req, 'ip', {
-    value: options.ip || '127.0.0.1',
-    writable: false,
-  });
 
   return req;
 }
@@ -68,12 +61,10 @@ describe('Rate Limiting Utility', () => {
       expect(getClientIP(req)).toBe('192.168.1.2');
     });
 
-    it('should fallback to req.ip when headers not present', () => {
-      const req = createMockRequest({
-        ip: '127.0.0.1',
-      });
+    it('should return "unknown" when headers not present', () => {
+      const req = createMockRequest({});
       
-      expect(getClientIP(req)).toBe('127.0.0.1');
+      expect(getClientIP(req)).toBe('unknown');
     });
 
     it('should return "unknown" when no IP available', () => {
@@ -110,7 +101,7 @@ describe('Rate Limiting Utility', () => {
         maxRequests: 2,
       });
 
-      const req = createMockRequest({ ip: '192.168.1.10' });
+      const req = createMockRequest({ xForwardedFor: '192.168.1.10' });
 
       // First two requests should succeed
       let result = await rateLimit(req);
@@ -133,7 +124,7 @@ describe('Rate Limiting Utility', () => {
         maxRequests: 1,
       });
 
-      const req = createMockRequest({ ip: '192.168.1.11' });
+      const req = createMockRequest({ xForwardedFor: '192.168.1.11' });
 
       // First request should succeed
       let result = await rateLimit(req);
@@ -166,7 +157,7 @@ describe('Rate Limiting Utility', () => {
       let result1 = await rateLimit(req1);
       expect(result1.success).toBe(true);
 
-      let result2 = await rateLimit(req2);
+      const result2 = await rateLimit(req2);
       expect(result2.success).toBe(true);
 
       // Same path should be limited
@@ -177,7 +168,7 @@ describe('Rate Limiting Utility', () => {
 
   describe('predefined rate limiters', () => {
     it('should have auth rate limiter with correct config', async () => {
-      const req = createMockRequest({ ip: '192.168.1.20' });
+      const req = createMockRequest({ xForwardedFor: '192.168.1.20' });
       const result = await rateLimiters.auth(req);
 
       expect(result.success).toBe(true);
@@ -185,7 +176,7 @@ describe('Rate Limiting Utility', () => {
     });
 
     it('should have upload rate limiter with correct config', async () => {
-      const req = createMockRequest({ ip: '192.168.1.21' });
+      const req = createMockRequest({ xForwardedFor: '192.168.1.21' });
       const result = await rateLimiters.upload(req);
 
       expect(result.success).toBe(true);
@@ -193,7 +184,7 @@ describe('Rate Limiting Utility', () => {
     });
 
     it('should have fileUpload rate limiter with stricter limits', async () => {
-      const req = createMockRequest({ ip: '192.168.1.22' });
+      const req = createMockRequest({ xForwardedFor: '192.168.1.22' });
       const result = await rateLimiters.fileUpload(req);
 
       expect(result.success).toBe(true);
@@ -201,7 +192,7 @@ describe('Rate Limiting Utility', () => {
     });
 
     it('should have billing rate limiter with strict limits', async () => {
-      const req = createMockRequest({ ip: '192.168.1.23' });
+      const req = createMockRequest({ xForwardedFor: '192.168.1.23' });
       const result = await rateLimiters.billing(req);
 
       expect(result.success).toBe(true);
@@ -209,7 +200,7 @@ describe('Rate Limiting Utility', () => {
     });
 
     it('should have paymentStatus rate limiter with lenient limits', async () => {
-      const req = createMockRequest({ ip: '192.168.1.24' });
+      const req = createMockRequest({ xForwardedFor: '192.168.1.24' });
       const result = await rateLimiters.paymentStatus(req);
 
       expect(result.success).toBe(true);
@@ -261,7 +252,7 @@ describe('Rate Limiting Utility', () => {
       });
 
       const wrappedHandler = withRateLimit(mockHandler, rateLimit);
-      const req = createMockRequest({ ip: '192.168.1.30' });
+      const req = createMockRequest({ xForwardedFor: '192.168.1.30' });
 
       const response = await wrappedHandler(req);
       
@@ -278,7 +269,7 @@ describe('Rate Limiting Utility', () => {
       });
 
       const wrappedHandler = withRateLimit(mockHandler, rateLimit);
-      const req = createMockRequest({ ip: '192.168.1.31' });
+      const req = createMockRequest({ xForwardedFor: '192.168.1.31' });
 
       // First call should succeed
       let response = await wrappedHandler(req);
@@ -299,7 +290,7 @@ describe('Rate Limiting Utility', () => {
       });
 
       const wrappedHandler = withRateLimit(mockHandler, rateLimit);
-      const req = createMockRequest({ ip: '192.168.1.32' });
+      const req = createMockRequest({ xForwardedFor: '192.168.1.32' });
       const additionalArg = { test: 'value' };
 
       await wrappedHandler(req, additionalArg);
@@ -310,8 +301,8 @@ describe('Rate Limiting Utility', () => {
 
   describe('rate limiter isolation', () => {
     it('should isolate different rate limiters', async () => {
-      const req1 = createMockRequest({ ip: '192.168.1.40' });
-      const req2 = createMockRequest({ ip: '192.168.1.40' }); // Same IP
+      const req1 = createMockRequest({ xForwardedFor: '192.168.1.40' });
+      const req2 = createMockRequest({ xForwardedFor: '192.168.1.40' }); // Same IP
 
       // Use different rate limiters for same IP
       const authResult = await rateLimiters.auth(req1);
