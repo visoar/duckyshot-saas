@@ -136,5 +136,5 @@ Required variables (see .env.example for full list):
 
 ## Interface Specification
 
-- Use English as the interface language
+- Use English as the interface language for users and use Chinese chat with me
 - Copywriting needs to be SEO optimized
