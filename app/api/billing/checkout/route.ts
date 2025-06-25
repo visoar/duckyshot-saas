@@ -4,6 +4,7 @@ import { billing } from "@/lib/billing";
 import { Session } from "@/types/auth";
 import { z } from "zod";
 import { getUserSubscription } from "@/lib/database/subscription";
+import { rateLimiters } from "@/lib/rate-limit";
 
 const checkoutSchema = z.object({
   tierId: z.string(),
@@ -14,6 +15,28 @@ const checkoutSchema = z.object({
 export async function POST(request: NextRequest) {
   let session: Session | null = null;
   try {
+    // Rate limiting check
+    const rateLimitResult = await rateLimiters.billing(request);
+    if (!rateLimitResult.success) {
+      return new NextResponse(
+        JSON.stringify({
+          error: 'Rate limit exceeded',
+          message: 'Too many billing requests, please try again later.',
+          retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000),
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString(),
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString(),
+          },
+        }
+      );
+    }
+
     session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -92,7 +115,14 @@ export async function POST(request: NextRequest) {
     const { checkoutUrl } =
       await billing.createCheckoutSession(checkoutOptions);
 
-    return NextResponse.json({ checkoutUrl });
+    const response = NextResponse.json({ checkoutUrl });
+
+    // Add rate limit headers to response
+    response.headers.set('X-RateLimit-Limit', rateLimitResult.limit.toString());
+    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString());
+    response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString());
+
+    return response;
   } catch (error) {
     console.error("[Checkout API Error]", {
       message: error instanceof Error ? error.message : "Unknown error",
