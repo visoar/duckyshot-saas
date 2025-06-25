@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, ReactNode } from "react";
+import { useState, useEffect, ReactNode, memo, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -56,7 +56,71 @@ interface AdminTableBaseProps<T> {
   emptyMessage?: string;
 }
 
-export function AdminTableBase<T extends { id: string | number }>({
+// Simple skeleton component
+const TableSkeleton = memo(({ columnCount }: { columnCount: number }) => (
+  <>
+    {Array.from({ length: 5 }).map((_, i) => (
+      <TableRow key={`skeleton-${i}`}>
+        {Array.from({ length: columnCount }).map((_, j) => (
+          <TableCell key={`skeleton-cell-${j}`}>
+            <div className="bg-muted h-4 w-full animate-pulse rounded" />
+          </TableCell>
+        ))}
+      </TableRow>
+    ))}
+  </>
+));
+
+TableSkeleton.displayName = 'TableSkeleton';
+
+// Simple empty state component
+const EmptyState = memo(({ 
+  columnCount, 
+  message 
+}: { 
+  columnCount: number; 
+  message: string; 
+}) => (
+  <TableRow>
+    <TableCell colSpan={columnCount} className="h-24 text-center">
+      {message}
+    </TableCell>
+  </TableRow>
+));
+
+EmptyState.displayName = 'EmptyState';
+
+// Pagination button component
+const PaginationButton = memo(({ 
+  pageNumber, 
+  currentPage, 
+  loading, 
+  onClick 
+}: {
+  pageNumber: number;
+  currentPage: number;
+  loading: boolean;
+  onClick: (page: number) => void;
+}) => {
+  const handleClick = useCallback(() => {
+    onClick(pageNumber);
+  }, [onClick, pageNumber]);
+
+  return (
+    <Button
+      variant={currentPage === pageNumber ? "default" : "outline"}
+      size="sm"
+      onClick={handleClick}
+      disabled={loading}
+    >
+      {pageNumber}
+    </Button>
+  );
+});
+
+PaginationButton.displayName = 'PaginationButton';
+
+function AdminTableBaseComponent<T extends { id: string | number }>({
   columns,
   data,
   loading,
@@ -77,15 +141,85 @@ export function AdminTableBase<T extends { id: string | number }>({
   // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
-      onSearchChange(debouncedSearchTerm);
+      if (debouncedSearchTerm !== searchTerm) {
+        onSearchChange(debouncedSearchTerm);
+      }
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [debouncedSearchTerm, onSearchChange]);
+  }, [debouncedSearchTerm, onSearchChange, searchTerm]);
 
-  const handleSearch = (value: string) => {
+  // Update internal state when external searchTerm changes
+  useEffect(() => {
+    setDebouncedSearchTerm(searchTerm);
+  }, [searchTerm]);
+
+  const handleSearch = useCallback((value: string) => {
     setDebouncedSearchTerm(value);
-  };
+  }, []);
+
+  // Memoize pagination calculations
+  const paginationInfo = useMemo(() => {
+    const startItem = (pagination.page - 1) * pagination.limit + 1;
+    const endItem = Math.min(pagination.page * pagination.limit, pagination.total);
+    const showPagination = pagination.totalPages > 1;
+    
+    return {
+      startItem,
+      endItem,
+      showPagination,
+      total: pagination.total,
+    };
+  }, [pagination.page, pagination.limit, pagination.total, pagination.totalPages]);
+
+  // Memoize pagination buttons
+  const paginationButtons = useMemo(() => {
+    const totalPages = pagination.totalPages;
+    const currentPage = pagination.page;
+    
+    // Calculate visible page range
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust start page if end page is at the limit
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    
+    return Array.from(
+      { length: endPage - startPage + 1 },
+      (_, i) => startPage + i
+    );
+  }, [pagination.totalPages, pagination.page]);
+
+  // Memoize navigation handlers
+  const handlePreviousPage = useCallback(() => {
+    if (pagination.page > 1) {
+      onPageChange(pagination.page - 1);
+    }
+  }, [pagination.page, onPageChange]);
+
+  const handleNextPage = useCallback(() => {
+    if (pagination.page < pagination.totalPages) {
+      onPageChange(pagination.page + 1);
+    }
+  }, [pagination.page, pagination.totalPages, onPageChange]);
+
+  // Memoize table rows to avoid re-rendering on every change
+  const tableRows = useMemo(() => {
+    return data.map((item) => (
+      <TableRow key={item.id}>
+        {columns.map((column) => (
+          <TableCell key={column.key}>
+            {column.render
+              ? column.render(item)
+              : column.key in item
+                ? String(item[column.key as keyof T])
+                : ""}
+          </TableCell>
+        ))}
+      </TableRow>
+    ));
+  }, [data, columns]);
 
   if (error) {
     return (
@@ -143,86 +277,48 @@ export function AdminTableBase<T extends { id: string | number }>({
           </TableHeader>
           <TableBody>
             {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={i}>
-                  {columns.map((column) => (
-                    <TableCell key={String(column.key)}>
-                      <div className="bg-muted h-4 w-full animate-pulse rounded" />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              <TableSkeleton columnCount={columns.length} />
             ) : data.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  {emptyMessage}
-                </TableCell>
-              </TableRow>
+              <EmptyState columnCount={columns.length} message={emptyMessage} />
             ) : (
-              data.map((item) => (
-                <TableRow key={item.id}>
-                  {columns.map((column) => (
-                    <TableCell key={column.key}>
-                      {column.render
-                        ? column.render(item)
-                        : column.key in item
-                          ? String(item[column.key as keyof T])
-                          : ""}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              <>{tableRows}</>
             )}
           </TableBody>
         </Table>
       </div>
 
       {/* Pagination */}
-      {pagination.totalPages > 1 && (
+      {paginationInfo.showPagination && (
         <div className="flex items-center justify-between">
           <div className="text-muted-foreground text-sm">
-            Showing {(pagination.page - 1) * pagination.limit + 1} to{" "}
-            {Math.min(pagination.page * pagination.limit, pagination.total)} of{" "}
-            {pagination.total} results
+            Showing {paginationInfo.startItem} to {paginationInfo.endItem} of{" "}
+            {paginationInfo.total} results
           </div>
           <div className="flex items-center space-x-2">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onPageChange(pagination.page - 1)}
+              onClick={handlePreviousPage}
               disabled={pagination.page <= 1 || loading}
             >
               <ChevronLeft className="h-4 w-4" />
               Previous
             </Button>
             <div className="flex items-center space-x-1">
-              {Array.from(
-                { length: Math.min(5, pagination.totalPages) },
-                (_, i) => {
-                  const pageNumber = i + 1;
-                  return (
-                    <Button
-                      key={pageNumber}
-                      variant={
-                        pagination.page === pageNumber ? "default" : "outline"
-                      }
-                      size="sm"
-                      onClick={() => onPageChange(pageNumber)}
-                      disabled={loading}
-                    >
-                      {pageNumber}
-                    </Button>
-                  );
-                },
-              )}
+              {paginationButtons.map((pageNumber) => (
+                <PaginationButton
+                  key={pageNumber}
+                  pageNumber={pageNumber}
+                  currentPage={pagination.page}
+                  loading={loading}
+                  onClick={onPageChange}
+                />
+              ))}
             </div>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => onPageChange(pagination.page + 1)}
+              onClick={handleNextPage}
               disabled={pagination.page >= pagination.totalPages || loading}
             >
               Next
@@ -234,3 +330,8 @@ export function AdminTableBase<T extends { id: string | number }>({
     </div>
   );
 }
+
+// Export memoized version with proper generic typing
+export const AdminTableBase = memo(AdminTableBaseComponent) as <T extends { id: string | number }>(
+  props: AdminTableBaseProps<T>
+) => ReactNode;
