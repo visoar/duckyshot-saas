@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useCallback, useState, useRef, useMemo, useEffect } from "react";
+import React, { useCallback, useState, useRef, useMemo, useEffect, memo } from "react";
 import {
   Upload,
   X,
@@ -27,6 +27,7 @@ import {
 
 // --- Helper Functions and Components ---
 
+// Helper function to get file type icon
 const getFileTypeIcon = (contentType: string): React.ReactNode => {
   if (contentType.startsWith("image/")) return <ImageIcon className="h-8 w-8 text-gray-500" />;
   if (contentType.startsWith("video/")) return <FileVideo className="h-8 w-8 text-gray-500" />;
@@ -38,6 +39,7 @@ const getFileTypeIcon = (contentType: string): React.ReactNode => {
 
 interface FileWithPreview extends File {
   preview?: string;
+  _id?: string; // Add unique identifier for better memoization
 }
 
 interface UploadedFile {
@@ -48,12 +50,18 @@ interface UploadedFile {
   fileName: string;
 }
 
-const FilePreview = ({ file }: { file: FileWithPreview }) => {
+// Memoize FilePreview to prevent unnecessary re-renders
+const FilePreview = memo(({ file }: { file: FileWithPreview }) => {
   const [hasError, setHasError] = useState(false);
 
+  // Reset error state when file changes
   useEffect(() => {
     setHasError(false);
-  }, [file]);
+  }, [file._id]); // Use file._id instead of entire file object
+
+  const handleImageError = useCallback(() => {
+    setHasError(true);
+  }, []);
 
   if (!file.preview || hasError) {
     return (
@@ -68,10 +76,68 @@ const FilePreview = ({ file }: { file: FileWithPreview }) => {
       src={file.preview}
       alt={file.name}
       className="h-12 w-12 rounded object-contain"
-      onError={() => setHasError(true)}
+      onError={handleImageError}
     />
   );
-};
+});
+
+FilePreview.displayName = 'FilePreview';
+
+// Memoized FileItem component to prevent unnecessary re-renders
+const FileItem = memo(({ 
+  fileState, 
+  onRemove 
+}: { 
+  fileState: FileUploadState; 
+  onRemove: (fileId: string) => void; 
+}) => {
+  const handleRemove = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onRemove(fileState.id);
+  }, [fileState.id, onRemove]);
+
+  return (
+    <div className="bg-background flex items-center space-x-4 rounded-lg border p-4">
+      <FilePreview file={fileState.file} />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{fileState.file.name}</p>
+        <p className="text-muted-foreground text-xs">
+          {formatFileSize(fileState.file.size)} • {fileState.file.type}
+        </p>
+        {fileState.status === "uploading" && (
+          <div className="mt-2">
+            <Progress value={fileState.progress} className="h-2" />
+          </div>
+        )}
+        <div className="mt-1 flex items-center space-x-2">
+          {fileState.status === "uploading" && (
+            <>
+              <Loader2 className="h-3 w-3 animate-spin" />
+              <span className="text-muted-foreground text-xs">Uploading...</span>
+            </>
+          )}
+          {fileState.status === "completed" && (
+            <span className="text-xs text-green-600">✓ Uploaded</span>
+          )}
+          {fileState.status === "error" && (
+            <span className="text-xs text-red-600">✗ {fileState.error}</span>
+          )}
+        </div>
+      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleRemove}
+        disabled={fileState.status === "uploading"}
+        className="flex-shrink-0"
+      >
+        <X className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+});
+
+FileItem.displayName = 'FileItem';
 
 
 // --- Main Component ---
@@ -95,9 +161,11 @@ interface FileUploadState {
   status: "pending" | "uploading" | "completed" | "error";
   error?: string;
   uploadedFile?: UploadedFile;
+  id: string; // Add unique identifier for better React key and memoization
 }
 
-export function FileUploader({
+// Main FileUploader component
+function FileUploaderComponent({
   acceptedFileTypes = UPLOAD_CONFIG.ALLOWED_FILE_TYPES,
   maxFileSize = UPLOAD_CONFIG.MAX_FILE_SIZE,
   maxFiles = 1,
@@ -113,16 +181,20 @@ export function FileUploader({
   const [isDragOver, setIsDragOver] = useState(false);
   const [globalError, setGlobalError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Track object URLs for cleanup
+  const objectUrlsRef = useRef<Set<string>>(new Set());
 
+  // Cleanup object URLs when component unmounts
   useEffect(() => {
+    const urlsToCleanup = objectUrlsRef.current;
     return () => {
-      files.forEach(f => {
-        if (f.file.preview?.startsWith("blob:")) {
-          URL.revokeObjectURL(f.file.preview);
-        }
+      urlsToCleanup.forEach(url => {
+        URL.revokeObjectURL(url);
       });
+      urlsToCleanup.clear();
     };
-  }, [files]);
+  }, []);
 
   const validateFile = useCallback(
     (file: File): string | null => {
@@ -153,7 +225,9 @@ export function FileUploader({
         reader.onerror = () => resolve(undefined);
         reader.readAsDataURL(file);
       } else {
-        resolve(URL.createObjectURL(file));
+        const objectUrl = URL.createObjectURL(file);
+        objectUrlsRef.current.add(objectUrl);
+        resolve(objectUrl);
       }
     });
   }, []);
@@ -210,8 +284,17 @@ export function FileUploader({
         }
         const processedFile = await compressImage(file);
         const preview = await createPreview(processedFile);
-        const fileWithPreview: FileWithPreview = Object.assign(processedFile, { preview });
-        preparedFiles.push({ file: fileWithPreview, progress: 0, status: "pending" });
+        const fileId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const fileWithPreview: FileWithPreview = Object.assign(processedFile, { 
+          preview, 
+          _id: fileId 
+        });
+        preparedFiles.push({ 
+          file: fileWithPreview, 
+          progress: 0, 
+          status: "pending",
+          id: fileId
+        });
       }
 
       setFiles((prev) => [...prev, ...preparedFiles]);
@@ -219,13 +302,16 @@ export function FileUploader({
     [files.length, maxFiles, validateFile, compressImage, createPreview],
   );
 
+  // Optimized upload effect with better dependency tracking
   useEffect(() => {
-    const uploadFile = async (fileIndex: number) => {
+    const uploadFile = async (fileId: string) => {
+      const fileIndex = files.findIndex(f => f.id === fileId);
       const fileState = files[fileIndex];
       if (!fileState || fileState.status !== 'pending') return null;
 
       try {
-        setFiles((prev) => prev.map((f, i) => i === fileIndex ? { ...f, status: "uploading" } : f));
+        // Update status to uploading
+        setFiles((prev) => prev.map(f => f.id === fileId ? { ...f, status: "uploading" as const } : f));
 
         const { file } = fileState;
         const response = await fetch("/api/upload/presigned-url", {
@@ -238,45 +324,82 @@ export function FileUploader({
 
         const { presignedUrl, publicUrl, key } = await response.json();
 
-        const uploadResponse = await fetch(presignedUrl, {
-          method: "PUT",
-          body: file,
-          headers: { "Content-Type": file.type },
+        // Create XMLHttpRequest for progress tracking
+        const xhr = new XMLHttpRequest();
+        
+        const uploadPromise = new Promise<UploadedFile>((resolve, reject) => {
+          xhr.upload.addEventListener('progress', (event) => {
+            if (event.lengthComputable) {
+              const progress = Math.round((event.loaded / event.total) * 100);
+              // Use functional update to avoid stale closure
+              setFiles((prev) => prev.map(f => 
+                f.id === fileId ? { ...f, progress } : f
+              ));
+            }
+          });
+
+          xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              const uploadedFile: UploadedFile = { 
+                url: publicUrl, 
+                key, 
+                size: file.size, 
+                contentType: file.type, 
+                fileName: file.name 
+              };
+              resolve(uploadedFile);
+            } else {
+              reject(new Error(`Upload failed: ${xhr.statusText}`));
+            }
+          });
+
+          xhr.addEventListener('error', () => {
+            reject(new Error('Upload failed: Network error'));
+          });
+
+          xhr.open('PUT', presignedUrl);
+          xhr.setRequestHeader('Content-Type', file.type);
+          xhr.send(file);
         });
 
-        if (!uploadResponse.ok) throw new Error(`Upload failed: ${uploadResponse.statusText}`);
+        const uploadedFile = await uploadPromise;
 
-        const uploadedFile: UploadedFile = { url: publicUrl, key, size: file.size, contentType: file.type, fileName: file.name };
-
-        setFiles((prev) => prev.map((f, i) => i === fileIndex ? { ...f, status: "completed", uploadedFile } : f));
+        setFiles((prev) => prev.map(f => 
+          f.id === fileId ? { ...f, status: "completed" as const, uploadedFile, progress: 100 } : f
+        ));
 
         return uploadedFile;
       } catch (error) {
-        setFiles((prev) => prev.map((f, i) => i === fileIndex ? { ...f, status: "error", error: (error as Error).message } : f));
+        setFiles((prev) => prev.map(f => 
+          f.id === fileId ? { ...f, status: "error" as const, error: (error as Error).message } : f
+        ));
         return null;
       }
     };
 
-    const pendingFiles = files.map((file, index) => ({ file, index })).filter(f => f.file.status === 'pending');
+    // Only process pending files
+    const pendingFiles = files.filter(f => f.status === 'pending');
     if (pendingFiles.length > 0) {
-      Promise.all(pendingFiles.map(f => uploadFile(f.index))).then(results => {
+      Promise.all(pendingFiles.map(f => uploadFile(f.id))).then(results => {
         const successfulUploads = results.filter((r): r is UploadedFile => !!r);
         if (onUploadComplete && successfulUploads.length > 0) {
           onUploadComplete(successfulUploads);
         }
       });
     }
-  }, [files, onUploadComplete]);
+    // Use a dependency that captures the essential state changes
+  }, [files.length, ...files.map(f => `${f.id}-${f.status}`), onUploadComplete]);
 
 
-  const removeFile = useCallback((index: number) => {
+  // Optimized removeFile with better cleanup and using ID instead of index
+  const removeFile = useCallback((fileId: string) => {
     setFiles((prev) => {
-      const newFiles = [...prev];
-      const [removedFile] = newFiles.splice(index, 1);
-      if (removedFile?.file.preview?.startsWith("blob:")) {
-        URL.revokeObjectURL(removedFile.file.preview);
+      const fileToRemove = prev.find(f => f.id === fileId);
+      if (fileToRemove?.file.preview?.startsWith("blob:")) {
+        URL.revokeObjectURL(fileToRemove.file.preview);
+        objectUrlsRef.current.delete(fileToRemove.file.preview);
       }
-      return newFiles;
+      return prev.filter(f => f.id !== fileId);
     });
   }, []);
 
@@ -331,33 +454,12 @@ export function FileUploader({
           </div>
         ) : (
           <div className="space-y-4">
-            {files.map((fileState, index) => (
-              <div key={index} className="bg-background flex items-center space-x-4 rounded-lg border p-4">
-                <FilePreview file={fileState.file} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{fileState.file.name}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {formatFileSize(fileState.file.size)} • {fileState.file.type}
-                  </p>
-                  {fileState.status === "uploading" && (
-                    <div className="mt-2"><Progress value={fileState.progress} className="h-2" /></div>
-                  )}
-                  <div className="mt-1 flex items-center space-x-2">
-                    {fileState.status === "uploading" && (
-                      <><Loader2 className="h-3 w-3 animate-spin" /><span className="text-muted-foreground text-xs">Uploading...</span></>
-                    )}
-                    {fileState.status === "completed" && (<span className="text-xs text-green-600">✓ Uploaded</span>)}
-                    {fileState.status === "error" && (<span className="text-xs text-red-600">✗ {fileState.error}</span>)}
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => { e.stopPropagation(); removeFile(index); }}
-                  disabled={fileState.status === "uploading"}
-                  className="flex-shrink-0"
-                ><X className="h-4 w-4" /></Button>
-              </div>
+            {files.map((fileState) => (
+              <FileItem 
+                key={fileState.id} 
+                fileState={fileState} 
+                onRemove={removeFile} 
+              />
             ))}
             {files.length < maxFiles && (
               <Button
@@ -365,7 +467,10 @@ export function FileUploader({
                 onClick={(e) => { e.stopPropagation(); openFileDialog(); }}
                 disabled={disabled}
                 className="w-full"
-              ><Upload className="mr-2 h-4 w-4" />Add {files.length > 0 ? "More " : ""}Files</Button>
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Add {files.length > 0 ? "More " : ""}Files
+              </Button>
             )}
           </div>
         )}
@@ -378,3 +483,6 @@ export function FileUploader({
     </div>
   );
 }
+
+// Export memoized version to prevent unnecessary re-renders
+export const FileUploader = memo(FileUploaderComponent);
