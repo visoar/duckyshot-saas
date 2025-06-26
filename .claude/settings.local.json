@@ -2,9 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(pnpm *)",
-      "Bash(cp *)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(*)",
+      "Bash(pnpm install:*)"
     ],
     "deny": []
   }
