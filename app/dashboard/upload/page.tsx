@@ -89,14 +89,20 @@ export default function UploadPage() {
       const result = await response.json();
       setServerUploadProgress(100);
 
-      // 添加成功上传的文件到列表
+      // 添加成功上传的文件到列表，只处理包含所有必需字段的成功结果
       const successfulUploads = (result.results as ServerUploadResult[])
-        .filter((r: ServerUploadResult) => r.success)
+        .filter((r: ServerUploadResult) => 
+          r.success && 
+          r.url && 
+          r.key && 
+          r.size !== undefined && 
+          r.contentType
+        )
         .map((r: ServerUploadResult) => ({
-          url: r.url!,
-          key: r.key!,
-          size: r.size!,
-          contentType: r.contentType!,
+          url: r.url as string,
+          key: r.key as string,
+          size: r.size as number,
+          contentType: r.contentType as string,
           fileName: r.fileName,
         }));
 

@@ -2,8 +2,23 @@
   "permissions": {
     "allow": [
       "Bash(pnpm *)",
-      "Bash(*)",
-      "Bash(pnpm install:*)"
+      "Bash(pnpm dev:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm db:generate:*)",
+      "Bash(pnpm db:push:*)",
+      "Bash(pnpm db:pull:*)",
+      "Bash(pnpm db:migrate:*)",
+      "Bash(cp *)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(pnpm analyze:*)",
+      "Bash(find:*)",
+      "Bash(rm:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

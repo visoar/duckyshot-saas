@@ -44,12 +44,61 @@ export const API_ERROR_CODES = {
 
 export type ApiErrorCode = typeof API_ERROR_CODES[keyof typeof API_ERROR_CODES];
 
-// Standard error response interface
+// Structured error detail types
+export interface ValidationErrorDetails {
+  field: string;
+  message: string;
+  value?: string | number | boolean;
+}
+
+export interface RateLimitErrorDetails {
+  limit: number;
+  remaining: number;
+  resetTime: string;
+}
+
+export interface AuthenticationErrorDetails {
+  requiredRole?: string;
+  currentRole?: string;
+  action?: string;
+}
+
+export interface FileUploadErrorDetails {
+  fileName?: string;
+  fileSize?: number;
+  maxSize?: number;
+  allowedTypes?: string[];
+  actualType?: string;
+}
+
+export interface DatabaseErrorDetails {
+  table?: string;
+  operation?: string;
+  constraint?: string;
+}
+
+export interface ZodErrorDetails {
+  fieldErrors: Record<string, string[] | undefined>;
+  formErrors: string[];
+}
+
+// Union type for all possible error details
+export type ApiErrorDetails = 
+  | ValidationErrorDetails[]
+  | RateLimitErrorDetails
+  | AuthenticationErrorDetails
+  | FileUploadErrorDetails
+  | DatabaseErrorDetails
+  | ZodErrorDetails
+  | Record<string, string | number | boolean>
+  | null;
+
+// Standard error response interface with typed details
 export interface ApiErrorResponse {
   error: string;
   code: ApiErrorCode;
   message: string;
-  details?: unknown;
+  details?: ApiErrorDetails;
   timestamp: string;
   requestId?: string;
 }
@@ -74,7 +123,7 @@ export function createApiError(
   code: ApiErrorCode,
   message: string,
   status: number,
-  details?: unknown,
+  details?: ApiErrorDetails,
   requestId?: string
 ): NextResponse {
   const errorResponse: ApiErrorResponse = {
@@ -191,7 +240,7 @@ export function createNotFoundError(
  */
 export function createConflictError(
   message: string,
-  details?: unknown
+  details?: ApiErrorDetails
 ): NextResponse {
   return createApiError(
     API_ERROR_CODES.RESOURCE_CONFLICT,

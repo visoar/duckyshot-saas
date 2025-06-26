@@ -111,19 +111,35 @@ export function generateZodSchema(
                 }
                 break;
             case "json":
+                // Create a safe JSON schema that accepts common JSON types
+                const jsonValueSchema = z.union([
+                    z.string(),
+                    z.number(),
+                    z.boolean(),
+                    z.null(),
+                    z.array(z.unknown()),
+                    z.record(z.unknown()),
+                ]);
+                
                 fieldSchema = z.string().transform((str, ctx) => {
                     if (!str) return null;
                     try {
-                        return JSON.parse(str);
-                    } catch {
-                        ctx.addIssue({ code: "custom", message: "Invalid JSON" });
+                        const parsed = JSON.parse(str);
+                        // Validate the parsed JSON against our safe schema
+                        return jsonValueSchema.parse(parsed);
+                    } catch (error) {
+                        ctx.addIssue({ 
+                            code: "custom", 
+                            message: error instanceof Error ? error.message : "Invalid JSON" 
+                        });
                         return z.NEVER;
                     }
-                }).pipe(z.any());
+                });
                 break;
             default:
-                // This should not happen with the current types, but as a fallback:
-                fieldSchema = z.any();
+                // Fallback for unknown column types - use string with warning
+                console.warn(`Unknown column type: ${col.type}. Falling back to string schema.`);
+                fieldSchema = z.string();
         }
 
         if (col.isOptional) {
