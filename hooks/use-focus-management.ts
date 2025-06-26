@@ -15,7 +15,10 @@ export function useFocusManagement() {
 
   // Restore focus to the previously focused element
   const restoreFocus = useCallback(() => {
-    if (lastFocusedElement.current && typeof lastFocusedElement.current.focus === 'function') {
+    if (
+      lastFocusedElement.current &&
+      typeof lastFocusedElement.current.focus === "function"
+    ) {
       // Small delay to ensure the dialog is fully closed
       setTimeout(() => {
         lastFocusedElement.current?.focus();
@@ -28,7 +31,7 @@ export function useFocusManagement() {
     if (!container) return;
 
     const focusableElements = container.querySelectorAll(
-      'input:not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled]), [href]:not([disabled])'
+      'input:not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled]), [href]:not([disabled])',
     );
 
     const firstElement = focusableElements[0] as HTMLElement;
@@ -45,7 +48,7 @@ export function useFocusManagement() {
     if (!container) return;
 
     const firstInput = container.querySelector(
-      'input:not([disabled]):not([type="hidden"]), textarea:not([disabled]), select:not([disabled])'
+      'input:not([disabled]):not([type="hidden"]), textarea:not([disabled]), select:not([disabled])',
     ) as HTMLElement;
 
     if (firstInput) {
@@ -56,34 +59,39 @@ export function useFocusManagement() {
   }, []);
 
   // Focus an element with error state
-  const focusErrorField = useCallback((fieldName: string, container?: HTMLElement | null) => {
-    const searchContainer = container || document;
-    const errorField = searchContainer.querySelector(
-      `[name="${fieldName}"], #${fieldName}, [data-field="${fieldName}"]`
-    ) as HTMLElement;
+  const focusErrorField = useCallback(
+    (fieldName: string, container?: HTMLElement | null) => {
+      const searchContainer = container || document;
+      const errorField = searchContainer.querySelector(
+        `[name="${fieldName}"], #${fieldName}, [data-field="${fieldName}"]`,
+      ) as HTMLElement;
 
-    if (errorField) {
-      setTimeout(() => {
-        errorField.focus();
-        // Scroll into view if needed
-        errorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 10);
-    }
-  }, []);
+      if (errorField) {
+        setTimeout(() => {
+          errorField.focus();
+          // Scroll into view if needed
+          errorField.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 10);
+      }
+    },
+    [],
+  );
 
   // Create a focus trap within a container
   const createFocusTrap = useCallback((container: HTMLElement) => {
     const focusableElements = container.querySelectorAll(
-      'input:not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled]), [href]:not([disabled])'
+      'input:not([disabled]), textarea:not([disabled]), select:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled]), [href]:not([disabled])',
     );
 
     if (focusableElements.length === 0) return () => {};
 
     const firstElement = focusableElements[0] as HTMLElement;
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+    const lastElement = focusableElements[
+      focusableElements.length - 1
+    ] as HTMLElement;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Tab') {
+      if (e.key === "Tab") {
         if (e.shiftKey) {
           // Shift + Tab: focus previous element
           if (document.activeElement === firstElement) {
@@ -100,28 +108,34 @@ export function useFocusManagement() {
       }
     };
 
-    container.addEventListener('keydown', handleKeyDown);
+    container.addEventListener("keydown", handleKeyDown);
 
     // Return cleanup function
     return () => {
-      container.removeEventListener('keydown', handleKeyDown);
+      container.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
   // Handle dialog open with focus management
-  const handleDialogOpen = useCallback((dialogContainer?: HTMLElement | null, focusFirst = true) => {
-    storeFocus();
-    if (focusFirst && dialogContainer) {
-      focusFirstInput(dialogContainer);
-    }
-  }, [storeFocus, focusFirstInput]);
+  const handleDialogOpen = useCallback(
+    (dialogContainer?: HTMLElement | null, focusFirst = true) => {
+      storeFocus();
+      if (focusFirst && dialogContainer) {
+        focusFirstInput(dialogContainer);
+      }
+    },
+    [storeFocus, focusFirstInput],
+  );
 
   // Handle dialog close with focus restoration
-  const handleDialogClose = useCallback((shouldRestore = true) => {
-    if (shouldRestore) {
-      restoreFocus();
-    }
-  }, [restoreFocus]);
+  const handleDialogClose = useCallback(
+    (shouldRestore = true) => {
+      if (shouldRestore) {
+        restoreFocus();
+      }
+    },
+    [restoreFocus],
+  );
 
   return {
     storeFocus,
@@ -139,7 +153,7 @@ export function useFocusManagement() {
  * Hook for managing focus within forms with validation
  */
 export function useFormFocusManagement<T extends Record<string, any>>(
-  errors?: any
+  errors?: any,
 ) {
   const { focusErrorField, focusFirstInput } = useFocusManagement();
   const formRef = useRef<HTMLFormElement>(null);

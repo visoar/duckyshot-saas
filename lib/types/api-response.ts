@@ -23,18 +23,22 @@ export const NumberApiResponseSchema = createApiResponseSchema(z.number());
 export const BooleanApiResponseSchema = createApiResponseSchema(z.boolean());
 
 // Array response schemas
-export function createArrayApiResponseSchema<T extends z.ZodTypeAny>(itemSchema: T) {
+export function createArrayApiResponseSchema<T extends z.ZodTypeAny>(
+  itemSchema: T,
+) {
   return createApiResponseSchema(z.array(itemSchema));
 }
 
 // Paginated response schema
-export function createPaginatedApiResponseSchema<T extends z.ZodTypeAny>(itemSchema: T) {
+export function createPaginatedApiResponseSchema<T extends z.ZodTypeAny>(
+  itemSchema: T,
+) {
   return BaseApiResponseSchema.extend({
     data: z.object({
       items: z.array(itemSchema),
       pagination: z.object({
         page: z.number(),
-        limit: z.number(), 
+        limit: z.number(),
         total: z.number(),
         totalPages: z.number(),
       }),

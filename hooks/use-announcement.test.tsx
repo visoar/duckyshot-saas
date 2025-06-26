@@ -8,8 +8,8 @@ function TestComponent() {
 
   return (
     <div>
-      <div 
-        ref={announcementRef} 
+      <div
+        ref={announcementRef}
         data-testid="announcement-region"
         aria-live="polite"
         aria-atomic="true"
@@ -50,7 +50,7 @@ describe("useAnnouncement", () => {
   it("should create announcement region with correct attributes", () => {
     render(<TestComponent />);
     const region = screen.getByTestId("announcement-region");
-    
+
     expect(region).toBeInTheDocument();
     expect(region).toHaveAttribute("aria-live", "polite");
     expect(region).toHaveAttribute("aria-atomic", "true");
@@ -184,14 +184,11 @@ describe("useAnnouncement", () => {
   it("should handle empty messages gracefully", () => {
     function EmptyMessageComponent() {
       const { announce, announcementRef } = useAnnouncement();
-      
+
       return (
         <div>
           <div ref={announcementRef} data-testid="announcement-region" />
-          <button
-            onClick={() => announce("")}
-            data-testid="announce-empty"
-          >
+          <button onClick={() => announce("")} data-testid="announce-empty">
             Announce Empty
           </button>
         </div>

@@ -43,54 +43,54 @@ const navigation: {
   url: string;
   icon: LucideIcon;
 }[] = [
-    {
-      title: "Home",
-      url: "/dashboard",
-      icon: Home,
-    },
-    {
-      title: "Upload",
-      url: "/dashboard/upload",
-      icon: Upload,
-    },
-    {
-      title: "Settings",
-      url: "/dashboard/settings",
-      icon: Settings,
-    },
-  ];
+  {
+    title: "Home",
+    url: "/dashboard",
+    icon: Home,
+  },
+  {
+    title: "Upload",
+    url: "/dashboard/upload",
+    icon: Upload,
+  },
+  {
+    title: "Settings",
+    url: "/dashboard/settings",
+    icon: Settings,
+  },
+];
 
 const adminNavigation: {
   title: string;
   url: string;
   icon: LucideIcon;
 }[] = [
-    {
-      title: "Admin Dashboard",
-      url: "/dashboard/admin",
-      icon: BarChart3,
-    },
-    {
-      title: "User Management",
-      url: "/dashboard/admin/users",
-      icon: Users,
-    },
-    {
-      title: "Payments",
-      url: "/dashboard/admin/payments",
-      icon: CreditCard,
-    },
-    {
-      title: "Subscriptions",
-      url: "/dashboard/admin/subscriptions",
-      icon: Shield,
-    },
-    {
-      title: "Uploads Managements",
-      url: "/dashboard/admin/uploads",
-      icon: Upload,
-    },
-  ];
+  {
+    title: "Admin Dashboard",
+    url: "/dashboard/admin",
+    icon: BarChart3,
+  },
+  {
+    title: "User Management",
+    url: "/dashboard/admin/users",
+    icon: Users,
+  },
+  {
+    title: "Payments",
+    url: "/dashboard/admin/payments",
+    icon: CreditCard,
+  },
+  {
+    title: "Subscriptions",
+    url: "/dashboard/admin/subscriptions",
+    icon: Shield,
+  },
+  {
+    title: "Uploads Managements",
+    url: "/dashboard/admin/uploads",
+    icon: Upload,
+  },
+];
 
 const genericTableNavigation = Object.keys(enabledTablesMap).map((key) => ({
   title: key.charAt(0).toUpperCase() + key.slice(1),
@@ -99,20 +99,23 @@ const genericTableNavigation = Object.keys(enabledTablesMap).map((key) => ({
 }));
 
 // Custom navigation item component with proper accessibility
-function NavigationItem({ 
-  item, 
-  isActive, 
-  onClick, 
-  onDoubleClick 
+function NavigationItem({
+  item,
+  isActive,
+  onClick,
+  onDoubleClick,
 }: {
   item: { title: string; url: string; icon: LucideIcon };
   isActive: boolean;
   onClick: () => void;
   onDoubleClick: () => void;
 }) {
-  const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
-    handleActivationKey(e, onClick);
-  }, [onClick]);
+  const handleKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      handleActivationKey(e, onClick);
+    },
+    [onClick],
+  );
 
   return (
     <SidebarMenuItem>
@@ -142,18 +145,24 @@ export function AppSidebar() {
     session?.user &&
     isAdminRole((session.user as { role?: UserRole }).role || "user");
 
-  const handleNavigation = React.useCallback((url: string) => () => {
-    router.replace(url);
-  }, [router]);
+  const handleNavigation = React.useCallback(
+    (url: string) => () => {
+      router.replace(url);
+    },
+    [router],
+  );
 
-  const handleNavigationWithToggle = React.useCallback((url: string) => () => {
-    router.replace(url);
-    toggleSidebar();
-  }, [router, toggleSidebar]);
+  const handleNavigationWithToggle = React.useCallback(
+    (url: string) => () => {
+      router.replace(url);
+      toggleSidebar();
+    },
+    [router, toggleSidebar],
+  );
 
   return (
-    <Sidebar 
-      collapsible="icon" 
+    <Sidebar
+      collapsible="icon"
       variant="inset"
       role="navigation"
       aria-label="Main sidebar navigation"
@@ -164,9 +173,9 @@ export function AppSidebar() {
           open ? "px-4" : "justify-center",
         )}
       >
-        <Link 
-          href="/" 
-          className="focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md"
+        <Link
+          href="/"
+          className="focus:ring-primary rounded-md focus:ring-2 focus:ring-offset-2 focus:outline-none"
           aria-label={`Go to ${APP_NAME} homepage`}
         >
           <Logo className="m-0 size-5 p-1" />
@@ -200,7 +209,11 @@ export function AppSidebar() {
             <SidebarGroup>
               <SidebarGroupContent className="flex flex-col gap-2">
                 {open && (
-                  <div className="text-muted-foreground px-2 py-1 text-xs font-semibold" role="heading" aria-level={3}>
+                  <div
+                    className="text-muted-foreground px-2 py-1 text-xs font-semibold"
+                    role="heading"
+                    aria-level={3}
+                  >
                     Admin
                   </div>
                 )}
@@ -223,11 +236,18 @@ export function AppSidebar() {
               <SidebarGroup>
                 <SidebarGroupContent className="flex flex-col gap-2">
                   {open && (
-                    <div className="text-muted-foreground px-2 py-1 text-xs font-semibold" role="heading" aria-level={3}>
+                    <div
+                      className="text-muted-foreground px-2 py-1 text-xs font-semibold"
+                      role="heading"
+                      aria-level={3}
+                    >
                       Manage Tables
                     </div>
                   )}
-                  <SidebarMenu role="navigation" aria-label="Table management navigation">
+                  <SidebarMenu
+                    role="navigation"
+                    aria-label="Table management navigation"
+                  >
                     {genericTableNavigation.map((item) => (
                       <NavigationItem
                         key={item.title}

@@ -29,7 +29,7 @@ export function formatFileTypesA11y(types: string[]): string {
   if (types.length === 0) return "all file types";
   if (types.length === 1) return types[0];
   if (types.length === 2) return `${types[0]} and ${types[1]}`;
-  
+
   const lastType = types[types.length - 1];
   const otherTypes = types.slice(0, -1).join(", ");
   return `${otherTypes}, and ${lastType}`;
@@ -47,10 +47,10 @@ export function createUploadInstructions({
 }): string {
   const fileCountText = maxFiles === 1 ? "1 file" : `up to ${maxFiles} files`;
   const sizeText = formatFileSizeA11y(maxFileSize);
-  const typeText = acceptedFileTypes 
+  const typeText = acceptedFileTypes
     ? formatFileTypesA11y(acceptedFileTypes)
     : "any file type";
-  
+
   return `Upload ${fileCountText}. Maximum size per file: ${sizeText}. Accepted formats: ${typeText}.`;
 }
 
@@ -59,14 +59,18 @@ export const UPLOAD_MESSAGES = {
   dragEnter: "Drop zone activated. Release files to upload.",
   dragLeave: "Drop zone deactivated.",
   uploadStart: (fileName: string) => `Uploading ${fileName}`,
-  uploadProgress: (fileName: string, percentage: number) => 
+  uploadProgress: (fileName: string, percentage: number) =>
     `${fileName} upload progress: ${percentage}%`,
   uploadSuccess: (fileName: string) => `${fileName} uploaded successfully`,
-  uploadError: (fileName: string, error: string) => 
+  uploadError: (fileName: string, error: string) =>
     `Failed to upload ${fileName}. Error: ${error}`,
   fileRemoved: (fileName: string) => `Removed ${fileName}`,
-  filesSelected: (count: number) => 
+  filesSelected: (count: number) =>
     count === 1 ? "1 file selected" : `${count} files selected`,
+  validationError: (fileName: string, error: string) =>
+    `Validation error for ${fileName}: ${error}`,
+  fileLimitExceeded: (maxFiles: number) =>
+    `Error: Cannot select more than ${maxFiles} file${maxFiles > 1 ? "s" : ""}.`,
 } as const;
 
 // Keyboard navigation helpers
@@ -76,7 +80,7 @@ export function isActivationKey(event: React.KeyboardEvent): boolean {
 
 export function handleActivationKey(
   event: React.KeyboardEvent,
-  callback: () => void
+  callback: () => void,
 ): void {
   if (isActivationKey(event)) {
     event.preventDefault();

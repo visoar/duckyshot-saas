@@ -16,7 +16,7 @@ describe("API Response Types", () => {
 
       const result = BaseApiResponseSchema.safeParse(validResponse);
       expect(result.success).toBe(true);
-      
+
       if (result.success) {
         expect(result.data.success).toBe(true);
         expect(result.data.message).toBe("Operation completed successfully");
@@ -31,7 +31,7 @@ describe("API Response Types", () => {
 
       const result = BaseApiResponseSchema.safeParse(errorResponse);
       expect(result.success).toBe(true);
-      
+
       if (result.success) {
         expect(result.data.success).toBe(false);
         expect(result.data.message).toBe("Validation failed");
@@ -89,7 +89,7 @@ describe("API Response Types", () => {
 
       const result = UserResponseSchema.safeParse(validResponse);
       expect(result.success).toBe(true);
-      
+
       if (result.success) {
         expect(result.data.data.id).toBe("123");
         expect(result.data.data.email).toBe("john@example.com");
@@ -128,7 +128,7 @@ describe("API Response Types", () => {
 
       const result = StringResponseSchema.safeParse(validResponse);
       expect(result.success).toBe(true);
-      
+
       if (result.success) {
         expect(result.data.data).toBe("Hello World");
       }
@@ -136,7 +136,7 @@ describe("API Response Types", () => {
 
     it("should work with array data types", () => {
       const ArrayResponseSchema = createApiResponseSchema(
-        z.array(z.object({ id: z.number(), name: z.string() }))
+        z.array(z.object({ id: z.number(), name: z.string() })),
       );
 
       const validResponse = {
@@ -150,7 +150,7 @@ describe("API Response Types", () => {
 
       const result = ArrayResponseSchema.safeParse(validResponse);
       expect(result.success).toBe(true);
-      
+
       if (result.success) {
         expect(result.data.data).toHaveLength(2);
         expect(result.data.data[0].name).toBe("Item 1");
@@ -166,7 +166,10 @@ describe("API Response Types", () => {
       };
 
       expect(errorDetails.code).toBe("VALIDATION_ERROR");
-      expect(errorDetails.details).toEqual({ field: "email", reason: "Invalid format" });
+      expect(errorDetails.details).toEqual({
+        field: "email",
+        reason: "Invalid format",
+      });
     });
 
     it("should allow optional details", () => {
@@ -207,10 +210,10 @@ describe("API Response Types", () => {
 
       expect(zodError1.fieldErrors.name).toBeDefined();
       expect(zodError1.formErrors).toBeUndefined();
-      
+
       expect(zodError2.fieldErrors).toBeUndefined();
       expect(zodError2.formErrors).toBeDefined();
-      
+
       expect(zodError3.fieldErrors).toBeUndefined();
       expect(zodError3.formErrors).toBeUndefined();
     });
@@ -225,7 +228,7 @@ describe("API Response Types", () => {
 
       const result = BaseApiResponseSchema.safeParse(simpleResponse);
       expect(result.success).toBe(true);
-      
+
       if (result.success) {
         expect(result.data.success).toBe(false);
         expect(result.data.message).toBe("Request validation failed");
@@ -275,7 +278,7 @@ describe("API Response Types", () => {
 
       const result = ComplexResponseSchema.safeParse(complexResponse);
       expect(result.success).toBe(true);
-      
+
       if (result.success) {
         expect(result.data.data.user.profile.settings.theme).toBe("dark");
         expect(result.data.data.metadata.version).toBe(1);

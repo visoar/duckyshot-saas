@@ -19,9 +19,12 @@ class InMemoryRateLimiter {
 
   constructor() {
     // Clean up expired entries every 5 minutes
-    this.cleanupInterval = setInterval(() => {
-      this.cleanup();
-    }, 5 * 60 * 1000);
+    this.cleanupInterval = setInterval(
+      () => {
+        this.cleanup();
+      },
+      5 * 60 * 1000,
+    );
   }
 
   private cleanup() {
@@ -33,7 +36,10 @@ class InMemoryRateLimiter {
     }
   }
 
-  async check(key: string, config: RateLimitConfig): Promise<{
+  async check(
+    key: string,
+    config: RateLimitConfig,
+  ): Promise<{
     success: boolean;
     limit: number;
     used: number;
@@ -42,12 +48,12 @@ class InMemoryRateLimiter {
   }> {
     const now = Date.now();
     const entry = this.store.get(key);
-    
+
     if (!entry || entry.resetTime <= now) {
       // Create new entry or reset expired entry
       const resetTime = now + config.windowMs;
       this.store.set(key, { count: 1, resetTime });
-      
+
       return {
         success: true,
         limit: config.maxRequests,
@@ -94,15 +100,17 @@ const globalRateLimiter = new InMemoryRateLimiter();
 
 export function createRateLimit(config: RateLimitConfig) {
   return async (req: NextRequest) => {
-    const key = config.keyGenerator ? config.keyGenerator(req) : getDefaultKey(req);
+    const key = config.keyGenerator
+      ? config.keyGenerator(req)
+      : getDefaultKey(req);
     const result = await globalRateLimiter.check(key, config);
-    
+
     return {
       ...result,
       headers: {
-        'X-RateLimit-Limit': config.maxRequests.toString(),
-        'X-RateLimit-Remaining': result.remaining.toString(),
-        'X-RateLimit-Reset': new Date(result.resetTime).toISOString(),
+        "X-RateLimit-Limit": config.maxRequests.toString(),
+        "X-RateLimit-Remaining": result.remaining.toString(),
+        "X-RateLimit-Reset": new Date(result.resetTime).toISOString(),
       },
     };
   };
@@ -110,18 +118,18 @@ export function createRateLimit(config: RateLimitConfig) {
 
 function getDefaultKey(req: NextRequest): string {
   // Try to get real IP from headers (for production behind proxy)
-  const forwarded = req.headers.get('x-forwarded-for');
-  const realIp = req.headers.get('x-real-ip');
-  const ip = forwarded?.split(',')[0] || realIp || 'unknown';
-  
+  const forwarded = req.headers.get("x-forwarded-for");
+  const realIp = req.headers.get("x-real-ip");
+  const ip = forwarded?.split(",")[0] || realIp || "unknown";
+
   return `${ip}:${req.nextUrl.pathname}`;
 }
 
 // Helper function to get client IP
 export function getClientIP(req: NextRequest): string {
-  const forwarded = req.headers.get('x-forwarded-for');
-  const realIp = req.headers.get('x-real-ip');
-  return forwarded?.split(',')[0] || realIp || 'unknown';
+  const forwarded = req.headers.get("x-forwarded-for");
+  const realIp = req.headers.get("x-real-ip");
+  return forwarded?.split(",")[0] || realIp || "unknown";
 }
 
 // Predefined rate limiters for common use cases
@@ -129,28 +137,28 @@ export const rateLimiters = {
   // Authentication endpoints - stricter limits
   auth: createRateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 5,
+    maxRequests: 50,
     keyGenerator: (req) => `auth:${getClientIP(req)}`,
   }),
 
   // Upload endpoints - moderate limits
   upload: createRateLimit({
     windowMs: 60 * 1000, // 1 minute
-    maxRequests: 10,
+    maxRequests: 100,
     keyGenerator: (req) => `upload:${getClientIP(req)}`,
   }),
 
   // File server upload - stricter limits
   fileUpload: createRateLimit({
     windowMs: 60 * 1000, // 1 minute
-    maxRequests: 5,
+    maxRequests: 100,
     keyGenerator: (req) => `file-upload:${getClientIP(req)}`,
   }),
 
   // Billing endpoints - strict limits
   billing: createRateLimit({
     windowMs: 60 * 1000, // 1 minute
-    maxRequests: 5,
+    maxRequests: 10,
     keyGenerator: (req) => `billing:${getClientIP(req)}`,
   }),
 
@@ -164,7 +172,7 @@ export const rateLimiters = {
   // General API endpoints
   api: createRateLimit({
     windowMs: 60 * 1000, // 1 minute
-    maxRequests: 100,
+    maxRequests: 200,
     keyGenerator: (req) => `api:${getClientIP(req)}`,
   }),
 };
@@ -178,37 +186,39 @@ export function createRateLimitErrorResponse(result: {
 }) {
   return new Response(
     JSON.stringify({
-      error: 'Rate limit exceeded',
-      message: 'Too many requests, please try again later.',
+      error: "Rate limit exceeded",
+      message: "Too many requests, please try again later.",
       retryAfter: Math.ceil((result.resetTime - Date.now()) / 1000),
     }),
     {
       status: 429,
       headers: {
-        'Content-Type': 'application/json',
-        'X-RateLimit-Limit': result.limit.toString(),
-        'X-RateLimit-Remaining': result.remaining.toString(),
-        'X-RateLimit-Reset': new Date(result.resetTime).toISOString(),
-        'Retry-After': Math.ceil((result.resetTime - Date.now()) / 1000).toString(),
+        "Content-Type": "application/json",
+        "X-RateLimit-Limit": result.limit.toString(),
+        "X-RateLimit-Remaining": result.remaining.toString(),
+        "X-RateLimit-Reset": new Date(result.resetTime).toISOString(),
+        "Retry-After": Math.ceil(
+          (result.resetTime - Date.now()) / 1000,
+        ).toString(),
       },
-    }
+    },
   );
 }
 
 // Utility to add rate limiting to API routes
 export function withRateLimit<T extends unknown[]>(
   handler: (req: NextRequest, ...args: T) => Promise<Response>,
-  rateLimiter: ReturnType<typeof createRateLimit>
+  rateLimiter: ReturnType<typeof createRateLimit>,
 ) {
   return async (req: NextRequest, ...args: T): Promise<Response> => {
     const result = await rateLimiter(req);
-    
+
     if (!result.success) {
       return createRateLimitErrorResponse(result);
     }
 
     const response = await handler(req, ...args);
-    
+
     // Add rate limit headers to successful responses
     Object.entries(result.headers).forEach(([key, value]) => {
       response.headers.set(key, value);

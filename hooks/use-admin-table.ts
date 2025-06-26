@@ -19,7 +19,7 @@ interface BaseAdminTableQueryArgs {
 }
 
 // Generic interface that allows extending with specific query parameters
-type AdminTableQueryArgs<TExtensions = Record<string, never>> = 
+type AdminTableQueryArgs<TExtensions = Record<string, never>> =
   BaseAdminTableQueryArgs & TExtensions;
 
 interface UseAdminTableProps<T, TQueryExtensions = Record<string, never>> {

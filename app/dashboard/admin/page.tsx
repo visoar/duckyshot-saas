@@ -14,7 +14,10 @@ import {
   getAdminStatsWithCharts,
   AdminStatsWithCharts,
 } from "@/lib/admin/stats";
-import { LazyRecentUsersChart, LazyRevenueChart } from "./_components/lazy-charts";
+import {
+  LazyRecentUsersChart,
+  LazyRevenueChart,
+} from "./_components/lazy-charts";
 
 export const metadata = createMetadata({
   title: "Admin Dashboard",
@@ -44,7 +47,9 @@ export default async function AdminDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
-            <LazyRecentUsersChart chartData={statsWithCharts.charts.recentUsers} />
+            <LazyRecentUsersChart
+              chartData={statsWithCharts.charts.recentUsers}
+            />
           </CardContent>
         </Card>
       </div>

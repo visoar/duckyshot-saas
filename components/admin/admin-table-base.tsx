@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, ReactNode, memo, useCallback, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  ReactNode,
+  memo,
+  useCallback,
+  useMemo,
+} from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -61,10 +68,14 @@ interface AdminTableBaseProps<T> {
 const TableSkeleton = memo(({ columnCount }: { columnCount: number }) => (
   <>
     {Array.from({ length: 5 }).map((_, i) => (
-      <TableRow key={`skeleton-${i}`} role="row" aria-label={`Loading row ${i + 1}`}>
+      <TableRow
+        key={`skeleton-${i}`}
+        role="row"
+        aria-label={`Loading row ${i + 1}`}
+      >
         {Array.from({ length: columnCount }).map((_, j) => (
           <TableCell key={`skeleton-cell-${j}`} role="cell">
-            <div 
+            <div
               className="bg-muted h-4 w-full animate-pulse rounded"
               aria-label="Loading content"
               role="status"
@@ -76,66 +87,64 @@ const TableSkeleton = memo(({ columnCount }: { columnCount: number }) => (
   </>
 ));
 
-TableSkeleton.displayName = 'TableSkeleton';
+TableSkeleton.displayName = "TableSkeleton";
 
 // Simple empty state component
-const EmptyState = memo(({ 
-  columnCount, 
-  message 
-}: { 
-  columnCount: number; 
-  message: string; 
-}) => (
-  <TableRow role="row">
-    <TableCell 
-      colSpan={columnCount} 
-      className="h-24 text-center"
-      role="cell"
-      aria-label={`Empty state: ${message}`}
-    >
-      <div role="status" aria-live="polite">
-        {message}
-      </div>
-    </TableCell>
-  </TableRow>
-));
+const EmptyState = memo(
+  ({ columnCount, message }: { columnCount: number; message: string }) => (
+    <TableRow role="row">
+      <TableCell
+        colSpan={columnCount}
+        className="h-24 text-center"
+        role="cell"
+        aria-label={`Empty state: ${message}`}
+      >
+        <div role="status" aria-live="polite">
+          {message}
+        </div>
+      </TableCell>
+    </TableRow>
+  ),
+);
 
-EmptyState.displayName = 'EmptyState';
+EmptyState.displayName = "EmptyState";
 
 // Pagination button component
-const PaginationButton = memo(({ 
-  pageNumber, 
-  currentPage, 
-  loading, 
-  onClick 
-}: {
-  pageNumber: number;
-  currentPage: number;
-  loading: boolean;
-  onClick: (page: number) => void;
-}) => {
-  const handleClick = useCallback(() => {
-    onClick(pageNumber);
-  }, [onClick, pageNumber]);
+const PaginationButton = memo(
+  ({
+    pageNumber,
+    currentPage,
+    loading,
+    onClick,
+  }: {
+    pageNumber: number;
+    currentPage: number;
+    loading: boolean;
+    onClick: (page: number) => void;
+  }) => {
+    const handleClick = useCallback(() => {
+      onClick(pageNumber);
+    }, [onClick, pageNumber]);
 
-  const isCurrent = currentPage === pageNumber;
+    const isCurrent = currentPage === pageNumber;
 
-  return (
-    <Button
-      variant={isCurrent ? "default" : "outline"}
-      size="sm"
-      onClick={handleClick}
-      disabled={loading}
-      aria-label={`Go to page ${pageNumber}`}
-      aria-current={isCurrent ? "page" : undefined}
-      aria-pressed={isCurrent}
-    >
-      {pageNumber}
-    </Button>
-  );
-});
+    return (
+      <Button
+        variant={isCurrent ? "default" : "outline"}
+        size="sm"
+        onClick={handleClick}
+        disabled={loading}
+        aria-label={`Go to page ${pageNumber}`}
+        aria-current={isCurrent ? "page" : undefined}
+        aria-pressed={isCurrent}
+      >
+        {pageNumber}
+      </Button>
+    );
+  },
+);
 
-PaginationButton.displayName = 'PaginationButton';
+PaginationButton.displayName = "PaginationButton";
 
 function AdminTableBaseComponent<T extends { id: string | number }>({
   columns,
@@ -154,7 +163,7 @@ function AdminTableBaseComponent<T extends { id: string | number }>({
   emptyMessage = "No data found",
 }: AdminTableBaseProps<T>) {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
-  
+
   // Generate stable IDs for accessibility
   const searchLabelId = useMemo(() => generateA11yId("search-label"), []);
   const tableCaptionId = useMemo(() => generateA11yId("table-caption"), []);
@@ -184,33 +193,41 @@ function AdminTableBaseComponent<T extends { id: string | number }>({
   // Memoize pagination calculations
   const paginationInfo = useMemo(() => {
     const startItem = (pagination.page - 1) * pagination.limit + 1;
-    const endItem = Math.min(pagination.page * pagination.limit, pagination.total);
+    const endItem = Math.min(
+      pagination.page * pagination.limit,
+      pagination.total,
+    );
     const showPagination = pagination.totalPages > 1;
-    
+
     return {
       startItem,
       endItem,
       showPagination,
       total: pagination.total,
     };
-  }, [pagination.page, pagination.limit, pagination.total, pagination.totalPages]);
+  }, [
+    pagination.page,
+    pagination.limit,
+    pagination.total,
+    pagination.totalPages,
+  ]);
 
   // Memoize pagination buttons
   const paginationButtons = useMemo(() => {
     const totalPages = pagination.totalPages;
     const currentPage = pagination.page;
-    
+
     // Calculate visible page range
     const maxVisiblePages = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
+
     // Adjust start page if end page is at the limit
     startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    
+
     return Array.from(
       { length: endPage - startPage + 1 },
-      (_, i) => startPage + i
+      (_, i) => startPage + i,
     );
   }, [pagination.totalPages, pagination.page]);
 
@@ -230,16 +247,16 @@ function AdminTableBaseComponent<T extends { id: string | number }>({
   // Memoize table rows to avoid re-rendering on every change
   const tableRows = useMemo(() => {
     return data.map((item, rowIndex) => (
-      <TableRow 
-        key={item.id} 
+      <TableRow
+        key={item.id}
         role="row"
         aria-rowindex={rowIndex + 2}
         tabIndex={0}
         aria-label={`Row ${rowIndex + 1} of ${data.length}`}
       >
         {columns.map((column, colIndex) => (
-          <TableCell 
-            key={column.key} 
+          <TableCell
+            key={column.key}
             role="cell"
             aria-describedby={`${tableCaptionId}-col-${colIndex}`}
           >
@@ -266,21 +283,28 @@ function AdminTableBaseComponent<T extends { id: string | number }>({
   }
 
   return (
-    <div className="space-y-4" role="region" aria-label="Data table with search and pagination">
+    <div
+      className="space-y-4"
+      role="region"
+      aria-label="Data table with search and pagination"
+    >
       {/* Search and Filter Controls */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative max-w-sm flex-1">
           <label htmlFor={searchLabelId} className="sr-only">
             Search table data
           </label>
-          <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" aria-hidden="true" />
+          <Search
+            className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2"
+            aria-hidden="true"
+          />
           <Input
             id={searchLabelId}
             placeholder={searchPlaceholder}
             value={debouncedSearchTerm}
             onChange={(e) => handleSearch(e.target.value)}
             className="pl-9"
-            aria-label={`Search table data. Current search: ${debouncedSearchTerm || 'none'}`}
+            aria-label={`Search table data. Current search: ${debouncedSearchTerm || "none"}`}
             role="searchbox"
           />
         </div>
@@ -290,7 +314,11 @@ function AdminTableBaseComponent<T extends { id: string | number }>({
               Filter table data
             </label>
             <Select value={filterValue} onValueChange={onFilterChange}>
-              <SelectTrigger className="w-[180px]" id={filterLabelId} aria-label="Filter table data">
+              <SelectTrigger
+                className="w-[180px]"
+                id={filterLabelId}
+                aria-label="Filter table data"
+              >
                 <SelectValue placeholder={filterPlaceholder} />
               </SelectTrigger>
               <SelectContent>
@@ -307,24 +335,25 @@ function AdminTableBaseComponent<T extends { id: string | number }>({
 
       {/* Table */}
       <div className="rounded-md border">
-        <Table 
-          role="table" 
+        <Table
+          role="table"
           aria-labelledby={tableCaptionId}
           aria-rowcount={loading ? -1 : data.length + 1}
           aria-busy={loading}
         >
           <caption id={tableCaptionId} className="sr-only">
-            Data table with {data.length} rows and {columns.length} columns. 
+            Data table with {data.length} rows and {columns.length} columns.
             {loading && "Loading data. "}
-            {debouncedSearchTerm && `Filtered by search: "${debouncedSearchTerm}". `}
+            {debouncedSearchTerm &&
+              `Filtered by search: "${debouncedSearchTerm}". `}
             {filterValue && `Filtered by: ${filterValue}. `}
             Page {pagination.page} of {pagination.totalPages}.
           </caption>
           <TableHeader>
             <TableRow role="row">
               {columns.map((column, index) => (
-                <TableHead 
-                  key={String(column.key)} 
+                <TableHead
+                  key={String(column.key)}
                   role="columnheader"
                   tabIndex={0}
                   aria-sort={column.sortable ? "none" : undefined}
@@ -351,13 +380,13 @@ function AdminTableBaseComponent<T extends { id: string | number }>({
 
       {/* Pagination */}
       {paginationInfo.showPagination && (
-        <nav 
+        <nav
           id={paginationId}
-          role="navigation" 
+          role="navigation"
           aria-label="Table pagination"
           className="flex items-center justify-between"
         >
-          <div 
+          <div
             className="text-muted-foreground text-sm"
             role="status"
             aria-live="polite"
@@ -366,7 +395,11 @@ function AdminTableBaseComponent<T extends { id: string | number }>({
             Showing {paginationInfo.startItem} to {paginationInfo.endItem} of{" "}
             {paginationInfo.total} results
           </div>
-          <div className="flex items-center space-x-2" role="group" aria-label="Pagination controls">
+          <div
+            className="flex items-center space-x-2"
+            role="group"
+            aria-label="Pagination controls"
+          >
             <Button
               variant="outline"
               size="sm"
@@ -377,7 +410,11 @@ function AdminTableBaseComponent<T extends { id: string | number }>({
               <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               Previous
             </Button>
-            <div className="flex items-center space-x-1" role="group" aria-label="Page numbers">
+            <div
+              className="flex items-center space-x-1"
+              role="group"
+              aria-label="Page numbers"
+            >
               {paginationButtons.map((pageNumber) => (
                 <PaginationButton
                   key={pageNumber}
@@ -406,6 +443,8 @@ function AdminTableBaseComponent<T extends { id: string | number }>({
 }
 
 // Export memoized version with proper generic typing
-export const AdminTableBase = memo(AdminTableBaseComponent) as <T extends { id: string | number }>(
-  props: AdminTableBaseProps<T>
+export const AdminTableBase = memo(AdminTableBaseComponent) as <
+  T extends { id: string | number },
+>(
+  props: AdminTableBaseProps<T>,
 ) => ReactNode;

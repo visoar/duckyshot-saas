@@ -27,7 +27,10 @@ export async function POST(request: NextRequest) {
     // 1. Rate limiting check
     const rateLimitResult = await rateLimiters.upload(request);
     if (!rateLimitResult.success) {
-      return createRateLimitError(rateLimitResult, 'Too many upload requests, please try again later.');
+      return createRateLimitError(
+        rateLimitResult,
+        "Too many upload requests, please try again later.",
+      );
     }
 
     // 2. 认证检查
@@ -51,7 +54,7 @@ export async function POST(request: NextRequest) {
       return createApiError(
         API_ERROR_CODES.INVALID_FILE_TYPE,
         `File type '${contentType}' is not allowed.`,
-        400
+        400,
       );
     }
 
@@ -59,7 +62,7 @@ export async function POST(request: NextRequest) {
       return createApiError(
         API_ERROR_CODES.FILE_TOO_LARGE,
         `File size of ${formatFileSize(size)} exceeds the limit of ${formatFileSize(UPLOAD_CONFIG.MAX_FILE_SIZE)}.`,
-        400
+        400,
       );
     }
 
@@ -75,8 +78,8 @@ export async function POST(request: NextRequest) {
       // createPresignedUrl 内部已经包含了验证，但我们在这里再次捕获以防万一
       return createApiError(
         API_ERROR_CODES.FILE_UPLOAD_FAILED,
-        result.error || 'Failed to create presigned URL',
-        400
+        result.error || "Failed to create presigned URL",
+        400,
       );
     }
 
@@ -106,12 +109,12 @@ export async function POST(request: NextRequest) {
     return addRateLimitHeaders(response, rateLimitResult);
   } catch (error) {
     const context: ErrorLogContext = {
-      endpoint: '/api/upload/presigned-url',
-      method: 'POST',
+      endpoint: "/api/upload/presigned-url",
+      method: "POST",
       userId: undefined, // session might not be available in catch block
       error,
     };
-    
+
     return handleApiError(error, context);
   }
 }

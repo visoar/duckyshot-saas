@@ -27,7 +27,10 @@ export async function POST(request: NextRequest) {
     // Rate limiting check
     const rateLimitResult = await rateLimiters.billing(request);
     if (!rateLimitResult.success) {
-      return createRateLimitError(rateLimitResult, 'Too many billing requests, please try again later.');
+      return createRateLimitError(
+        rateLimitResult,
+        "Too many billing requests, please try again later.",
+      );
     }
 
     session = await auth.api.getSession({ headers: request.headers });
@@ -63,7 +66,7 @@ export async function POST(request: NextRequest) {
         // 返回 409 Conflict 状态码，并附带管理链接
         return createConflictError(
           "You already have an active subscription. Please manage your plan from the billing portal.",
-          { managementUrl: portalUrl }
+          { managementUrl: portalUrl },
         );
       }
     }
@@ -107,12 +110,12 @@ export async function POST(request: NextRequest) {
     return addRateLimitHeaders(response, rateLimitResult);
   } catch (error) {
     const context: ErrorLogContext = {
-      endpoint: '/api/billing/checkout',
-      method: 'POST',
+      endpoint: "/api/billing/checkout",
+      method: "POST",
       userId: session?.user?.id,
       error,
     };
-    
+
     return handleApiError(error, context);
   }
 }

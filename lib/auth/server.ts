@@ -49,7 +49,7 @@ export const auth = betterAuth({
         max: 3, // max 3 magic link requests per 5 minutes per IP
       },
       "/sign-in/email": {
-        window: 300, // 5 minutes  
+        window: 300, // 5 minutes
         max: 5, // max 5 sign-in attempts per 5 minutes per IP
       },
       "/sign-up/email": {

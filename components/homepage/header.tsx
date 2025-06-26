@@ -280,8 +280,8 @@ function MobileNavigation({
   const { handleDialogOpen, handleDialogClose } = useFocusManagement();
 
   return (
-    <Sheet 
-      open={isOpen} 
+    <Sheet
+      open={isOpen}
       onOpenChange={(open) => {
         onClose();
         if (!open) {
@@ -289,15 +289,15 @@ function MobileNavigation({
         }
       }}
     >
-      <SheetContent 
-        side="right" 
+      <SheetContent
+        side="right"
         className="w-80 p-0"
         onOpenAutoFocus={(e) => {
           // Prevent default focus and focus first navigation item
           e.preventDefault();
           handleDialogOpen();
           const target = e.currentTarget as HTMLElement;
-          const firstNavItem = target?.querySelector('nav a') as HTMLElement;
+          const firstNavItem = target?.querySelector("nav a") as HTMLElement;
           if (firstNavItem) {
             setTimeout(() => firstNavItem.focus(), 10);
           }
@@ -310,12 +310,16 @@ function MobileNavigation({
         </div>
 
         <div className="flex flex-col p-6">
-          <nav className="space-y-4" role="navigation" aria-label="Mobile navigation">
+          <nav
+            className="space-y-4"
+            role="navigation"
+            aria-label="Mobile navigation"
+          >
             {mobileNavItems.map((item, index) => (
               <Link
                 key={index}
                 href={item.href!}
-                className="text-foreground hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md block py-2 text-sm font-medium transition-colors"
+                className="text-foreground hover:text-primary focus:ring-primary block rounded-md py-2 text-sm font-medium transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none"
                 onClick={onClose}
                 tabIndex={0}
               >

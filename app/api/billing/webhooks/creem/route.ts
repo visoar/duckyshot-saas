@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       return createApiError(
         API_ERROR_CODES.MISSING_REQUIRED_FIELD,
         "Missing webhook signature header",
-        400
+        400,
       );
     }
 
@@ -30,11 +30,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     const context: ErrorLogContext = {
-      endpoint: '/api/billing/webhooks/creem',
-      method: 'POST',
+      endpoint: "/api/billing/webhooks/creem",
+      method: "POST",
       error,
     };
-    
+
     return handleApiError(error, context);
   }
 }

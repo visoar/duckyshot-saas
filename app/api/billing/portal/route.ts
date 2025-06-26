@@ -17,7 +17,10 @@ export async function GET(request: NextRequest) {
     // Rate limiting check
     const rateLimitResult = await rateLimiters.billing(request);
     if (!rateLimitResult.success) {
-      return createRateLimitError(rateLimitResult, 'Too many billing requests, please try again later.');
+      return createRateLimitError(
+        rateLimitResult,
+        "Too many billing requests, please try again later.",
+      );
     }
 
     const session = await auth.api.getSession({ headers: request.headers });
@@ -27,7 +30,10 @@ export async function GET(request: NextRequest) {
 
     const subscription = await getUserSubscription(session.user.id);
     if (!subscription?.customerId) {
-      return createNotFoundError("subscription", "No active subscription found for this user.");
+      return createNotFoundError(
+        "subscription",
+        "No active subscription found for this user.",
+      );
     }
 
     const { portalUrl } = await billing.createCustomerPortalUrl(
@@ -40,12 +46,12 @@ export async function GET(request: NextRequest) {
     return addRateLimitHeaders(response, rateLimitResult);
   } catch (error) {
     const context: ErrorLogContext = {
-      endpoint: '/api/billing/portal',
-      method: 'GET',
+      endpoint: "/api/billing/portal",
+      method: "GET",
       userId: undefined, // session might not be available in catch block
       error,
     };
-    
+
     return handleApiError(error, context);
   }
 }

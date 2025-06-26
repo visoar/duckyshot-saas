@@ -33,7 +33,7 @@ export function AuthForm({ mode, availableProviders }: AuthFormProps) {
 
   const onSubmit = async (data: z.infer<typeof authSchema>) => {
     setLoading(true);
-    
+
     try {
       const result = await signIn.magicLink({
         email: data.email,

@@ -5,10 +5,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { UserWithSubscription } from "@/types/billing";
 
 // Lazy load the UserManagementTable component
-const UserManagementTable = lazy(() => 
-  import("./user-management-table").then(module => ({ 
-    default: module.UserManagementTable 
-  }))
+const UserManagementTable = lazy(() =>
+  import("./user-management-table").then((module) => ({
+    default: module.UserManagementTable,
+  })),
 );
 
 // Loading skeleton for the user management table
@@ -20,7 +20,7 @@ function UserTableSkeleton() {
         <Skeleton className="h-10 w-80" />
         <Skeleton className="h-10 w-40" />
       </div>
-      
+
       {/* Table skeleton */}
       <div className="rounded-md border">
         <div className="border-b p-4">
@@ -32,7 +32,7 @@ function UserTableSkeleton() {
             <Skeleton className="h-4 w-16" />
           </div>
         </div>
-        
+
         {/* Table rows skeleton */}
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="border-b p-4">
@@ -54,7 +54,7 @@ function UserTableSkeleton() {
           </div>
         ))}
       </div>
-      
+
       {/* Pagination skeleton */}
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-40" />
@@ -72,7 +72,6 @@ function UserTableSkeleton() {
   );
 }
 
-
 // Pagination type definition
 interface PaginationData {
   page: number;
@@ -88,13 +87,13 @@ interface LazyUserManagementTableProps {
 }
 
 // Lazy-loaded User Management Table with proper error boundary
-export function LazyUserManagementTable({ 
-  initialData, 
-  initialPagination 
+export function LazyUserManagementTable({
+  initialData,
+  initialPagination,
 }: LazyUserManagementTableProps) {
   return (
     <Suspense fallback={<UserTableSkeleton />}>
-      <UserManagementTable 
+      <UserManagementTable
         initialData={initialData}
         initialPagination={initialPagination}
       />

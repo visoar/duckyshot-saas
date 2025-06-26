@@ -4,10 +4,10 @@ import { lazy, Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load the large UploadManagementTable component
-const UploadManagementTable = lazy(() => 
-  import("./upload-management-table").then(module => ({ 
-    default: module.UploadManagementTable 
-  }))
+const UploadManagementTable = lazy(() =>
+  import("./upload-management-table").then((module) => ({
+    default: module.UploadManagementTable,
+  })),
 );
 
 // Loading skeleton for the upload management table
@@ -19,7 +19,7 @@ function UploadTableSkeleton() {
         <Skeleton className="h-10 w-80" />
         <Skeleton className="h-10 w-40" />
       </div>
-      
+
       {/* Table skeleton */}
       <div className="rounded-md border">
         <div className="border-b p-4">
@@ -32,7 +32,7 @@ function UploadTableSkeleton() {
             <Skeleton className="h-4 w-16" />
           </div>
         </div>
-        
+
         {/* Table rows skeleton */}
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="border-b p-4">
@@ -56,7 +56,7 @@ function UploadTableSkeleton() {
           </div>
         ))}
       </div>
-      
+
       {/* Pagination skeleton */}
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-40" />
@@ -107,13 +107,13 @@ interface LazyUploadManagementTableProps {
 }
 
 // Lazy-loaded Upload Management Table with proper error boundary
-export function LazyUploadManagementTable({ 
-  initialData, 
-  initialPagination 
+export function LazyUploadManagementTable({
+  initialData,
+  initialPagination,
 }: LazyUploadManagementTableProps) {
   return (
     <Suspense fallback={<UploadTableSkeleton />}>
-      <UploadManagementTable 
+      <UploadManagementTable
         initialData={initialData}
         initialPagination={initialPagination}
       />

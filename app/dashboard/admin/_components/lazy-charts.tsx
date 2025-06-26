@@ -4,12 +4,16 @@ import { lazy, Suspense } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load chart components to reduce initial bundle size
-const RevenueChart = lazy(() => 
-  import("./revenue-chart").then(module => ({ default: module.RevenueChart }))
+const RevenueChart = lazy(() =>
+  import("./revenue-chart").then((module) => ({
+    default: module.RevenueChart,
+  })),
 );
 
-const RecentUsersChart = lazy(() => 
-  import("./recent-users-chart").then(module => ({ default: module.RecentUsersChart }))
+const RecentUsersChart = lazy(() =>
+  import("./recent-users-chart").then((module) => ({
+    default: module.RecentUsersChart,
+  })),
 );
 
 // Loading skeleton for charts

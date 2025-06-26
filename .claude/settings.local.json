@@ -19,7 +19,11 @@
       "Bash(rm:*)",
       "mcp__ide__getDiagnostics",
       "Bash(grep:*)",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "Bash(ls:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": []
   }

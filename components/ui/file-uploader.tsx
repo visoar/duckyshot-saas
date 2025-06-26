@@ -309,7 +309,7 @@ function FileUploaderComponent({
     },
     [acceptedFileTypes, maxFileSize],
   );
-  
+
   const processAndPreviewFile = useCallback(
     (file: File): Promise<ProcessedFileResult> => {
       return new Promise((resolve) => {

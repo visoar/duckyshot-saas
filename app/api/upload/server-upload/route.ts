@@ -39,7 +39,10 @@ export async function POST(request: NextRequest) {
     // Rate limiting check
     const rateLimitResult = await rateLimiters.fileUpload(request);
     if (!rateLimitResult.success) {
-      return createRateLimitError(rateLimitResult, 'Too many file upload requests, please try again later.');
+      return createRateLimitError(
+        rateLimitResult,
+        "Too many file upload requests, please try again later.",
+      );
     }
 
     // Check authentication
@@ -55,7 +58,7 @@ export async function POST(request: NextRequest) {
         API_ERROR_CODES.INVALID_REQUEST,
         "Invalid content type. Expected multipart/form-data",
         400,
-        { received: contentType || "none" }
+        { received: contentType || "none" },
       );
     }
 
@@ -67,7 +70,7 @@ export async function POST(request: NextRequest) {
       return createApiError(
         API_ERROR_CODES.INVALID_REQUEST,
         "No files provided",
-        400
+        400,
       );
     }
 
@@ -89,20 +92,25 @@ export async function POST(request: NextRequest) {
         // Lightweight security validation for R2 hosting
         const securityCheck = await validateFileForR2(file);
         if (!securityCheck.allowUpload) {
-          throw new Error(`File upload blocked: ${securityCheck.securityLog.risks.join(', ')}`);
+          throw new Error(
+            `File upload blocked: ${securityCheck.securityLog.risks.join(", ")}`,
+          );
         }
 
         // Log security findings for monitoring (non-blocking)
-        if (securityCheck.securityLog.risks.length > 0 || securityCheck.securityLog.warnings.length > 0) {
+        if (
+          securityCheck.securityLog.risks.length > 0 ||
+          securityCheck.securityLog.warnings.length > 0
+        ) {
           console.warn(`File security log for ${file.name}:`, {
             risks: securityCheck.securityLog.risks,
             warnings: securityCheck.securityLog.warnings,
             fileInfo: {
               size: file.size,
               type: file.type,
-              name: file.name
+              name: file.name,
             },
-            timestamp: securityCheck.securityLog.timestamp
+            timestamp: securityCheck.securityLog.timestamp,
           });
         }
 
@@ -182,12 +190,12 @@ export async function POST(request: NextRequest) {
     return addRateLimitHeaders(response, rateLimitResult);
   } catch (error) {
     const context: ErrorLogContext = {
-      endpoint: '/api/upload/server-upload',
-      method: 'POST',
+      endpoint: "/api/upload/server-upload",
+      method: "POST",
       userId: undefined, // session might not be available in catch block
       error,
     };
-    
+
     return handleApiError(error, context);
   }
 }
