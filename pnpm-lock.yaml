@@ -131,9 +131,6 @@ importers:
       creem:
         specifier: ^0.3.37
         version: 0.3.37(zod@3.25.67)
-      date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
       drizzle-orm:
         specifier: ^0.44.2
         version: 0.44.2(kysely@0.28.2)(postgres@3.4.7)

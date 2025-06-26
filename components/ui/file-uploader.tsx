@@ -1,5 +1,3 @@
-// components/ui/file-uploader.tsx
-
 "use client";
 
 import React, { useCallback, useState, useRef, useMemo, useEffect, memo } from "react";
