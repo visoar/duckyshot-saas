@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { DashboardPageWrapper } from "../_components/dashboard-page-wrapper";
-import { FileUploader } from "@/components/ui/file-uploader";
+import { FileUploader } from "@/components/upload";
 import {
   Card,
   CardContent,

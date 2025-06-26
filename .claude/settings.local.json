@@ -23,7 +23,10 @@
       "Bash(ls:*)",
       "Bash(pnpm remove:*)",
       "Bash(pnpm typecheck:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(timeout 15 pnpm dev)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }

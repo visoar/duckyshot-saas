@@ -8,7 +8,7 @@
 
 ### 1.1 客户端预签名上传 (推荐用于 UI)
 
-这是通过 `FileUploader` 组件使用的默认和推荐方式。
+这是通过 `FileUploader` 组件（位于 `@/components/upload`）使用的默认和推荐方式。
 
 **流程:**
 
@@ -69,7 +69,7 @@
 该组件已预设为使用全局配置，因此最简单的用法无需任何参数。
 
 ```tsx
-import { FileUploader } from "@/components/ui/file-uploader";
+import { FileUploader } from "@/components/upload";
 
 function MyUploadPage() {
   const handleUploadComplete = (files) => {
