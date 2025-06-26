@@ -18,7 +18,8 @@
       "Bash(find:*)",
       "Bash(rm:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(rg:*)"
     ],
     "deny": []
   }

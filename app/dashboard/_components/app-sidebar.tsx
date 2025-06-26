@@ -36,6 +36,7 @@ import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useSession } from "@/lib/auth/client";
+import { handleActivationKey } from "@/lib/utils/accessibility";
 
 const navigation: {
   title: string;
@@ -97,6 +98,40 @@ const genericTableNavigation = Object.keys(enabledTablesMap).map((key) => ({
   icon: Database,
 }));
 
+// Custom navigation item component with proper accessibility
+function NavigationItem({ 
+  item, 
+  isActive, 
+  onClick, 
+  onDoubleClick 
+}: {
+  item: { title: string; url: string; icon: LucideIcon };
+  isActive: boolean;
+  onClick: () => void;
+  onDoubleClick: () => void;
+}) {
+  const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
+    handleActivationKey(e, onClick);
+  }, [onClick]);
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        isActive={isActive}
+        tooltip={item.title}
+        onClick={onClick}
+        onDoubleClick={onDoubleClick}
+        onKeyDown={handleKeyDown}
+        className="cursor-pointer"
+        aria-label={`Navigate to ${item.title}`}
+      >
+        <item.icon className="size-4" aria-hidden="true" />
+        <span>{item.title}</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
+
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -107,19 +142,33 @@ export function AppSidebar() {
     session?.user &&
     isAdminRole((session.user as { role?: UserRole }).role || "user");
 
-  const handleNavigation = (url: string) => () => {
+  const handleNavigation = React.useCallback((url: string) => () => {
     router.replace(url);
-  };
+  }, [router]);
+
+  const handleNavigationWithToggle = React.useCallback((url: string) => () => {
+    router.replace(url);
+    toggleSidebar();
+  }, [router, toggleSidebar]);
 
   return (
-    <Sidebar collapsible="icon" variant="inset">
+    <Sidebar 
+      collapsible="icon" 
+      variant="inset"
+      role="navigation"
+      aria-label="Main sidebar navigation"
+    >
       <SidebarHeader
         className={cn(
           "flex flex-row items-center py-3 text-sm font-semibold",
           open ? "px-4" : "justify-center",
         )}
       >
-        <Link href="/">
+        <Link 
+          href="/" 
+          className="focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md"
+          aria-label={`Go to ${APP_NAME} homepage`}
+        >
           <Logo className="m-0 size-5 p-1" />
         </Link>
         {open && (
@@ -131,26 +180,15 @@ export function AppSidebar() {
       <SidebarContent className="">
         <SidebarGroup>
           <SidebarGroupContent className="flex flex-col gap-2">
-            <SidebarMenu>
+            <SidebarMenu role="navigation" aria-label="Main navigation">
               {navigation.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <div
-                    onClick={handleNavigation(item.url)}
-                    onDoubleClick={() => {
-                      handleNavigation(item.url)();
-                      toggleSidebar();
-                    }}
-                  >
-                    <SidebarMenuButton
-                      isActive={item.url === pathname}
-                      tooltip={item.title}
-                      className="cursor-pointer"
-                    >
-                      <item.icon className="size-4" />
-                      <span>{item.title}</span>
-                    </SidebarMenuButton>
-                  </div>
-                </SidebarMenuItem>
+                <NavigationItem
+                  key={item.title}
+                  item={item}
+                  isActive={item.url === pathname}
+                  onClick={handleNavigation(item.url)}
+                  onDoubleClick={handleNavigationWithToggle(item.url)}
+                />
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
@@ -162,30 +200,19 @@ export function AppSidebar() {
             <SidebarGroup>
               <SidebarGroupContent className="flex flex-col gap-2">
                 {open && (
-                  <div className="text-muted-foreground px-2 py-1 text-xs font-semibold">
+                  <div className="text-muted-foreground px-2 py-1 text-xs font-semibold" role="heading" aria-level={3}>
                     Admin
                   </div>
                 )}
-                <SidebarMenu>
+                <SidebarMenu role="navigation" aria-label="Admin navigation">
                   {adminNavigation.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <div
-                        onClick={handleNavigation(item.url)}
-                        onDoubleClick={() => {
-                          handleNavigation(item.url)();
-                          toggleSidebar();
-                        }}
-                      >
-                        <SidebarMenuButton
-                          isActive={item.url === pathname}
-                          tooltip={item.title}
-                          className="cursor-pointer"
-                        >
-                          <item.icon className="size-4" />
-                          <span>{item.title}</span>
-                        </SidebarMenuButton>
-                      </div>
-                    </SidebarMenuItem>
+                    <NavigationItem
+                      key={item.title}
+                      item={item}
+                      isActive={item.url === pathname}
+                      onClick={handleNavigation(item.url)}
+                      onDoubleClick={handleNavigationWithToggle(item.url)}
+                    />
                   ))}
                 </SidebarMenu>
               </SidebarGroupContent>
@@ -196,30 +223,19 @@ export function AppSidebar() {
               <SidebarGroup>
                 <SidebarGroupContent className="flex flex-col gap-2">
                   {open && (
-                    <div className="text-muted-foreground px-2 py-1 text-xs font-semibold">
+                    <div className="text-muted-foreground px-2 py-1 text-xs font-semibold" role="heading" aria-level={3}>
                       Manage Tables
                     </div>
                   )}
-                  <SidebarMenu>
+                  <SidebarMenu role="navigation" aria-label="Table management navigation">
                     {genericTableNavigation.map((item) => (
-                      <SidebarMenuItem key={item.title}>
-                        <div
-                          onClick={handleNavigation(item.url)}
-                          onDoubleClick={() => {
-                            handleNavigation(item.url)();
-                            toggleSidebar();
-                          }}
-                        >
-                          <SidebarMenuButton
-                            isActive={pathname.startsWith(item.url)}
-                            tooltip={item.title}
-                            className="cursor-pointer"
-                          >
-                            <item.icon className="size-4" />
-                            <span>{item.title}</span>
-                          </SidebarMenuButton>
-                        </div>
-                      </SidebarMenuItem>
+                      <NavigationItem
+                        key={item.title}
+                        item={item}
+                        isActive={pathname.startsWith(item.url)}
+                        onClick={handleNavigation(item.url)}
+                        onDoubleClick={handleNavigationWithToggle(item.url)}
+                      />
                     ))}
                   </SidebarMenu>
                 </SidebarGroupContent>
