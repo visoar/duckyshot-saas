@@ -17,9 +17,10 @@ jest.mock("@/lib/auth/client", () => ({
 jest.mock("next/navigation");
 jest.mock("sonner");
 jest.mock("next/link", () => {
-  const Link: React.FC<React.PropsWithChildren<{ href: string }>> = ({ children, href }) => (
-    <a href={href}>{children}</a>
-  );
+  const Link: React.FC<React.PropsWithChildren<{ href: string }>> = ({
+    children,
+    href,
+  }) => <a href={href}>{children}</a>;
   return Link;
 });
 
@@ -94,9 +95,7 @@ describe("AuthForm", () => {
 
       render(<AuthForm mode="login" />);
 
-      const emailInput = screen.getByPlaceholderText(
-        "you@example.com",
-      );
+      const emailInput = screen.getByPlaceholderText("you@example.com");
       const submitButton = screen.getByRole("button", {
         name: /Send Magic Link/i,
       });
@@ -109,7 +108,9 @@ describe("AuthForm", () => {
           email: "test@example.com",
           callbackURL: "/dashboard",
         });
-        expect(mockPush).toHaveBeenCalledWith("/auth/sent?email=test%40example.com");
+        expect(mockPush).toHaveBeenCalledWith(
+          "/auth/sent?email=test%40example.com",
+        );
       });
     });
 
@@ -121,9 +122,7 @@ describe("AuthForm", () => {
 
       render(<AuthForm mode="login" />);
 
-      const emailInput = screen.getByPlaceholderText(
-        "you@example.com",
-      );
+      const emailInput = screen.getByPlaceholderText("you@example.com");
       const submitButton = screen.getByRole("button", {
         name: /Send Magic Link/i,
       });

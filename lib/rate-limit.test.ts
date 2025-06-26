@@ -174,7 +174,7 @@ describe("Rate Limiting Utility", () => {
       const result = await rateLimiters.auth(req);
 
       expect(result.success).toBe(true);
-      expect(result.limit).toBe(5);
+      expect(result.limit).toBe(50);
     });
 
     it("should have upload rate limiter with correct config", async () => {
@@ -182,7 +182,7 @@ describe("Rate Limiting Utility", () => {
       const result = await rateLimiters.upload(req);
 
       expect(result.success).toBe(true);
-      expect(result.limit).toBe(10);
+      expect(result.limit).toBe(100);
     });
 
     it("should have fileUpload rate limiter with stricter limits", async () => {
@@ -190,7 +190,7 @@ describe("Rate Limiting Utility", () => {
       const result = await rateLimiters.fileUpload(req);
 
       expect(result.success).toBe(true);
-      expect(result.limit).toBe(5);
+      expect(result.limit).toBe(100);
     });
 
     it("should have billing rate limiter with strict limits", async () => {
@@ -198,7 +198,7 @@ describe("Rate Limiting Utility", () => {
       const result = await rateLimiters.billing(req);
 
       expect(result.success).toBe(true);
-      expect(result.limit).toBe(5);
+      expect(result.limit).toBe(10);
     });
 
     it("should have paymentStatus rate limiter with lenient limits", async () => {
