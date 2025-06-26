@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { UserAvatarCell } from "../user-avatar-cell";
 import { adminTableConfig } from "@/lib/admin/config";
 import { FieldValues } from "react-hook-form";
+import { useFocusManagement } from "@/hooks/use-focus-management";
 
 interface RecordItem {
     id: string | number;
@@ -39,6 +40,9 @@ export function GenericTableManager({
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingRecord, setEditingRecord] = useState<RecordItem | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string | number>>(new Set());
+    
+    // Focus management for dialog
+    const { handleDialogOpen, handleDialogClose } = useFocusManagement();
 
     const queryAction = useCallback(
         (args: { page: number; limit: number; search?: string }) => getGenericTableData(tableName, args),
@@ -134,7 +138,11 @@ export function GenericTableManager({
                 label: "Actions",
                 render: (item: RecordItem) => (
                     <div className="flex gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => { setEditingRecord(item); setIsFormOpen(true); }}>
+                        <Button variant="ghost" size="icon" onClick={() => { 
+                            setEditingRecord(item); 
+                            setIsFormOpen(true);
+                            handleDialogOpen();
+                        }}>
                             <Edit className="h-4 w-4" />
                         </Button>
                         <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete([item.id])}>
@@ -144,7 +152,7 @@ export function GenericTableManager({
                 ),
             },
         ];
-    }, [schemaInfo, tableConfig, data, selectedIds, handleDelete]);
+    }, [schemaInfo, tableConfig, data, selectedIds, handleDelete, handleDialogOpen]);
 
     const handleFormSubmit = async (formData: FieldValues) => {
         startTransition(async () => {
@@ -177,7 +185,11 @@ export function GenericTableManager({
                             Delete ({selectedIds.size})
                         </Button>
                     )}
-                    <Button onClick={() => { setEditingRecord(null); setIsFormOpen(true); }}>
+                    <Button onClick={() => { 
+                        setEditingRecord(null); 
+                        setIsFormOpen(true);
+                        handleDialogOpen();
+                    }}>
                         <Plus className="mr-2 h-4 w-4" />
                         Create New
                     </Button>
@@ -197,7 +209,15 @@ export function GenericTableManager({
                 emptyMessage={`No records found in ${tableName}.`}
             />
 
-            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <Dialog 
+                open={isFormOpen} 
+                onOpenChange={(open) => {
+                    setIsFormOpen(open);
+                    if (!open) {
+                        handleDialogClose();
+                    }
+                }}
+            >
                 <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
                         <DialogTitle>
@@ -208,7 +228,10 @@ export function GenericTableManager({
                         schemaInfo={schemaInfo}
                         readOnlyColumns={tableConfig.readOnlyColumns}
                         onSubmit={handleFormSubmit}
-                        onCancel={() => setIsFormOpen(false)}
+                        onCancel={() => {
+                            setIsFormOpen(false);
+                            handleDialogClose();
+                        }}
                         defaultValues={editingRecord}
                         isSubmitting={isPending}
                     />

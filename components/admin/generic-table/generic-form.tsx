@@ -11,7 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { generateZodSchema, type SchemaInfo, type ColumnInfo } from "@/lib/admin/schema-generator";
 import { Loader2 } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
+import { useFormFocusManagement } from "@/hooks/use-focus-management";
 
 interface GenericFormProps {
     schemaInfo: SchemaInfo;
@@ -37,6 +38,14 @@ export function GenericForm({
         resolver: zodResolver(validationSchema),
         defaultValues: defaultValues || {},
     });
+
+    // Focus management for form
+    const { formRef, focusFirstField } = useFormFocusManagement(form.formState.errors);
+
+    // Focus first field when form mounts
+    useEffect(() => {
+        focusFirstField();
+    }, [focusFirstField]);
 
     const renderField = (field: ControllerRenderProps<FieldValues, string>, col: ColumnInfo) => {
         const value = field.value ?? '';
@@ -77,7 +86,13 @@ export function GenericForm({
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
+            <form 
+                ref={formRef}
+                onSubmit={form.handleSubmit(onSubmit)} 
+                className="space-y-4 max-h-[70vh] overflow-y-auto p-1"
+                role="form"
+                aria-label={defaultValues ? "Edit record form" : "Create new record form"}
+            >
                 {schemaInfo.map((col) => (
                     <FormField
                         key={col.name}
