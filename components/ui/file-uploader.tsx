@@ -24,6 +24,13 @@ import {
   isFileTypeAllowed,
   isFileSizeAllowed,
 } from "@/lib/config/upload";
+import { useAnnouncement } from "@/hooks/use-announcement";
+import { 
+  generateA11yId, 
+  createUploadInstructions, 
+  handleActivationKey,
+  UPLOAD_MESSAGES 
+} from "@/lib/utils/accessibility";
 
 // --- Helper Functions and Components ---
 
@@ -86,41 +93,75 @@ FilePreview.displayName = 'FilePreview';
 // Memoized FileItem component to prevent unnecessary re-renders
 const FileItem = memo(({ 
   fileState, 
-  onRemove 
+  onRemove,
+  announce
 }: { 
   fileState: FileUploadState; 
   onRemove: (fileId: string) => void; 
+  announce: (message: string, priority?: "polite" | "assertive") => void;
 }) => {
   const handleRemove = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
+    announce(UPLOAD_MESSAGES.fileRemoved(fileState.file.name));
     onRemove(fileState.id);
-  }, [fileState.id, onRemove]);
+  }, [fileState.id, fileState.file.name, onRemove, announce]);
+
+  // Announce upload status changes
+  React.useEffect(() => {
+    if (fileState.status === "completed") {
+      announce(UPLOAD_MESSAGES.uploadSuccess(fileState.file.name));
+    } else if (fileState.status === "error" && fileState.error) {
+      announce(UPLOAD_MESSAGES.uploadError(fileState.file.name, fileState.error), "assertive");
+    }
+  }, [fileState.status, fileState.file.name, fileState.error, announce]);
+
+  const progressId = useMemo(() => generateA11yId("progress"), []);
+  const statusId = useMemo(() => generateA11yId("status"), []);
 
   return (
-    <div className="bg-background flex items-center space-x-4 rounded-lg border p-4">
+    <div 
+      className="bg-background flex items-center space-x-4 rounded-lg border p-4"
+      role="listitem"
+      aria-describedby={`${progressId} ${statusId}`}
+    >
       <FilePreview file={fileState.file} />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{fileState.file.name}</p>
-        <p className="text-muted-foreground text-xs">
+        <p className="truncate text-sm font-medium" aria-label={`File: ${fileState.file.name}`}>
+          {fileState.file.name}
+        </p>
+        <p className="text-muted-foreground text-xs" aria-label={`Size: ${formatFileSize(fileState.file.size)}, Type: ${fileState.file.type}`}>
           {formatFileSize(fileState.file.size)} • {fileState.file.type}
         </p>
         {fileState.status === "uploading" && (
           <div className="mt-2">
-            <Progress value={fileState.progress} className="h-2" />
+            <Progress 
+              value={fileState.progress} 
+              className="h-2" 
+              aria-labelledby={progressId}
+            />
+            <div id={progressId} className="sr-only">
+              Upload progress: {fileState.progress}%
+            </div>
           </div>
         )}
-        <div className="mt-1 flex items-center space-x-2">
+        <div className="mt-1 flex items-center space-x-2" id={statusId}>
           {fileState.status === "uploading" && (
             <>
-              <Loader2 className="h-3 w-3 animate-spin" />
-              <span className="text-muted-foreground text-xs">Uploading...</span>
+              <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+              <span className="text-muted-foreground text-xs" aria-live="polite">
+                Uploading... {fileState.progress}%
+              </span>
             </>
           )}
           {fileState.status === "completed" && (
-            <span className="text-xs text-green-600">✓ Uploaded</span>
+            <span className="text-xs text-green-600" role="status" aria-live="polite">
+              ✓ Uploaded successfully
+            </span>
           )}
           {fileState.status === "error" && (
-            <span className="text-xs text-red-600">✗ {fileState.error}</span>
+            <span className="text-xs text-red-600" role="alert" aria-live="assertive">
+              ✗ {fileState.error}
+            </span>
           )}
         </div>
       </div>
@@ -130,8 +171,10 @@ const FileItem = memo(({
         onClick={handleRemove}
         disabled={fileState.status === "uploading"}
         className="flex-shrink-0"
+        aria-label={`Remove ${fileState.file.name}`}
+        title={`Remove ${fileState.file.name}`}
       >
-        <X className="h-4 w-4" />
+        <X className="h-4 w-4" aria-hidden="true" />
       </Button>
     </div>
   );
@@ -184,6 +227,11 @@ function FileUploaderComponent({
   
   // Track object URLs for cleanup
   const objectUrlsRef = useRef<Set<string>>(new Set());
+  
+  // Accessibility features
+  const { announce, announcementRef } = useAnnouncement();
+  const uploadInstructionsId = useMemo(() => generateA11yId("upload-instructions"), []);
+  const dropZoneId = useMemo(() => generateA11yId("drop-zone"), []);
 
   // Cleanup object URLs when component unmounts
   useEffect(() => {
@@ -312,6 +360,7 @@ function FileUploaderComponent({
       try {
         // Update status to uploading
         setFiles((prev) => prev.map(f => f.id === fileId ? { ...f, status: "uploading" as const } : f));
+        announce(UPLOAD_MESSAGES.uploadStart(fileState.file.name));
 
         const { file } = fileState;
         const response = await fetch("/api/upload/presigned-url", {
@@ -326,6 +375,7 @@ function FileUploaderComponent({
 
         // Create XMLHttpRequest for progress tracking
         const xhr = new XMLHttpRequest();
+        let lastAnnouncedProgress = 0;
         
         const uploadPromise = new Promise<UploadedFile>((resolve, reject) => {
           xhr.upload.addEventListener('progress', (event) => {
@@ -335,6 +385,12 @@ function FileUploaderComponent({
               setFiles((prev) => prev.map(f => 
                 f.id === fileId ? { ...f, progress } : f
               ));
+              
+              // Announce progress at 25%, 50%, 75% intervals to avoid spamming
+              if (progress >= lastAnnouncedProgress + 25 && progress < 100) {
+                lastAnnouncedProgress = progress;
+                announce(UPLOAD_MESSAGES.uploadProgress(file.name, progress));
+              }
             }
           });
 
@@ -388,7 +444,7 @@ function FileUploaderComponent({
       });
     }
     // Use a dependency that captures the essential state changes
-  }, [files.length, ...files.map(f => `${f.id}-${f.status}`), onUploadComplete]);
+  }, [files, onUploadComplete, announce]);
 
 
   // Optimized removeFile with better cleanup and using ID instead of index
@@ -403,41 +459,103 @@ function FileUploaderComponent({
     });
   }, []);
 
-  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragOver(true); };
-  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); setIsDragOver(false); };
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    if (disabled || !e.dataTransfer.files) return;
-    handleFiles(e.dataTransfer.files);
-  };
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) handleFiles(e.target.files);
-    e.target.value = "";
-  };
-  const openFileDialog = () => { if (!disabled) fileInputRef.current?.click(); };
+  const openFileDialog = useCallback(() => { 
+    if (!disabled) fileInputRef.current?.click(); 
+  }, [disabled]);
 
   const acceptAttribute = useMemo(() => (Array.isArray(acceptedFileTypes) ? acceptedFileTypes.join(",") : undefined), [acceptedFileTypes]);
 
+  // Create upload instructions for screen readers
+  const uploadInstructions = useMemo(() => 
+    createUploadInstructions({
+      maxFiles,
+      maxFileSize,
+      acceptedFileTypes: acceptedFileTypes as string[],
+    }), [maxFiles, maxFileSize, acceptedFileTypes]
+  );
+
+  // Handle keyboard navigation for drop zone
+  const handleDropZoneKeyDown = useCallback((e: React.KeyboardEvent) => {
+    handleActivationKey(e, () => {
+      if (!disabled) {
+        openFileDialog();
+      }
+    });
+  }, [disabled, openFileDialog]);
+
+  // Handle drag events with announcements
+  const handleDragOverWithAnnouncement = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    if (!isDragOver) {
+      setIsDragOver(true);
+      announce(UPLOAD_MESSAGES.dragEnter);
+    }
+  }, [isDragOver, announce]);
+
+  const handleDragLeaveWithAnnouncement = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    announce(UPLOAD_MESSAGES.dragLeave);
+  }, [announce]);
+
+  const handleDropWithAnnouncement = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    if (disabled || !e.dataTransfer.files) return;
+    
+    const fileCount = e.dataTransfer.files.length;
+    announce(UPLOAD_MESSAGES.filesSelected(fileCount));
+    handleFiles(e.dataTransfer.files);
+  }, [disabled, announce, handleFiles]);
+
+  const handleFileInputChangeWithAnnouncement = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const fileCount = e.target.files.length;
+      announce(UPLOAD_MESSAGES.filesSelected(fileCount));
+      handleFiles(e.target.files);
+    }
+    e.target.value = "";
+  }, [announce, handleFiles]);
+
   return (
     <div className={cn("w-full", className)}>
+      <div
+        ref={announcementRef}
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      />
       <input
         ref={fileInputRef}
         type="file"
         multiple={maxFiles > 1}
         accept={acceptAttribute}
-        onChange={handleFileInputChange}
+        onChange={handleFileInputChangeWithAnnouncement}
         className="hidden"
         disabled={disabled}
+        aria-describedby={uploadInstructionsId}
+        aria-label={`File upload input. ${uploadInstructions}`}
       />
+      
+      {/* Screen reader instructions */}
+      <div id={uploadInstructionsId} className="sr-only">
+        {uploadInstructions}
+      </div>
+      
       <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        id={dropZoneId}
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        aria-label={`File drop zone. ${uploadInstructions} Press Enter or Space to select files.`}
+        aria-describedby={uploadInstructionsId}
+        onDragOver={handleDragOverWithAnnouncement}
+        onDragLeave={handleDragLeaveWithAnnouncement}
+        onDrop={handleDropWithAnnouncement}
         onClick={openFileDialog}
+        onKeyDown={handleDropZoneKeyDown}
         className={cn(
           "relative cursor-pointer rounded-lg border-2 border-dashed p-6 transition-colors",
-          "hover:border-primary/50 hover:bg-muted/50",
+          "hover:border-primary/50 hover:bg-muted/50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
           isDragOver && "border-primary bg-primary/5",
           disabled && "cursor-not-allowed opacity-50",
           files.length === 0 && "flex min-h-[200px] items-center justify-center",
@@ -453,12 +571,13 @@ function FileUploaderComponent({
             </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4" role="list" aria-label="Selected files">
             {files.map((fileState) => (
               <FileItem 
                 key={fileState.id} 
                 fileState={fileState} 
-                onRemove={removeFile} 
+                onRemove={removeFile}
+                announce={announce}
               />
             ))}
             {files.length < maxFiles && (
@@ -467,8 +586,9 @@ function FileUploaderComponent({
                 onClick={(e) => { e.stopPropagation(); openFileDialog(); }}
                 disabled={disabled}
                 className="w-full"
+                aria-label={`Add ${files.length > 0 ? "more " : ""}files for upload`}
               >
-                <Upload className="mr-2 h-4 w-4" />
+                <Upload className="mr-2 h-4 w-4" aria-hidden="true" />
                 Add {files.length > 0 ? "More " : ""}Files
               </Button>
             )}
