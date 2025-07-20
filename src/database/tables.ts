@@ -8,6 +8,18 @@ import {
   webhookEvents,
   uploads,
   userRoleEnum,
+  // AI specific tables
+  aiArtworks,
+  aiStyles,
+  userCredits,
+  aiGenerationStatusEnum,
+  // Product specific tables
+  products,
+  productCategoryEnum,
+  shippingAddresses,
+  productOrders,
+  orderItems,
+  orderStatusEnum,
 } from "./schema";
 
 export {
@@ -20,4 +32,16 @@ export {
   webhookEvents,
   uploads,
   userRoleEnum,
+  // AI specific tables
+  aiArtworks,
+  aiStyles,
+  userCredits,
+  aiGenerationStatusEnum,
+  // Product specific tables
+  products,
+  productCategoryEnum,
+  shippingAddresses,
+  productOrders,
+  orderItems,
+  orderStatusEnum,
 };

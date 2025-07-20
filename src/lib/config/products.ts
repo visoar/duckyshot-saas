@@ -34,101 +34,126 @@ export interface PricingTier {
 }
 
 /**
- * 统一定义所有产品套餐
- * 每个计费模式 (one_time, monthly, yearly) 都需要一个唯一的产品ID。
+ * Pet AI 平台专用产品套餐定义
+ * 实现信用点数 + 订阅会员的混合商业模式
  */
 export const PRODUCT_TIERS: PricingTier[] = [
   {
-    id: "plus",
-    name: "Plus",
-    description: "Best for growing teams and businesses",
+    id: "credits_starter",
+    name: "Starter Pack",
+    description: "Perfect for trying out our Pet AI magic",
     isPopular: false,
     features: [
-      { name: "Unlimited projects", included: true },
-      { name: "Advanced analytics", included: true },
-      { name: "Priority support", included: true },
-      { name: "10GB storage", included: false },
-      { name: "Team collaboration", included: false },
-      { name: "API access", included: false },
-      { name: "Dedicated support", included: false },
-      { name: "Advanced security", included: false },
+      { name: "10 AI generations", included: true },
+      { name: "All art styles available", included: true },
+      { name: "High-quality downloads", included: true },
+      { name: "Basic support", included: true },
+      { name: "Watermark removal", included: false },
+      { name: "Commercial usage rights", included: false },
+      { name: "Priority generation queue", included: false },
+      { name: "Exclusive art styles", included: false },
     ],
     pricing: {
       creem: {
-        // 示例ID, 请替换
-        oneTime: "prod_1HVwfBIaKkJh9CgS7zD37h",
-        monthly: "prod_6uhcfBUcRxprqDvep0U5Jw",
-        yearly: "prod_7LJkGVgv4LOBuucrxANo2b",
+        oneTime: "prod_starter_10_credits",
+        monthly: "prod_starter_10_credits",
+        yearly: "prod_starter_10_credits",
+      },
+    },
+    prices: {
+      oneTime: 7.99,
+      monthly: 7.99,
+      yearly: 7.99,
+    },
+    currency: "USD",
+  },
+  {
+    id: "credits_popular",
+    name: "Popular Pack",
+    description: "Most loved by pet parents worldwide",
+    isPopular: true,
+    features: [
+      { name: "30 AI generations", included: true },
+      { name: "All art styles available", included: true },
+      { name: "High-quality downloads", included: true },
+      { name: "Priority support", included: true },
+      { name: "Watermark removal", included: true },
+      { name: "Commercial usage rights", included: true },
+      { name: "Priority generation queue", included: false },
+      { name: "Exclusive art styles", included: false },
+    ],
+    pricing: {
+      creem: {
+        oneTime: "prod_popular_30_credits",
+        monthly: "prod_popular_30_credits", 
+        yearly: "prod_popular_30_credits",
       },
     },
     prices: {
       oneTime: 19.99,
+      monthly: 19.99,
+      yearly: 19.99,
+    },
+    currency: "USD",
+  },
+  {
+    id: "premium_monthly",
+    name: "Premium Monthly",
+    description: "Unlimited creativity for pet lovers",
+    isPopular: false,
+    features: [
+      { name: "30 monthly AI generations", included: true },
+      { name: "All art styles + exclusive ones", included: true },
+      { name: "Ultra high-quality downloads", included: true },
+      { name: "Priority support", included: true },
+      { name: "Watermark removal", included: true },
+      { name: "Commercial usage rights", included: true },
+      { name: "Priority generation queue", included: true },
+      { name: "Exclusive art styles", included: true },
+    ],
+    pricing: {
+      creem: {
+        oneTime: "prod_premium_monthly_sub",
+        monthly: "prod_premium_monthly_sub",
+        yearly: "prod_premium_yearly_sub",
+      },
+    },
+    prices: {
+      oneTime: 9.99,
       monthly: 9.99,
       yearly: 99.99,
     },
     currency: "USD",
   },
   {
-    id: "pro",
-    name: "Professional",
-    description: "Best for growing teams and businesses",
-    isPopular: true,
-    features: [
-      { name: "Unlimited projects", included: true },
-      { name: "Advanced analytics", included: true },
-      { name: "Priority support", included: true },
-      { name: "10GB storage", included: true },
-      { name: "Team collaboration", included: true },
-      { name: "API access", included: true },
-      { name: "Dedicated support", included: false },
-      { name: "Advanced security", included: false },
-    ],
-    pricing: {
-      creem: {
-        // 示例ID, 请替换
-        oneTime: "prod_6uhcfBUcRxprqDvep0U5Jw",
-        monthly: "prod_6uhcfBUcRxprqDvep0U5Jw",
-        yearly: "prod_6uhcfBUcRxprqDvep0U5Jw",
-      },
-    },
-    prices: {
-      oneTime: 29.99,
-      monthly: 19.99,
-      yearly: 199.99,
-    },
-    currency: "USD",
-  },
-  {
-    id: "team",
-    name: "Team",
-    description: "Best for growing teams and businesses",
+    id: "credits_bulk",
+    name: "Bulk Pack",
+    description: "Best value for frequent users",
     isPopular: false,
     features: [
-      { name: "Unlimited projects", included: true },
-      { name: "Advanced analytics", included: true },
+      { name: "100 AI generations", included: true },
+      { name: "All art styles available", included: true },
+      { name: "Ultra high-quality downloads", included: true },
       { name: "Priority support", included: true },
-      { name: "10GB storage", included: true },
-      { name: "Team collaboration", included: true },
-      { name: "API access", included: true },
-      { name: "Dedicated support", included: true },
-      { name: "Advanced security", included: true },
+      { name: "Watermark removal", included: true },
+      { name: "Commercial usage rights", included: true },
+      { name: "Priority generation queue", included: true },
+      { name: "Exclusive art styles", included: false },
     ],
     pricing: {
       creem: {
-        // 示例ID, 请替换
-        oneTime: "prod_6uhcfBUcRxprqDvep0U5Jw",
-        monthly: "prod_6uhcfBUcRxprqDvep0U5Jw",
-        yearly: "prod_6uhcfBUcRxprqDvep0U5Jw",
+        oneTime: "prod_bulk_100_credits",
+        monthly: "prod_bulk_100_credits",
+        yearly: "prod_bulk_100_credits",
       },
     },
     prices: {
       oneTime: 59.99,
-      monthly: 49.99,
-      yearly: 499.99,
+      monthly: 59.99,
+      yearly: 59.99,
     },
     currency: "USD",
   },
-  // 可以添加更多套餐...
 ];
 
 /**

@@ -36,6 +36,11 @@ const env = createEnv({
     CREEM_API_KEY: z.string(),
     CREEM_ENVIRONMENT: z.enum(["test_mode", "live_mode"]).default("test_mode"),
     CREEM_WEBHOOK_SECRET: z.string(),
+
+    // AI Image Generation Services
+    FAL_AI_API_KEY: z.string().optional(),
+    REPLICATE_API_TOKEN: z.string().optional(),
+    AI_PROVIDER: z.enum(["fal", "replicate"]).default("fal"),
   },
 
   // Client-side public environment variables
@@ -80,6 +85,11 @@ const env = createEnv({
     CREEM_API_KEY: process.env.CREEM_API_KEY,
     CREEM_ENVIRONMENT: process.env.CREEM_ENVIRONMENT,
     CREEM_WEBHOOK_SECRET: process.env.CREEM_WEBHOOK_SECRET,
+
+    // AI Image Generation Services
+    FAL_AI_API_KEY: process.env.FAL_AI_API_KEY,
+    REPLICATE_API_TOKEN: process.env.REPLICATE_API_TOKEN,
+    AI_PROVIDER: process.env.AI_PROVIDER,
   },
 });
 

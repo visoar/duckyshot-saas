@@ -2,7 +2,6 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import {
   ArrowRight,
-  Github,
   Star,
   Users,
   Zap,
@@ -11,7 +10,7 @@ import {
   Sparkles,
   BowArrow,
 } from "lucide-react";
-import { APP_DESCRIPTION, GITHUB_URL } from "@/lib/config/constants";
+import { APP_DESCRIPTION } from "@/lib/config/constants";
 import Link from "next/link";
 
 export function Hero() {
@@ -31,20 +30,19 @@ export function Hero() {
             <div className="border-border bg-background/50 inline-flex items-center rounded-full border px-3 py-1 text-sm backdrop-blur-sm">
               <Sparkles className="text-primary mr-2 h-3 w-3" />
               <span className="text-muted-foreground">
-                Trusted by 10,000+ developers
+                Loved by 10,000+ pet parents
               </span>
             </div>
 
             {/* Main Heading */}
             <div className="space-y-4">
               <h1 className="text-foreground text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-                Build & Launch Your
-                <span className="text-primary block">SaaS in Days</span>
+                Transform Your Pet Into
+                <span className="text-primary block">Stunning AI Art</span>
               </h1>
 
               <p className="text-muted-foreground max-w-lg text-xl leading-relaxed">
                 {APP_DESCRIPTION}
-                Everything you need to go from idea to revenue.
               </p>
             </div>
 
@@ -52,15 +50,15 @@ export function Hero() {
             <div className="flex flex-wrap gap-6 text-sm">
               <div className="text-muted-foreground flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-500" />
-                <span>Production Ready</span>
+                <span>10+ Art Styles</span>
               </div>
               <div className="text-muted-foreground flex items-center gap-2">
                 <Shield className="h-4 w-4 text-blue-500" />
-                <span>Enterprise Security</span>
+                <span>High Quality Results</span>
               </div>
               <div className="text-muted-foreground flex items-center gap-2">
                 <Zap className="h-4 w-4 text-yellow-500" />
-                <span>Lightning Fast</span>
+                <span>Lightning Fast AI</span>
               </div>
             </div>
 
@@ -72,7 +70,7 @@ export function Hero() {
                 asChild
               >
                 <Link href="/signup">
-                  Start Building
+                  Create Your Pet Art
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
@@ -83,9 +81,9 @@ export function Hero() {
                 className="group border-border hover:bg-accent h-12 px-8 text-base font-medium"
                 asChild
               >
-                <Link href={GITHUB_URL} target="_blank">
-                  <Github className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
-                  View on GitHub
+                <Link href="/pricing">
+                  <Sparkles className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
+                  View Pricing
                 </Link>
               </Button>
             </div>
@@ -99,7 +97,7 @@ export function Hero() {
               <div className="bg-border h-4 w-px" />
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
-                <span>10,000+ developers</span>
+                <span>10,000+ happy pets</span>
               </div>
             </div>
           </div>

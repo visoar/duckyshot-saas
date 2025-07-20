@@ -97,6 +97,68 @@ export const UPLOAD_CONFIG = {
 } as const;
 
 /**
+ * Pet AI 专用上传配置
+ * 针对宠物照片上传的特殊要求
+ */
+export const PET_AI_UPLOAD_CONFIG = {
+  /**
+   * 宠物照片最大文件大小（字节）
+   * @default 20MB - 足够高质量照片，但限制过大文件
+   */
+  MAX_PET_IMAGE_SIZE: 20 * 1024 * 1024,
+
+  /**
+   * 宠物照片最大文件大小（MB），用于UI显示
+   */
+  MAX_PET_IMAGE_SIZE_MB: 20,
+
+  /**
+   * 允许的宠物照片格式
+   * 限制为最常用和AI处理效果最好的格式
+   */
+  ALLOWED_PET_IMAGE_TYPES: [
+    "image/jpeg",
+    "image/png", 
+    "image/webp"
+  ] as const,
+
+  /**
+   * 推荐的宠物照片格式（用于提示用户）
+   */
+  RECOMMENDED_PET_IMAGE_TYPES: [
+    "image/jpeg",
+    "image/png"
+  ] as const,
+
+  /**
+   * 宠物照片最小尺寸要求（像素）
+   * 确保有足够的细节进行AI处理
+   */
+  MIN_PET_IMAGE_DIMENSIONS: {
+    width: 512,
+    height: 512,
+  },
+
+  /**
+   * 宠物照片推荐尺寸要求（像素）
+   * 获得最佳AI生成效果
+   */
+  RECOMMENDED_PET_IMAGE_DIMENSIONS: {
+    width: 1024,
+    height: 1024,
+  },
+
+  /**
+   * 宠物照片最大尺寸限制（像素）
+   * 防止过大图片影响处理性能
+   */
+  MAX_PET_IMAGE_DIMENSIONS: {
+    width: 4096,
+    height: 4096,
+  },
+} as const;
+
+/**
  * 检查文件类型是否在允许列表中。
  * @param contentType - 文件的 MIME 类型。
  * @returns 如果允许则为 `true`，否则为 `false`。
@@ -154,6 +216,103 @@ export function getFileExtension(contentType: string): string {
   return "bin"; // Default fallback
 }
 
+/**
+ * 检查文件类型是否适合宠物照片上传
+ * @param contentType - 文件的 MIME 类型
+ * @returns 如果适合则为 `true`，否则为 `false`
+ */
+export function isPetImageTypeAllowed(contentType: string): boolean {
+  return PET_AI_UPLOAD_CONFIG.ALLOWED_PET_IMAGE_TYPES.includes(
+    contentType as typeof PET_AI_UPLOAD_CONFIG.ALLOWED_PET_IMAGE_TYPES[number]
+  );
+}
+
+/**
+ * 检查文件大小是否适合宠物照片上传
+ * @param size - 文件的字节大小
+ * @returns 如果在限制内则为 `true`，否则为 `false`
+ */
+export function isPetImageSizeAllowed(size: number): boolean {
+  return size <= PET_AI_UPLOAD_CONFIG.MAX_PET_IMAGE_SIZE;
+}
+
+/**
+ * 检查图片尺寸是否符合宠物照片要求
+ * @param width - 图片宽度
+ * @param height - 图片高度
+ * @returns 验证结果对象
+ */
+export function validatePetImageDimensions(width: number, height: number): {
+  isValid: boolean;
+  isTooSmall: boolean;
+  isTooLarge: boolean;
+  isRecommended: boolean;
+  message?: string;
+} {
+  const { MIN_PET_IMAGE_DIMENSIONS, MAX_PET_IMAGE_DIMENSIONS, RECOMMENDED_PET_IMAGE_DIMENSIONS } = PET_AI_UPLOAD_CONFIG;
+  
+  const isTooSmall = width < MIN_PET_IMAGE_DIMENSIONS.width || height < MIN_PET_IMAGE_DIMENSIONS.height;
+  const isTooLarge = width > MAX_PET_IMAGE_DIMENSIONS.width || height > MAX_PET_IMAGE_DIMENSIONS.height;
+  const isRecommended = width >= RECOMMENDED_PET_IMAGE_DIMENSIONS.width && height >= RECOMMENDED_PET_IMAGE_DIMENSIONS.height;
+  
+  if (isTooSmall) {
+    return {
+      isValid: false,
+      isTooSmall: true,
+      isTooLarge: false,
+      isRecommended: false,
+      message: `Image too small. Minimum size: ${MIN_PET_IMAGE_DIMENSIONS.width}x${MIN_PET_IMAGE_DIMENSIONS.height} pixels`
+    };
+  }
+  
+  if (isTooLarge) {
+    return {
+      isValid: false,
+      isTooSmall: false,
+      isTooLarge: true,
+      isRecommended: false,
+      message: `Image too large. Maximum size: ${MAX_PET_IMAGE_DIMENSIONS.width}x${MAX_PET_IMAGE_DIMENSIONS.height} pixels`
+    };
+  }
+  
+  return {
+    isValid: true,
+    isTooSmall: false,
+    isTooLarge: false,
+    isRecommended,
+    message: isRecommended ? undefined : `For best results, use images ${RECOMMENDED_PET_IMAGE_DIMENSIONS.width}x${RECOMMENDED_PET_IMAGE_DIMENSIONS.height} pixels or larger`
+  };
+}
+
+/**
+ * 生成宠物照片上传提示文本
+ * @returns 包含上传要求的提示文本
+ */
+export function getPetImageUploadHints(): {
+  formats: string;
+  maxSize: string;
+  dimensions: string;
+  tips: string[];
+} {
+  const formatsList = PET_AI_UPLOAD_CONFIG.RECOMMENDED_PET_IMAGE_TYPES
+    .map(type => type.split('/')[1].toUpperCase())
+    .join(', ');
+    
+  const tips = [
+    "Use clear, well-lit photos with your pet as the main subject",
+    "Avoid blurry or heavily filtered images",
+    "Higher resolution images produce better AI results",
+    "Photos with your pet's face clearly visible work best"
+  ];
+  
+  return {
+    formats: `Supported formats: ${formatsList}`,
+    maxSize: `Maximum size: ${PET_AI_UPLOAD_CONFIG.MAX_PET_IMAGE_SIZE_MB}MB`,
+    dimensions: `Recommended: ${PET_AI_UPLOAD_CONFIG.RECOMMENDED_PET_IMAGE_DIMENSIONS.width}x${PET_AI_UPLOAD_CONFIG.RECOMMENDED_PET_IMAGE_DIMENSIONS.height}px or larger`,
+    tips
+  };
+}
+
 // 用于验证预签名 URL 请求体的 Zod schema
 export const presignedUrlRequestSchema = z.object({
   fileName: z
@@ -162,4 +321,23 @@ export const presignedUrlRequestSchema = z.object({
     .max(255, "File name is too long."),
   contentType: z.string().min(1, "Content type cannot be empty."),
   size: z.number().positive("File size must be positive."),
+});
+
+// 宠物照片上传专用 Zod schema
+export const petImageUploadRequestSchema = z.object({
+  fileName: z
+    .string()
+    .min(1, "File name cannot be empty.")
+    .max(255, "File name is too long."),
+  contentType: z
+    .string()
+    .refine(isPetImageTypeAllowed, {
+      message: `Invalid file type. Supported types: ${PET_AI_UPLOAD_CONFIG.ALLOWED_PET_IMAGE_TYPES.join(", ")}`
+    }),
+  size: z
+    .number()
+    .positive("File size must be positive.")
+    .max(PET_AI_UPLOAD_CONFIG.MAX_PET_IMAGE_SIZE, {
+      message: `File too large. Maximum size: ${PET_AI_UPLOAD_CONFIG.MAX_PET_IMAGE_SIZE_MB}MB`
+    }),
 });

@@ -19,7 +19,8 @@
     "analyze": "ANALYZE=true next build",
     "analyze:dev": "ANALYZE=true next dev",
     "set:admin": "tsx --env-file=.env scripts/set-admin.ts",
-    "set:admin:prod": "tsx scripts/set-admin.ts"
+    "set:admin:prod": "tsx scripts/set-admin.ts",
+    "seed:ai-styles": "tsx --env-file=.env scripts/seed-ai-styles.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.832.0",

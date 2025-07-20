@@ -1,12 +1,12 @@
 // Brand Configuration
 export const APP_NAME =
   process.env.NODE_ENV === "development"
-    ? "DEV - SaaS Starter"
-    : "SaaS Starter";
+    ? "DEV - DuckyShot"
+    : "DuckyShot";
 export const APP_DESCRIPTION =
-  "Complete UllrAI SaaS starter with authentication, payments, database, and deployment.";
-export const COMPANY_NAME = "UllrAI Lab";
-export const COMPANY_TAGLINE = "by UllrAI, for developers";
+  "Transform your pet into stunning AI art. Create magical portraits with our advanced AI technology and turn them into custom merchandise.";
+export const COMPANY_NAME = "DuckyShot";
+export const COMPANY_TAGLINE = "AI Pet Art Studio";
 
 export const TRIAL_DAYS = 7;
 
