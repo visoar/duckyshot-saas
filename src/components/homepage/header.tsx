@@ -18,6 +18,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronDown, Menu, UserCircle, ExternalLink } from "lucide-react";
 import { APP_NAME } from "@/lib/config/constants";
+import { isAdminRole, UserRole } from "@/lib/config/roles";
 
 interface NavItem {
   title: string;
@@ -65,6 +66,59 @@ const navigationItems: NavItem[] = [
   {
     title: "Contact",
     href: "/contact",
+  },
+];
+
+// Dashboard navigation for logged-in users
+const dashboardNavItems: NavItem[] = [
+  {
+    title: "AI Studio",
+    href: "/dashboard/ai-studio",
+  },
+  {
+    title: "Artworks",
+    href: "/dashboard/artworks",
+  },
+  {
+    title: "Pricing",
+    href: "/pricing",
+  },
+  {
+    title: "Settings",
+    href: "/dashboard/settings",
+  },
+];
+
+const dashboardAdminNavItems: NavItem[] = [
+  {
+    title: "Admin",
+    items: [
+      {
+        title: "Overview",
+        href: "/dashboard/admin",
+        description: "Admin dashboard overview",
+      },
+      {
+        title: "Users",
+        href: "/dashboard/admin/users",
+        description: "Manage users",
+      },
+      {
+        title: "Payments",
+        href: "/dashboard/admin/payments",
+        description: "View payments",
+      },
+      {
+        title: "Subscriptions",
+        href: "/dashboard/admin/subscriptions",
+        description: "Manage subscriptions",
+      },
+      {
+        title: "Uploads",
+        href: "/dashboard/admin/uploads",
+        description: "Manage uploads",
+      },
+    ],
   },
 ];
 
@@ -276,6 +330,15 @@ function MobileNavigation({
   onClose: () => void;
 }) {
   const { data: session, isPending } = useSession();
+  const [mounted, setMounted] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  const isAdmin =
+    mounted && session?.user &&
+    isAdminRole(((session.user as { role?: UserRole }).role) || "user");
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -288,16 +351,76 @@ function MobileNavigation({
 
         <div className="flex flex-col p-6">
           <nav className="space-y-4">
-            {mobileNavItems.map((item, index) => (
-              <Link
-                key={index}
-                href={item.href!}
-                className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
-                onClick={onClose}
-              >
-                {item.title}
-              </Link>
-            ))}
+            {/* Show dashboard nav for authenticated users */}
+            {mounted && session?.user ? (
+              <>
+                {dashboardNavItems.map((item, index) => (
+                  <Link
+                    key={index}
+                    href={item.href!}
+                    className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
+                    onClick={onClose}
+                  >
+                    {item.title}
+                  </Link>
+                ))}
+                {/* Admin navigation */}
+                {isAdmin && (
+                  <>
+                    <div className="text-muted-foreground border-border border-t pt-4 text-xs font-semibold">
+                      Admin
+                    </div>
+                    <Link
+                      href="/dashboard/admin"
+                      className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
+                      onClick={onClose}
+                    >
+                      Overview
+                    </Link>
+                    <Link
+                      href="/dashboard/admin/users"
+                      className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
+                      onClick={onClose}
+                    >
+                      Users
+                    </Link>
+                    <Link
+                      href="/dashboard/admin/payments"
+                      className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
+                      onClick={onClose}
+                    >
+                      Payments
+                    </Link>
+                    <Link
+                      href="/dashboard/admin/subscriptions"
+                      className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
+                      onClick={onClose}
+                    >
+                      Subscriptions
+                    </Link>
+                    <Link
+                      href="/dashboard/admin/uploads"
+                      className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
+                      onClick={onClose}
+                    >
+                      Uploads
+                    </Link>
+                  </>
+                )}
+              </>
+            ) : (
+              /* Show public nav for non-authenticated users */
+              mobileNavItems.map((item, index) => (
+                <Link
+                  key={index}
+                  href={item.href!}
+                  className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
+                  onClick={onClose}
+                >
+                  {item.title}
+                </Link>
+              ))
+            )}
           </nav>
 
           <MobileAuthButtons session={session} isPending={isPending} />
@@ -310,10 +433,13 @@ function MobileNavigation({
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const { data: session, isPending } = useSession();
 
   useEffect(() => {
+    setMounted(true);
+    
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
@@ -342,12 +468,12 @@ export function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden items-center gap-1 md:flex">
-              {navigationItems.map((item, index) => (
-                <div key={index}>
-                  {item.items ? (
-                    <NavigationDropdown item={item} />
-                  ) : (
+              {/* Show dashboard nav for authenticated users */}
+              {mounted && session?.user ? (
+                <>
+                  {dashboardNavItems.map((item, index) => (
                     <Button
+                      key={index}
                       asChild
                       variant="ghost"
                       className="h-9 px-3 text-sm font-medium"
@@ -362,9 +488,62 @@ export function Header() {
                         {item.title}
                       </Link>
                     </Button>
-                  )}
-                </div>
-              ))}
+                  ))}
+                  {/* Admin navigation for admin users */}
+                  {mounted && session?.user &&
+                    isAdminRole(
+                      ((session.user as { role?: UserRole }).role) || "user",
+                    ) &&
+                    dashboardAdminNavItems.map((item, index) => (
+                      <div key={`admin-${index}`}>
+                        {item.items ? (
+                          <NavigationDropdown item={item} />
+                        ) : (
+                          <Button
+                            asChild
+                            variant="ghost"
+                            className="h-9 px-3 text-sm font-medium"
+                          >
+                            <Link
+                              href={item.href!}
+                              className={cn(
+                                "text-muted-foreground transition-colors",
+                                pathname === item.href && "text-foreground",
+                              )}
+                            >
+                              {item.title}
+                            </Link>
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                </>
+              ) : (
+                /* Show public nav for non-authenticated users */
+                navigationItems.map((item, index) => (
+                  <div key={index}>
+                    {item.items ? (
+                      <NavigationDropdown item={item} />
+                    ) : (
+                      <Button
+                        asChild
+                        variant="ghost"
+                        className="h-9 px-3 text-sm font-medium"
+                      >
+                        <Link
+                          href={item.href!}
+                          className={cn(
+                            "text-muted-foreground transition-colors",
+                            pathname === item.href && "text-foreground",
+                          )}
+                        >
+                          {item.title}
+                        </Link>
+                      </Button>
+                    )}
+                  </div>
+                ))
+              )}
             </nav>
 
             {/* Right side actions */}
