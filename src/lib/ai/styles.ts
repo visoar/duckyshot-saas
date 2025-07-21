@@ -25,8 +25,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "oil-painting",
     name: "Oil Painting",
-    description: "Transform your pet into a classical oil painting masterpiece",
+    description: "Convert this to a classical oil painting masterpiece",
     category: "classic",
+    previewImageUrl:"https://gen-image.ullrai.com/q/oil_painting_cat",
     isActive: true,
     sortOrder: 1,
     metadata: {
@@ -39,8 +40,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "watercolor",
     name: "Watercolor",
-    description: "Soft, flowing watercolor painting style",
+    description: "Convert this to Soft, flowing watercolor painting style",
     category: "classic",
+    previewImageUrl:"https://gen-image.ullrai.com/q/watercolor_cat",
     isActive: true,
     sortOrder: 2,
     metadata: {
@@ -53,8 +55,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "pencil-sketch",
     name: "Pencil Sketch",
-    description: "Detailed pencil drawing with shading",
+    description: "Convert this to Detailed pencil drawing with shading",
     category: "classic",
+    previewImageUrl:"https://gen-image.ullrai.com/q/pencil_sketch_cat",
     isActive: true,
     sortOrder: 3,
     metadata: {
@@ -69,8 +72,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "cartoon",
     name: "Cartoon",
-    description: "Fun and playful cartoon style",
+    description: "Convert this to Fun and playful cartoon style",
     category: "modern",
+    previewImageUrl:"https://gen-image.ullrai.com/q/cartoon_cat",
     isActive: true,
     sortOrder: 4,
     metadata: {
@@ -83,8 +87,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "anime",
     name: "Anime",
-    description: "Japanese anime and manga style",
+    description: "Convert this to Japanese anime and manga style",
     category: "modern",
+    previewImageUrl:"https://gen-image.ullrai.com/q/anime_cat",
     isActive: true,
     sortOrder: 5,
     metadata: {
@@ -97,8 +102,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "pop-art",
     name: "Pop Art",
-    description: "Vibrant pop art with bold colors",
+    description: "Convert this to Vibrant pop art with bold colors",
     category: "modern",
+    previewImageUrl:"https://gen-image.ullrai.com/q/pop_art_cat",
     isActive: true,
     sortOrder: 6,
     metadata: {
@@ -113,8 +119,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "cyberpunk",
     name: "Cyberpunk",
-    description: "Futuristic cyberpunk aesthetic",
+    description: "Convert this to Futuristic cyberpunk aesthetic",
     category: "special",
+    previewImageUrl:"https://gen-image.ullrai.com/q/cyberpunk_cat",
     isActive: true,
     sortOrder: 7,
     metadata: {
@@ -127,8 +134,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "pixel-art",
     name: "Pixel Art",
-    description: "Retro 8-bit pixel art style",
+    description: "Convert this to Retro 8-bit pixel art style",
     category: "special",
+    previewImageUrl:"https://gen-image.ullrai.com/q/pixel_art_cat",
     isActive: true,
     sortOrder: 8,
     metadata: {
@@ -141,8 +149,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "van-gogh",
     name: "Van Gogh Style",
-    description: "Swirling brushstrokes like Van Gogh",
+    description: "Convert this to Swirling brushstrokes like Van Gogh",
     category: "special",
+    previewImageUrl:"https://gen-image.ullrai.com/q/van-gogh_cat",
     isActive: true,
     sortOrder: 9,
     metadata: {
@@ -155,8 +164,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "studio-ghibli",
     name: "Studio Ghibli",
-    description: "Magical Studio Ghibli animation style",
+    description: "Convert this to Magical Studio Ghibli animation style",
     category: "special",
+    previewImageUrl:"https://gen-image.ullrai.com/q/ghibli_cat",
     isActive: true,
     sortOrder: 10,
     metadata: {
@@ -170,10 +180,10 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
 
 // Style Categories
 export const STYLE_CATEGORIES = [
-  { id: "classic", name: "Classic Art", description: "Traditional art styles" },
-  { id: "modern", name: "Modern", description: "Contemporary digital styles" },
-  { id: "special", name: "Special", description: "Unique and themed styles" },
-  { id: "seasonal", name: "Seasonal", description: "Holiday and seasonal themes" },
+  { id: "classic", name: "Classic Art", description: "Convert this to Traditional art styles" },
+  { id: "modern", name: "Modern", description: "Convert this to Contemporary digital styles" },
+  { id: "special", name: "Special", description: "Convert this to Unique and themed styles" },
+  { id: "seasonal", name: "Seasonal", description: "Convert this to Holiday and seasonal themes" },
 ] as const;
 
 // Utility functions

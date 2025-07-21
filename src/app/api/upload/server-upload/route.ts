@@ -94,16 +94,17 @@ export async function POST(request: NextRequest) {
         const publicUrl = `${env.R2_PUBLIC_URL}/${key}`;
 
         // Store upload record in database
-        await db.insert(uploads).values({
+        const [uploadRecord] = await db.insert(uploads).values({
           userId: session.user!.id,
           fileKey: key,
           url: publicUrl,
           fileName: file.name,
           fileSize: file.size,
           contentType: file.type,
-        });
+        }).returning();
 
         return {
+          uploadId: uploadRecord.id,
           fileName: file.name,
           url: publicUrl,
           key: key,

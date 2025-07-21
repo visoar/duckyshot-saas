@@ -1,35 +1,37 @@
-import { DashboardPageHeader } from "./dashboard-page-header";
-
 interface DashboardPageWrapperProps {
   title: string;
   parentTitle?: string;
   parentUrl?: string;
   description?: string;
   actions?: React.ReactNode;
-  showSidebarTrigger?: boolean;
   children: React.ReactNode;
 }
 
 export function DashboardPageWrapper({
   title,
-  parentTitle,
-  parentUrl,
   description,
   actions,
-  showSidebarTrigger = true,
   children,
 }: DashboardPageWrapperProps) {
   return (
-    <>
-      <DashboardPageHeader
-        title={title}
-        parentTitle={parentTitle}
-        parentUrl={parentUrl}
-        description={description}
-        actions={actions}
-        showSidebarTrigger={showSidebarTrigger}
-      />
-      <main className="flex-1 space-y-6 px-4 py-2">{children}</main>
-    </>
+    <div className="space-y-8">
+      {/* Page Header */}
+      <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            {title}
+          </h1>
+          {description && (
+            <p className="text-muted-foreground mt-2 text-sm">
+              {description}
+            </p>
+          )}
+        </div>
+        {actions && <div className="flex items-center space-x-2">{actions}</div>}
+      </div>
+      
+      {/* Page Content */}
+      <div className="space-y-6">{children}</div>
+    </div>
   );
 }

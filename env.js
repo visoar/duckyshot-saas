@@ -47,6 +47,8 @@ const env = createEnv({
   client: {
     // Application settings
     NEXT_PUBLIC_APP_URL: z.string(),
+    // Cloudflare R2 Public URL
+    NEXT_PUBLIC_R2_PUBLIC_URL: z.string(),
   },
 
   // Linking runtime environment variables
@@ -81,6 +83,7 @@ const env = createEnv({
 
     // Application settings
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_R2_PUBLIC_URL: process.env.NEXT_PUBLIC_R2_PUBLIC_URL,
     // Payments
     CREEM_API_KEY: process.env.CREEM_API_KEY,
     CREEM_ENVIRONMENT: process.env.CREEM_ENVIRONMENT,

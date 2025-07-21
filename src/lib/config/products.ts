@@ -40,38 +40,9 @@ export interface PricingTier {
 export const PRODUCT_TIERS: PricingTier[] = [
   {
     id: "credits_starter",
-    name: "Starter Pack",
+    name: "Starter",
     description: "Perfect for trying out our Pet AI magic",
     isPopular: false,
-    features: [
-      { name: "10 AI generations", included: true },
-      { name: "All art styles available", included: true },
-      { name: "High-quality downloads", included: true },
-      { name: "Basic support", included: true },
-      { name: "Watermark removal", included: false },
-      { name: "Commercial usage rights", included: false },
-      { name: "Priority generation queue", included: false },
-      { name: "Exclusive art styles", included: false },
-    ],
-    pricing: {
-      creem: {
-        oneTime: "prod_starter_10_credits",
-        monthly: "prod_starter_10_credits",
-        yearly: "prod_starter_10_credits",
-      },
-    },
-    prices: {
-      oneTime: 7.99,
-      monthly: 7.99,
-      yearly: 7.99,
-    },
-    currency: "USD",
-  },
-  {
-    id: "credits_popular",
-    name: "Popular Pack",
-    description: "Most loved by pet parents worldwide",
-    isPopular: true,
     features: [
       { name: "30 AI generations", included: true },
       { name: "All art styles available", included: true },
@@ -97,10 +68,10 @@ export const PRODUCT_TIERS: PricingTier[] = [
     currency: "USD",
   },
   {
-    id: "premium_monthly",
-    name: "Premium Monthly",
+    id: "premium",
+    name: "Premium",
     description: "Unlimited creativity for pet lovers",
-    isPopular: false,
+    isPopular: true,
     features: [
       { name: "30 monthly AI generations", included: true },
       { name: "All art styles + exclusive ones", included: true },
@@ -127,7 +98,7 @@ export const PRODUCT_TIERS: PricingTier[] = [
   },
   {
     id: "credits_bulk",
-    name: "Bulk Pack",
+    name: "Bulk",
     description: "Best value for frequent users",
     isPopular: false,
     features: [

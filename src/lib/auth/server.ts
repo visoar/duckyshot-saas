@@ -6,7 +6,7 @@ import env from "@/env";
 import { db } from "@/database";
 import { sendMagicLink } from "@/emails/magic-link";
 import { APP_NAME } from "@/lib/config/constants";
-// 移除: import { UAParser } from "ua-parser-js";
+import { UserCreditsService } from "@/lib/database/ai";
 import { providerConfigs } from "./providers";
 
 // Dynamically build social providers based on environment variables
@@ -69,8 +69,21 @@ export const auth = betterAuth({
       trustedProviders: ["google", "github", "linkedin"],
     },
   },
-  // 完全移除 databaseHooks，因为我们不再在创建会话时进行解析
-  // databaseHooks: { ... },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          // Initialize user credits when a new user is created
+          try {
+            await UserCreditsService.initializeUserCredits(user.id, 3); // 3 free credits
+            console.log(`Initialized credits for new user: ${user.id}`);
+          } catch (error) {
+            console.error(`Failed to initialize credits for user ${user.id}:`, error);
+          }
+        },
+      },
+    },
+  },
   plugins: [
     magicLink({
       sendMagicLink: async ({ email, url }, request) => {

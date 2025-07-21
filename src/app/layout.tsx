@@ -1,7 +1,7 @@
 import "@/styles/globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
-import { Oxanium, Merriweather, Fira_Code } from "next/font/google";
+// import { Oxanium, Merriweather, Fira_Code } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import Script from "next/script";
 import { createMetadata } from "@/lib/metadata";
@@ -15,13 +15,13 @@ import env from "@/env";
 import NextTopLoader from "nextjs-toploader";
 import { CookieConsent } from "@/components/cookie-consent";
 
-const oxanium = Oxanium({ subsets: ["latin"], variable: "--font-sans" });
-const merriweather = Merriweather({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-serif",
-});
-const firaCode = Fira_Code({ subsets: ["latin"], variable: "--font-mono" });
+// const oxanium = Oxanium({ subsets: ["latin"], variable: "--font-sans" });
+// const merriweather = Merriweather({
+//   subsets: ["latin"],
+//   weight: ["400", "700"],
+//   variable: "--font-serif",
+// });
+// const firaCode = Fira_Code({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata = createMetadata({
   title: {
@@ -59,7 +59,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${oxanium.variable} ${merriweather.variable} ${firaCode.variable}`}
+      // className={`${oxanium.variable} ${merriweather.variable} ${firaCode.variable}`}
       suppressHydrationWarning
     >
       <head />

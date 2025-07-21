@@ -7,11 +7,9 @@ import * as schema from "@/database/schema";
  */
 export const enabledTablesMap = {
   uploads: schema.uploads,
-  sessions: schema.sessions,
-  payments: schema.payments,
-  subscriptions: schema.subscriptions,
-  users: schema.users,
-  verifications: schema.verifications,
+  ai_styles: schema.aiStyles,
+  ai_artworks: schema.aiArtworks,
+  user_credits: schema.userCredits,
   // 示例: 如果您有一个 "products" 表, 在这里添加:
   // products: schema.products,
 } as const;

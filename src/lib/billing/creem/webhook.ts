@@ -18,6 +18,23 @@ import {
 } from "@/lib/database/subscription";
 import type { Tx } from "@/lib/database/subscription";
 import { getProductTierByProductId } from "@/lib/config/products";
+import { UserCreditsService } from "@/lib/database/ai";
+
+// Credit allocation based on product tiers
+function getCreditsByProductTier(tierId: string): number {
+  switch (tierId) {
+    case "credits_starter":
+      return 10;
+    case "credits_popular": 
+      return 30;
+    case "credits_bulk":
+      return 100;
+    case "premium_monthly":
+      return 30; // Monthly subscription gets 30 credits per month
+    default:
+      return 0;
+  }
+}
 
 // --- Helper functions and type guards (no changes here) ---
 
@@ -212,6 +229,15 @@ async function processCheckoutCompletedEvent(
       },
       tx,
     );
+
+    // Add credits for subscription-based credit packages
+    if (tier?.id) {
+      const creditsToAdd = getCreditsByProductTier(tier.id);
+      if (creditsToAdd > 0) {
+        await UserCreditsService.addCredits(userId, creditsToAdd);
+        console.log(`Added ${creditsToAdd} credits to user ${userId} for subscription tier ${tier.id}`);
+      }
+    }
   }
   // Handle one_time purchases
   else if (paymentMode === "one_time") {
@@ -234,6 +260,15 @@ async function processCheckoutCompletedEvent(
       },
       tx,
     );
+
+    // Add credits for credit package purchases
+    if (tier?.id) {
+      const creditsToAdd = getCreditsByProductTier(tier.id);
+      if (creditsToAdd > 0) {
+        await UserCreditsService.addCredits(userId, creditsToAdd);
+        console.log(`Added ${creditsToAdd} credits to user ${userId} for tier ${tier.id}`);
+      }
+    }
   } else {
     throw new Error(
       `Unsupported payment mode: ${paymentMode} or missing subscription data for subscription mode`,
@@ -344,6 +379,15 @@ async function processSubscriptionRenewal(
 
   if (isPaymentObject(renewalData)) {
     await processPaymentSucceededEvent(renewalData, tx);
+  }
+
+  // Add monthly credits for subscription renewals
+  if (tier?.id) {
+    const creditsToAdd = getCreditsByProductTier(tier.id);
+    if (creditsToAdd > 0) {
+      await UserCreditsService.addCredits(user.id, creditsToAdd);
+      console.log(`Added ${creditsToAdd} credits to user ${user.id} for subscription renewal of tier ${tier.id}`);
+    }
   }
 }
 

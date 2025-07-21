@@ -11,6 +11,8 @@ import {
   BarChart3,
   LucideIcon,
   Database,
+  Sparkles,
+  Image,
 } from "lucide-react";
 import { APP_NAME } from "@/lib/config/constants";
 import { isAdminRole, UserRole } from "@/lib/config/roles";
@@ -44,8 +46,18 @@ const navigation: {
 }[] = [
   {
     title: "Home",
-    url: "/dashboard/home",
+    url: "/dashboard",
     icon: Home,
+  },
+  {
+    title: "AI Studio",
+    url: "/dashboard/ai-studio",
+    icon: Sparkles,
+  },
+  {
+    title: "My Artworks",
+    url: "/dashboard/artworks",
+    icon: Image,
   },
   {
     title: "Upload",

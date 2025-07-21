@@ -26,6 +26,7 @@
     "@aws-sdk/client-s3": "^3.832.0",
     "@aws-sdk/lib-storage": "^3.832.0",
     "@aws-sdk/s3-request-presigner": "^3.832.0",
+    "@fal-ai/client": "^1.6.0",
     "@hookform/resolvers": "^5.1.1",
     "@keystatic/core": "^0.5.47",
     "@keystatic/next": "^5.0.4",

@@ -1,22 +1,25 @@
 import { Suspense } from "react";
 import Loading from "@/app/loading";
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { AppSidebar } from "./_components/app-sidebar";
-import { SessionGuard } from "./_components/session-guard"; // 导入守卫组件
+import { Header } from "@/components/homepage/header";
+import { Footer } from "@/components/homepage/footer";
+import { SessionGuard } from "./_components/session-guard";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-export default async function AppLayout({ children }: DashboardLayoutProps) {
+export default async function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset className="flex flex-col">
+    <div className="flex min-h-screen flex-col">
+      <Header />
+      <main className="flex-1">
         <SessionGuard>
-          <Suspense fallback={<Loading />}>{children}</Suspense>
+          <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8">
+            <Suspense fallback={<Loading />}>{children}</Suspense>
+          </div>
         </SessionGuard>
-      </SidebarInset>
-    </SidebarProvider>
+      </main>
+      <Footer />
+    </div>
   );
 }

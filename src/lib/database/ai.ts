@@ -304,6 +304,19 @@ export class AIWorkflowService {
     const status: AIArtworkStatus = result.status === "completed" ? "completed" : 
                                    result.status === "failed" ? "failed" : "processing";
 
+    // If generation failed, refund the credits
+    if (status === "failed") {
+      // First get the artwork to see how many credits were used
+      const artwork = await AIArtworkService.getArtworkById(artworkId);
+      if (artwork && artwork.artwork.creditsUsed > 0) {
+        // Refund the credits back to the user
+        await UserCreditsService.addCredits(
+          artwork.artwork.userId, 
+          artwork.artwork.creditsUsed
+        );
+      }
+    }
+
     return AIArtworkService.updateArtwork({
       id: artworkId,
       status,

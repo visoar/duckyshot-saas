@@ -3,6 +3,9 @@ import { auth } from "@/lib/auth/server";
 import { AIWorkflowService, UserCreditsService } from "@/lib/database/ai";
 import { aiService } from "@/lib/ai/provider";
 import { getStyleById, generateStylePrompt, generateNegativePrompt } from "@/lib/ai/styles";
+import { db } from "@/database";
+import { uploads } from "@/database/schema";
+import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 
 // Request validation schema
@@ -51,9 +54,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get upload information (would need to check if upload exists and belongs to user)
-    // For now, we'll create a placeholder image URL
-    const imageUrl = `https://your-r2-domain.com/uploads/${uploadId}`;
+    // Get upload information and verify it belongs to the user
+    const [upload] = await db
+      .select()
+      .from(uploads)
+      .where(and(
+        eq(uploads.id, uploadId),
+        eq(uploads.userId, userId)
+      ));
+
+    if (!upload) {
+      return NextResponse.json(
+        { error: "Upload not found or does not belong to user" },
+        { status: 400 }
+      );
+    }
+
+    // Use the actual upload URL for AI generation
+    const imageUrl = upload.url;
 
     // Generate AI prompts
     const stylePrompt = generateStylePrompt(style, petDescription);
@@ -83,14 +101,33 @@ export async function POST(request: NextRequest) {
     try {
       const result = await aiService.generatePetArt(generationParams);
       
-      // Update artwork with results
-      await AIWorkflowService.completeGeneration(artwork.id, result);
+      // If generation was successful, upload images to R2
+      let finalImages = result.images;
+      if (result.status === "completed" && result.images && result.images.length > 0) {
+        const uploadResult = await aiService.uploadGeneratedImagesToR2(result.images, userId);
+        
+        if (uploadResult.success && uploadResult.r2Urls) {
+          // Use R2 URLs instead of fal URLs
+          finalImages = uploadResult.r2Urls;
+        } else {
+          console.warn("Failed to upload images to R2, using original URLs:", uploadResult.error);
+          // Continue with original URLs if R2 upload fails
+        }
+      }
+      
+      // Update artwork with results (using R2 URLs if upload was successful)
+      const finalResult = {
+        ...result,
+        images: finalImages,
+      };
+      
+      await AIWorkflowService.completeGeneration(artwork.id, finalResult);
 
       return NextResponse.json({
         success: true,
         artworkId: artwork.id,
         status: result.status,
-        images: result.images,
+        images: finalImages,
         creditsUsed: numImages,
       });
     } catch (aiError) {

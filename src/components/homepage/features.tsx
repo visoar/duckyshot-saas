@@ -2,14 +2,14 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
-  Database,
+  Camera,
   Palette,
-  Rocket,
-  Shield,
-  BarChart3,
+  Heart,
+  ShoppingBag,
+  Download,
   ArrowRight,
-  Sparkles,
-  CreditCard,
+  Wand2,
+  Clock,
 } from "lucide-react";
 
 interface Feature {
@@ -21,46 +21,46 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    title: "Authentication & Users",
+    title: "AI Art Generation",
     description:
-      "Complete auth system with OAuth, magic links, and user management. Role-based access control included.",
-    icon: Shield,
-    category: "Security",
+      "Transform your pet photos into stunning artwork using advanced AI. Choose from 10+ artistic styles including oil painting, watercolor, and cartoon.",
+    icon: Wand2,
+    category: "AI Technology",
   },
   {
-    title: "Payments & Billing",
+    title: "Multiple Art Styles", 
     description:
-      "Stripe integration with subscriptions, invoicing, and tax handling. Revenue tracking built-in.",
-    icon: CreditCard,
-    category: "Payments",
-  },
-  {
-    title: "Database & API",
-    description:
-      "Type-safe database with Drizzle ORM. RESTful APIs and real-time subscriptions ready.",
-    icon: Database,
-    category: "Backend",
-  },
-  {
-    title: "Analytics & Insights",
-    description:
-      "User behavior tracking, conversion metrics, and beautiful dashboards for data-driven decisions.",
-    icon: BarChart3,
-    category: "Analytics",
-  },
-  {
-    title: "Modern UI/UX",
-    description:
-      "Beautiful, responsive design with dark mode. Accessible components and smooth animations.",
+      "Express your pet's personality with diverse styles: classic art, modern designs, anime, cyberpunk, and seasonal themes.",
     icon: Palette,
-    category: "Design",
+    category: "Creative Options",
   },
   {
-    title: "Production Deploy",
+    title: "High-Quality Upload",
     description:
-      "One-click deployment to Vercel, AWS, or Docker. CI/CD pipelines and monitoring included.",
-    icon: Rocket,
-    category: "DevOps",
+      "Upload photos up to 20MB with smart compression. Our AI works best with clear, well-lit photos of your beloved pets.",
+    icon: Camera,
+    category: "Photo Processing",
+  },
+  {
+    title: "Custom Merchandise",
+    description:
+      "Turn your AI artwork into physical products: t-shirts, mugs, phone cases, canvas prints, and more. Perfect for gifts!",
+    icon: ShoppingBag,
+    category: "Products",
+  },
+  {
+    title: "Instant Download",
+    description:
+      "Download high-resolution artwork immediately. Get watermark-free versions and share your pet's art with friends and family.",
+    icon: Download,
+    category: "Output",
+  },
+  {
+    title: "Lightning Fast",
+    description:
+      "Generate beautiful artwork in under 30 seconds. Our optimized AI ensures quick turnaround without compromising quality.",
+    icon: Clock,
+    category: "Performance",
   },
 ];
 
@@ -106,18 +106,18 @@ export function Features() {
         {/* Section Header */}
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <Badge variant="secondary" className="mb-4">
-            <Sparkles className="mr-2 h-3 w-3" />
-            Everything Included
+            <Heart className="mr-2 h-3 w-3 fill-current text-pink-500" />
+            Made with Love for Pet Parents
           </Badge>
 
           <h2 className="text-foreground text-3xl font-bold tracking-tight sm:text-4xl">
-            Everything you need to
-            <span className="text-primary block">build and scale</span>
+            Everything you need to create
+            <span className="text-primary block">magical pet art</span>
           </h2>
 
           <p className="text-muted-foreground mt-6 text-lg">
-            Skip months of development. Our starter includes all the essential
-            features you need to launch your SaaS product successfully.
+            From photo upload to custom merchandise, our platform handles the entire journey 
+            of transforming your pet&apos;s photos into treasured artwork.
           </p>
         </div>
 
@@ -131,16 +131,16 @@ export function Features() {
         {/* Bottom Stats */}
         <div className="mt-16 grid grid-cols-3 gap-8 text-center">
           <div>
-            <div className="text-foreground text-2xl font-bold">50+</div>
-            <div className="text-muted-foreground text-sm">Components</div>
-          </div>
-          <div>
             <div className="text-foreground text-2xl font-bold">10+</div>
-            <div className="text-muted-foreground text-sm">Integrations</div>
+            <div className="text-muted-foreground text-sm">Art Styles</div>
           </div>
           <div>
-            <div className="text-foreground text-2xl font-bold">100%</div>
-            <div className="text-muted-foreground text-sm">Type Safe</div>
+            <div className="text-foreground text-2xl font-bold">50K+</div>
+            <div className="text-muted-foreground text-sm">Artworks Created</div>
+          </div>
+          <div>
+            <div className="text-foreground text-2xl font-bold">30s</div>
+            <div className="text-muted-foreground text-sm">Generation Time</div>
           </div>
         </div>
       </div>

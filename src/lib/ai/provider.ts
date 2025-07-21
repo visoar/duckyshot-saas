@@ -1,4 +1,7 @@
 import env from "@/env";
+import { uploadFromUrl } from "@/lib/r2";
+import { randomUUID } from "crypto";
+import { getFileExtension } from "@/lib/config/upload";
 
 // AI Generation Parameters
 export interface AIGenerationParams {
@@ -26,62 +29,162 @@ export abstract class AIProvider {
   abstract getStatus(jobId: string): Promise<AIGenerationResult>;
 }
 
-// Fal.ai Provider Implementation
+// Fal.ai Provider Implementation using FLUX Pro Kontext for image editing
 export class FalAIProvider extends AIProvider {
   private apiKey: string;
-  private baseUrl = "https://fal.run/fal-ai/flux/schnell";
+  private modelEndpoint = "fal-ai/flux-pro/kontext";
 
   constructor(apiKey: string) {
     super();
     this.apiKey = apiKey;
   }
 
-  async generateImages(params: AIGenerationParams): Promise<AIGenerationResult> {
+  /**
+   * Upload images from URLs to R2 storage
+   */
+  private async uploadImagesToR2(
+    imageUrls: string[], 
+    userId: string
+  ): Promise<{ success: boolean; r2Urls?: string[]; error?: string }> {
     try {
-      const response = await fetch(this.baseUrl, {
-        method: "POST",
-        headers: {
-          "Authorization": `Key ${this.apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          image_url: params.imageUrl,
-          prompt: params.stylePrompt,
-          num_images: params.numImages || 2,
-          guidance_scale: params.guidance || 7.5,
-          num_inference_steps: 50,
-          strength: params.strength || 0.8,
-          seed: params.seed,
-        }),
+      const uploadPromises = imageUrls.map(async (imageUrl, index) => {
+        // Generate unique key for each image
+        const timestamp = Date.now();
+        const uuid = randomUUID();
+        const fileExtension = getFileExtension("image/jpeg"); // Default to jpeg for AI generated images
+        const key = `ai-generated/${userId}/${timestamp}-${uuid}-${index}.${fileExtension}`;
+        
+        const result = await uploadFromUrl(imageUrl, key, "image/jpeg");
+        
+        if (!result.success) {
+          throw new Error(`Failed to upload image ${index}: ${result.error}`);
+        }
+        
+        return result.url!;
       });
 
-      if (!response.ok) {
-        throw new Error(`Fal.ai API error: ${response.statusText}`);
-      }
-
-      const result = await response.json();
+      const r2Urls = await Promise.all(uploadPromises);
       
       return {
-        id: result.request_id || Date.now().toString(),
+        success: true,
+        r2Urls,
+      };
+    } catch (error) {
+      console.error("Error uploading images to R2:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Failed to upload images to R2",
+      };
+    }
+  }
+
+  async generateImages(params: AIGenerationParams): Promise<AIGenerationResult> {
+    try {
+      // Dynamically import fal client to avoid SSR issues
+      const { fal } = await import("@fal-ai/client");
+      
+      // Configure the client with API key
+      fal.config({
+        credentials: this.apiKey,
+      });
+
+      // Use FLUX Pro Kontext for image editing with style prompts
+      const result = await fal.subscribe(this.modelEndpoint, {
+        input: {
+          prompt: params.stylePrompt,
+          image_url: params.imageUrl,
+          guidance_scale: params.guidance || 3.5,
+          num_images: params.numImages || 2,
+          safety_tolerance: "2",
+          seed: params.seed,
+        },
+        logs: true,
+        onQueueUpdate: (update) => {
+          if (update.status === "IN_PROGRESS") {
+            console.log("Generation in progress:", update.logs?.map(log => log.message).join(", "));
+          }
+        },
+      });
+
+      if (!result.data?.images || result.data.images.length === 0) {
+        throw new Error("No images generated from Fal.ai API");
+      }
+
+      // Extract fal image URLs
+      const falImageUrls = result.data.images.map((img: { url: string }) => img.url);
+      
+      // Upload images to R2 storage (we need userId from context)
+      // For now, we'll return fal URLs and handle R2 upload in the service layer
+      // This allows us to access userId from the API context
+      
+      return {
+        id: result.requestId || Date.now().toString(),
         status: "completed",
-        images: result.images?.map((img: { url: string }) => img.url) || [],
+        images: falImageUrls,
       };
     } catch (error) {
       console.error("Fal.ai generation error:", error);
       return {
         id: Date.now().toString(),
         status: "failed",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : "AI generation failed",
       };
     }
   }
 
+  /**
+   * Upload fal.ai images to R2 (to be called from service layer with userId)
+   */
+  async uploadGeneratedImagesToR2(
+    falImageUrls: string[],
+    userId: string
+  ): Promise<{ success: boolean; r2Urls?: string[]; error?: string }> {
+    return this.uploadImagesToR2(falImageUrls, userId);
+  }
+
   async getStatus(jobId: string): Promise<AIGenerationResult> {
-    // For synchronous API, return completed status
-    return {
-      id: jobId,
-      status: "completed",
-    };
+    try {
+      const { fal } = await import("@fal-ai/client");
+      
+      fal.config({
+        credentials: this.apiKey,
+      });
+
+      const status = await fal.queue.status(this.modelEndpoint, {
+        requestId: jobId,
+        logs: true,
+      });
+
+      if (status.status === "COMPLETED") {
+        const result = await fal.queue.result(this.modelEndpoint, {
+          requestId: jobId,
+        });
+
+        return {
+          id: jobId,
+          status: "completed",
+          images: result.data?.images?.map((img: { url: string }) => img.url) || [],
+        };
+      } else if (status.status && ["TIMEOUT", "FAILED", "CANCELLED"].includes(status.status as string)) {
+        return {
+          id: jobId,
+          status: "failed",
+          error: "Generation failed",
+        };
+      } else {
+        return {
+          id: jobId,
+          status: "processing",
+          progress: 0.5,
+        };
+      }
+    } catch (error) {
+      return {
+        id: jobId,
+        status: "failed",
+        error: error instanceof Error ? error.message : "Status check failed",
+      };
+    }
   }
 }
 
@@ -202,6 +305,26 @@ export class AIService {
 
   async checkStatus(jobId: string): Promise<AIGenerationResult> {
     return this.provider.getStatus(jobId);
+  }
+
+  /**
+   * Upload generated images to R2 storage
+   * This should be called after successful generation to store images in our own storage
+   */
+  async uploadGeneratedImagesToR2(
+    falImageUrls: string[],
+    userId: string
+  ): Promise<{ success: boolean; r2Urls?: string[]; error?: string }> {
+    if (this.provider instanceof FalAIProvider) {
+      return this.provider.uploadGeneratedImagesToR2(falImageUrls, userId);
+    }
+    
+    // For other providers, we can implement similar logic
+    // For now, just return the original URLs
+    return {
+      success: false,
+      error: "Image upload to R2 not supported for this provider"
+    };
   }
 }
 
