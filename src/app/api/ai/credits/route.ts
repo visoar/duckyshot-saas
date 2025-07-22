@@ -7,17 +7,14 @@ export async function GET(request: Request) {
     // Authenticate user
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userId = session.user.id;
 
     // Get user credits
     let credits = await UserCreditsService.getUserCredits(userId);
-    
+
     // Initialize credits for new users
     if (!credits) {
       credits = await UserCreditsService.initializeUserCredits(userId, 3); // 3 free credits for new users
@@ -26,7 +23,7 @@ export async function GET(request: Request) {
     if (!credits) {
       return NextResponse.json(
         { error: "Failed to initialize user credits" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -36,12 +33,11 @@ export async function GET(request: Request) {
       remainingCredits: credits.remainingCredits,
       lastResetAt: credits.lastResetAt,
     });
-
   } catch (error) {
     console.error("Credits API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

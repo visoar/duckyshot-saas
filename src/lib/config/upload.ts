@@ -116,19 +116,12 @@ export const PET_AI_UPLOAD_CONFIG = {
    * 允许的宠物照片格式
    * 限制为最常用和AI处理效果最好的格式
    */
-  ALLOWED_PET_IMAGE_TYPES: [
-    "image/jpeg",
-    "image/png", 
-    "image/webp"
-  ] as const,
+  ALLOWED_PET_IMAGE_TYPES: ["image/jpeg", "image/png", "image/webp"] as const,
 
   /**
    * 推荐的宠物照片格式（用于提示用户）
    */
-  RECOMMENDED_PET_IMAGE_TYPES: [
-    "image/jpeg",
-    "image/png"
-  ] as const,
+  RECOMMENDED_PET_IMAGE_TYPES: ["image/jpeg", "image/png"] as const,
 
   /**
    * 宠物照片最小尺寸要求（像素）
@@ -223,7 +216,7 @@ export function getFileExtension(contentType: string): string {
  */
 export function isPetImageTypeAllowed(contentType: string): boolean {
   return PET_AI_UPLOAD_CONFIG.ALLOWED_PET_IMAGE_TYPES.includes(
-    contentType as typeof PET_AI_UPLOAD_CONFIG.ALLOWED_PET_IMAGE_TYPES[number]
+    contentType as (typeof PET_AI_UPLOAD_CONFIG.ALLOWED_PET_IMAGE_TYPES)[number],
   );
 }
 
@@ -242,45 +235,60 @@ export function isPetImageSizeAllowed(size: number): boolean {
  * @param height - 图片高度
  * @returns 验证结果对象
  */
-export function validatePetImageDimensions(width: number, height: number): {
+export function validatePetImageDimensions(
+  width: number,
+  height: number,
+): {
   isValid: boolean;
   isTooSmall: boolean;
   isTooLarge: boolean;
   isRecommended: boolean;
   message?: string;
 } {
-  const { MIN_PET_IMAGE_DIMENSIONS, MAX_PET_IMAGE_DIMENSIONS, RECOMMENDED_PET_IMAGE_DIMENSIONS } = PET_AI_UPLOAD_CONFIG;
-  
-  const isTooSmall = width < MIN_PET_IMAGE_DIMENSIONS.width || height < MIN_PET_IMAGE_DIMENSIONS.height;
-  const isTooLarge = width > MAX_PET_IMAGE_DIMENSIONS.width || height > MAX_PET_IMAGE_DIMENSIONS.height;
-  const isRecommended = width >= RECOMMENDED_PET_IMAGE_DIMENSIONS.width && height >= RECOMMENDED_PET_IMAGE_DIMENSIONS.height;
-  
+  const {
+    MIN_PET_IMAGE_DIMENSIONS,
+    MAX_PET_IMAGE_DIMENSIONS,
+    RECOMMENDED_PET_IMAGE_DIMENSIONS,
+  } = PET_AI_UPLOAD_CONFIG;
+
+  const isTooSmall =
+    width < MIN_PET_IMAGE_DIMENSIONS.width ||
+    height < MIN_PET_IMAGE_DIMENSIONS.height;
+  const isTooLarge =
+    width > MAX_PET_IMAGE_DIMENSIONS.width ||
+    height > MAX_PET_IMAGE_DIMENSIONS.height;
+  const isRecommended =
+    width >= RECOMMENDED_PET_IMAGE_DIMENSIONS.width &&
+    height >= RECOMMENDED_PET_IMAGE_DIMENSIONS.height;
+
   if (isTooSmall) {
     return {
       isValid: false,
       isTooSmall: true,
       isTooLarge: false,
       isRecommended: false,
-      message: `Image too small. Minimum size: ${MIN_PET_IMAGE_DIMENSIONS.width}x${MIN_PET_IMAGE_DIMENSIONS.height} pixels`
+      message: `Image too small. Minimum size: ${MIN_PET_IMAGE_DIMENSIONS.width}x${MIN_PET_IMAGE_DIMENSIONS.height} pixels`,
     };
   }
-  
+
   if (isTooLarge) {
     return {
       isValid: false,
       isTooSmall: false,
       isTooLarge: true,
       isRecommended: false,
-      message: `Image too large. Maximum size: ${MAX_PET_IMAGE_DIMENSIONS.width}x${MAX_PET_IMAGE_DIMENSIONS.height} pixels`
+      message: `Image too large. Maximum size: ${MAX_PET_IMAGE_DIMENSIONS.width}x${MAX_PET_IMAGE_DIMENSIONS.height} pixels`,
     };
   }
-  
+
   return {
     isValid: true,
     isTooSmall: false,
     isTooLarge: false,
     isRecommended,
-    message: isRecommended ? undefined : `For best results, use images ${RECOMMENDED_PET_IMAGE_DIMENSIONS.width}x${RECOMMENDED_PET_IMAGE_DIMENSIONS.height} pixels or larger`
+    message: isRecommended
+      ? undefined
+      : `For best results, use images ${RECOMMENDED_PET_IMAGE_DIMENSIONS.width}x${RECOMMENDED_PET_IMAGE_DIMENSIONS.height} pixels or larger`,
   };
 }
 
@@ -294,22 +302,22 @@ export function getPetImageUploadHints(): {
   dimensions: string;
   tips: string[];
 } {
-  const formatsList = PET_AI_UPLOAD_CONFIG.RECOMMENDED_PET_IMAGE_TYPES
-    .map(type => type.split('/')[1].toUpperCase())
-    .join(', ');
-    
+  const formatsList = PET_AI_UPLOAD_CONFIG.RECOMMENDED_PET_IMAGE_TYPES.map(
+    (type) => type.split("/")[1].toUpperCase(),
+  ).join(", ");
+
   const tips = [
     "Use clear, well-lit photos with your pet as the main subject",
     "Avoid blurry or heavily filtered images",
     "Higher resolution images produce better AI results",
-    "Photos with your pet's face clearly visible work best"
+    "Photos with your pet's face clearly visible work best",
   ];
-  
+
   return {
     formats: `Supported formats: ${formatsList}`,
     maxSize: `Maximum size: ${PET_AI_UPLOAD_CONFIG.MAX_PET_IMAGE_SIZE_MB}MB`,
     dimensions: `Recommended: ${PET_AI_UPLOAD_CONFIG.RECOMMENDED_PET_IMAGE_DIMENSIONS.width}x${PET_AI_UPLOAD_CONFIG.RECOMMENDED_PET_IMAGE_DIMENSIONS.height}px or larger`,
-    tips
+    tips,
   };
 }
 
@@ -329,15 +337,13 @@ export const petImageUploadRequestSchema = z.object({
     .string()
     .min(1, "File name cannot be empty.")
     .max(255, "File name is too long."),
-  contentType: z
-    .string()
-    .refine(isPetImageTypeAllowed, {
-      message: `Invalid file type. Supported types: ${PET_AI_UPLOAD_CONFIG.ALLOWED_PET_IMAGE_TYPES.join(", ")}`
-    }),
+  contentType: z.string().refine(isPetImageTypeAllowed, {
+    message: `Invalid file type. Supported types: ${PET_AI_UPLOAD_CONFIG.ALLOWED_PET_IMAGE_TYPES.join(", ")}`,
+  }),
   size: z
     .number()
     .positive("File size must be positive.")
     .max(PET_AI_UPLOAD_CONFIG.MAX_PET_IMAGE_SIZE, {
-      message: `File too large. Maximum size: ${PET_AI_UPLOAD_CONFIG.MAX_PET_IMAGE_SIZE_MB}MB`
+      message: `File too large. Maximum size: ${PET_AI_UPLOAD_CONFIG.MAX_PET_IMAGE_SIZE_MB}MB`,
     }),
 });

@@ -28,7 +28,7 @@ export function Hero() {
           <div className="space-y-8">
             {/* Status Badge */}
             <div className="border-border bg-background/50 inline-flex items-center rounded-full border px-3 py-1 text-sm backdrop-blur-sm">
-              <Heart className="text-pink-500 mr-2 h-3 w-3 fill-current" />
+              <Heart className="mr-2 h-3 w-3 fill-current text-pink-500" />
               <span className="text-muted-foreground">
                 Loved by 25,000+ pet parents worldwide
               </span>
@@ -42,7 +42,9 @@ export function Hero() {
               </h1>
 
               <p className="text-muted-foreground max-w-lg text-xl leading-relaxed">
-                Upload your pet&apos;s photo and watch our AI transform it into stunning artwork in 10+ artistic styles. Then create custom merchandise to treasure forever.
+                Upload your pet&apos;s photo and watch our AI transform it into
+                stunning artwork in 10+ artistic styles. Then create custom
+                merchandise to treasure forever.
               </p>
             </div>
 
@@ -112,30 +114,36 @@ export function Hero() {
                   {/* Header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="bg-purple-500/10 flex h-8 w-8 items-center justify-center rounded-lg">
-                        <Palette className="text-purple-500 h-4 w-4" />
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
+                        <Palette className="h-4 w-4 text-purple-500" />
                       </div>
                       <div>
                         <div className="text-sm font-medium">AI Art Studio</div>
-                        <div className="text-xs text-muted-foreground">Create magical pet art</div>
+                        <div className="text-muted-foreground text-xs">
+                          Create magical pet art
+                        </div>
                       </div>
                     </div>
-                    <div className="bg-pink-500/20 h-8 w-8 rounded-full flex items-center justify-center">
-                      <Heart className="h-4 w-4 text-pink-500 fill-current" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-500/20">
+                      <Heart className="h-4 w-4 fill-current text-pink-500" />
                     </div>
                   </div>
 
                   {/* Before/After Demo */}
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="border-border/50 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 rounded-lg border p-3">
-                      <div className="text-xs text-center mb-2 font-medium">Original Photo</div>
-                      <div className="aspect-square rounded bg-gradient-to-br from-amber-100 to-orange-200 dark:from-amber-900/30 dark:to-orange-900/30 flex items-center justify-center">
+                    <div className="border-border/50 rounded-lg border bg-gradient-to-br from-blue-50 to-purple-50 p-3 dark:from-blue-950/50 dark:to-purple-950/50">
+                      <div className="mb-2 text-center text-xs font-medium">
+                        Original Photo
+                      </div>
+                      <div className="flex aspect-square items-center justify-center rounded bg-gradient-to-br from-amber-100 to-orange-200 dark:from-amber-900/30 dark:to-orange-900/30">
                         <Camera className="h-6 w-6 text-amber-600" />
                       </div>
                     </div>
-                    <div className="border-border/50 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50 rounded-lg border p-3">
-                      <div className="text-xs text-center mb-2 font-medium">AI Artwork</div>
-                      <div className="aspect-square rounded bg-gradient-to-br from-purple-100 to-pink-200 dark:from-purple-900/30 dark:to-pink-900/30 flex items-center justify-center">
+                    <div className="border-border/50 rounded-lg border bg-gradient-to-br from-emerald-50 to-teal-50 p-3 dark:from-emerald-950/50 dark:to-teal-950/50">
+                      <div className="mb-2 text-center text-xs font-medium">
+                        AI Artwork
+                      </div>
+                      <div className="flex aspect-square items-center justify-center rounded bg-gradient-to-br from-purple-100 to-pink-200 dark:from-purple-900/30 dark:to-pink-900/30">
                         <Sparkles className="h-6 w-6 text-purple-600" />
                       </div>
                     </div>
@@ -143,27 +151,32 @@ export function Hero() {
 
                   {/* Style Selection */}
                   <div className="border-border/50 bg-background/30 rounded-lg border p-3">
-                    <div className="text-xs font-medium mb-2">Art Styles</div>
+                    <div className="mb-2 text-xs font-medium">Art Styles</div>
                     <div className="flex gap-2">
-                      {['Oil', 'Cartoon', 'Anime', 'Van Gogh'].map((style, i) => (
-                        <div
-                          key={i}
-                          className={`px-2 py-1 rounded text-xs ${i === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
-                        >
-                          {style}
-                        </div>
-                      ))}
+                      {["Oil", "Cartoon", "Anime", "Van Gogh"].map(
+                        (style, i) => (
+                          <div
+                            key={i}
+                            className={`rounded px-2 py-1 text-xs ${i === 1 ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                          >
+                            {style}
+                          </div>
+                        ),
+                      )}
                     </div>
                   </div>
 
                   {/* Generation Progress */}
                   <div className="border-border/50 bg-background/30 rounded-lg border p-3">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="mb-2 flex items-center justify-between">
                       <div className="text-xs font-medium">Generating...</div>
                       <div className="text-xs text-emerald-600">85%</div>
                     </div>
-                    <div className="h-2 bg-muted rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-1000" style={{ width: '85%' }} />
+                    <div className="bg-muted h-2 overflow-hidden rounded-full">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-1000"
+                        style={{ width: "85%" }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -172,7 +185,7 @@ export function Hero() {
               {/* Floating Elements */}
               <div className="border-border bg-background absolute -top-4 right-0 rounded-lg border p-3 shadow-lg">
                 <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
                   <span className="text-xs font-medium">AI Working</span>
                 </div>
               </div>

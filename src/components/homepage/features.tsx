@@ -28,7 +28,7 @@ const features: Feature[] = [
     category: "AI Technology",
   },
   {
-    title: "Multiple Art Styles", 
+    title: "Multiple Art Styles",
     description:
       "Express your pet's personality with diverse styles: classic art, modern designs, anime, cyberpunk, and seasonal themes.",
     icon: Palette,
@@ -116,8 +116,9 @@ export function Features() {
           </h2>
 
           <p className="text-muted-foreground mt-6 text-lg">
-            From photo upload to custom merchandise, our platform handles the entire journey 
-            of transforming your pet&apos;s photos into treasured artwork.
+            From photo upload to custom merchandise, our platform handles the
+            entire journey of transforming your pet&apos;s photos into treasured
+            artwork.
           </p>
         </div>
 
@@ -136,7 +137,9 @@ export function Features() {
           </div>
           <div>
             <div className="text-foreground text-2xl font-bold">50K+</div>
-            <div className="text-muted-foreground text-sm">Artworks Created</div>
+            <div className="text-muted-foreground text-sm">
+              Artworks Created
+            </div>
           </div>
           <div>
             <div className="text-foreground text-2xl font-bold">30s</div>

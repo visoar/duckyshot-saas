@@ -93,6 +93,7 @@ All uploads go through:
 This project uses Next.js App Router with a `src` directory structure for better organization and consistency.
 
 #### Core Structure
+
 - `src/` - All application source code
 - `styles/` - Global CSS and styling (at root level)
 - `public/` - Static assets
@@ -120,11 +121,13 @@ This project uses Next.js App Router with a `src` directory structure for better
 - Form components in `components/forms/`
 
 #### Database (src/database/)
+
 - `database/schema.ts` - Database schema definitions
 - `database/migrations/` - Migration files
 - `database/config.ts` - Database configuration
 
 #### Key Files
+
 - `tsconfig.json` - TypeScript configuration with path mappings for `@/*` to `src/*`
 - `jest.config.js` - Jest configuration with proper module resolution for src structure
 - `styles/globals.css` - Global styles and Tailwind configuration

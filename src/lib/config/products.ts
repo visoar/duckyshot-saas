@@ -56,7 +56,7 @@ export const PRODUCT_TIERS: PricingTier[] = [
     pricing: {
       creem: {
         oneTime: "prod_popular_30_credits",
-        monthly: "prod_popular_30_credits", 
+        monthly: "prod_popular_30_credits",
         yearly: "prod_popular_30_credits",
       },
     },

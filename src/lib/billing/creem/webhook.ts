@@ -25,7 +25,7 @@ function getCreditsByProductTier(tierId: string): number {
   switch (tierId) {
     case "credits_starter":
       return 10;
-    case "credits_popular": 
+    case "credits_popular":
       return 30;
     case "credits_bulk":
       return 100;
@@ -235,7 +235,9 @@ async function processCheckoutCompletedEvent(
       const creditsToAdd = getCreditsByProductTier(tier.id);
       if (creditsToAdd > 0) {
         await UserCreditsService.addCredits(userId, creditsToAdd);
-        console.log(`Added ${creditsToAdd} credits to user ${userId} for subscription tier ${tier.id}`);
+        console.log(
+          `Added ${creditsToAdd} credits to user ${userId} for subscription tier ${tier.id}`,
+        );
       }
     }
   }
@@ -266,7 +268,9 @@ async function processCheckoutCompletedEvent(
       const creditsToAdd = getCreditsByProductTier(tier.id);
       if (creditsToAdd > 0) {
         await UserCreditsService.addCredits(userId, creditsToAdd);
-        console.log(`Added ${creditsToAdd} credits to user ${userId} for tier ${tier.id}`);
+        console.log(
+          `Added ${creditsToAdd} credits to user ${userId} for tier ${tier.id}`,
+        );
       }
     }
   } else {
@@ -386,7 +390,9 @@ async function processSubscriptionRenewal(
     const creditsToAdd = getCreditsByProductTier(tier.id);
     if (creditsToAdd > 0) {
       await UserCreditsService.addCredits(user.id, creditsToAdd);
-      console.log(`Added ${creditsToAdd} credits to user ${user.id} for subscription renewal of tier ${tier.id}`);
+      console.log(
+        `Added ${creditsToAdd} credits to user ${user.id} for subscription renewal of tier ${tier.id}`,
+      );
     }
   }
 }

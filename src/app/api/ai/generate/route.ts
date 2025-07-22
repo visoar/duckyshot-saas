@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth/server";
 import { AIWorkflowService, UserCreditsService } from "@/lib/database/ai";
 import { aiService } from "@/lib/ai/provider";
-import { getStyleById, generateStylePrompt, generateNegativePrompt } from "@/lib/ai/styles";
+import {
+  getStyleById,
+  generateStylePrompt,
+  generateNegativePrompt,
+} from "@/lib/ai/styles";
 import { db } from "@/database";
 import { uploads } from "@/database/schema";
 import { eq, and } from "drizzle-orm";
@@ -14,6 +18,9 @@ const generateRequestSchema = z.object({
   styleId: z.string().min(1, "Style ID is required"),
   petDescription: z.string().optional(),
   numImages: z.number().min(1).max(4).default(2),
+  isPrivate: z.boolean().optional().default(false), // Whether this is a private generation (paid feature)
+  title: z.string().optional(), // Optional title for the artwork
+  description: z.string().optional(), // Optional description for the artwork
 });
 
 export async function POST(request: NextRequest) {
@@ -21,52 +28,55 @@ export async function POST(request: NextRequest) {
     // Authenticate user
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userId = session.user.id;
 
     // Parse and validate request body
     const body = await request.json();
-    const { uploadId, styleId, petDescription, numImages } = generateRequestSchema.parse(body);
+    const {
+      uploadId,
+      styleId,
+      petDescription,
+      numImages,
+      isPrivate,
+      title,
+      description,
+    } = generateRequestSchema.parse(body);
 
     // Check if user has enough credits
-    const hasCredits = await UserCreditsService.hasEnoughCredits(userId, numImages);
+    const hasCredits = await UserCreditsService.hasEnoughCredits(
+      userId,
+      numImages,
+    );
     if (!hasCredits) {
       return NextResponse.json(
-        { 
+        {
           error: "Insufficient credits",
-          message: "You don't have enough credits to generate images. Please purchase more credits."
+          message:
+            "You don't have enough credits to generate images. Please purchase more credits.",
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Get style information
     const style = getStyleById(styleId);
     if (!style) {
-      return NextResponse.json(
-        { error: "Invalid style ID" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid style ID" }, { status: 400 });
     }
 
     // Get upload information and verify it belongs to the user
     const [upload] = await db
       .select()
       .from(uploads)
-      .where(and(
-        eq(uploads.id, uploadId),
-        eq(uploads.userId, userId)
-      ));
+      .where(and(eq(uploads.id, uploadId), eq(uploads.userId, userId)));
 
     if (!upload) {
       return NextResponse.json(
         { error: "Upload not found or does not belong to user" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -94,33 +104,46 @@ export async function POST(request: NextRequest) {
       styleId,
       generationParams,
       creditsRequired: numImages,
+      isPrivate,
+      title,
+      description,
     });
 
     // Start AI generation (async)
     // In a real implementation, this would be queued for background processing
     try {
       const result = await aiService.generatePetArt(generationParams);
-      
+
       // If generation was successful, upload images to R2
       let finalImages = result.images;
-      if (result.status === "completed" && result.images && result.images.length > 0) {
-        const uploadResult = await aiService.uploadGeneratedImagesToR2(result.images, userId);
-        
+      if (
+        result.status === "completed" &&
+        result.images &&
+        result.images.length > 0
+      ) {
+        const uploadResult = await aiService.uploadGeneratedImagesToR2(
+          result.images,
+          userId,
+        );
+
         if (uploadResult.success && uploadResult.r2Urls) {
           // Use R2 URLs instead of fal URLs
           finalImages = uploadResult.r2Urls;
         } else {
-          console.warn("Failed to upload images to R2, using original URLs:", uploadResult.error);
+          console.warn(
+            "Failed to upload images to R2, using original URLs:",
+            uploadResult.error,
+          );
           // Continue with original URLs if R2 upload fails
         }
       }
-      
+
       // Update artwork with results (using R2 URLs if upload was successful)
       const finalResult = {
         ...result,
         images: finalImages,
       };
-      
+
       await AIWorkflowService.completeGeneration(artwork.id, finalResult);
 
       return NextResponse.json({
@@ -133,12 +156,13 @@ export async function POST(request: NextRequest) {
     } catch (aiError) {
       // If AI generation fails, we should handle it gracefully
       console.error("AI generation failed:", aiError);
-      
+
       // Update artwork status to failed
       await AIWorkflowService.completeGeneration(artwork.id, {
         id: artwork.id,
         status: "failed",
-        error: aiError instanceof Error ? aiError.message : "AI generation failed",
+        error:
+          aiError instanceof Error ? aiError.message : "AI generation failed",
       });
 
       return NextResponse.json({
@@ -149,23 +173,22 @@ export async function POST(request: NextRequest) {
         creditsUsed: 0, // Credits should be refunded on failure
       });
     }
-
   } catch (error) {
     console.error("Generate API error:", error);
-    
+
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
+        {
           error: "Invalid request",
-          details: error.errors 
+          details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

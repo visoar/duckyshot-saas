@@ -1,16 +1,17 @@
 import { db } from "@/database";
-import { 
-  aiArtworks, 
-  aiStyles, 
-  userCredits, 
+import {
+  aiArtworks,
+  aiStyles,
+  userCredits,
   uploads,
-  aiGenerationStatusEnum 
+  aiGenerationStatusEnum,
 } from "@/database/schema";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and, sql, isNull } from "drizzle-orm";
 import type { AIGenerationParams, AIGenerationResult } from "@/lib/ai/provider";
 
 // Types
-export type AIArtworkStatus = typeof aiGenerationStatusEnum.enumValues[number];
+export type AIArtworkStatus =
+  (typeof aiGenerationStatusEnum.enumValues)[number];
 
 export interface CreateArtworkParams {
   userId: string;
@@ -18,6 +19,9 @@ export interface CreateArtworkParams {
   styleId: string;
   generationParams: AIGenerationParams;
   creditsUsed?: number;
+  isPrivate?: boolean;
+  title?: string;
+  description?: string;
 }
 
 export interface UpdateArtworkParams {
@@ -42,6 +46,10 @@ export class AIArtworkService {
         status: "pending",
         generationParams: params.generationParams,
         creditsUsed: params.creditsUsed || 1,
+        isPrivate: params.isPrivate ?? true, // Default to private
+        isPublic: false, // By default, artworks are not public
+        title: params.title,
+        description: params.description,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -79,7 +87,7 @@ export class AIArtworkService {
       .from(aiArtworks)
       .leftJoin(uploads, eq(aiArtworks.originalImageUploadId, uploads.id))
       .leftJoin(aiStyles, eq(aiArtworks.styleId, aiStyles.id))
-      .where(eq(aiArtworks.id, id));
+      .where(and(eq(aiArtworks.id, id), isNull(aiArtworks.deletedAt)));
 
     return artwork;
   }
@@ -95,7 +103,7 @@ export class AIArtworkService {
       .from(aiArtworks)
       .leftJoin(uploads, eq(aiArtworks.originalImageUploadId, uploads.id))
       .leftJoin(aiStyles, eq(aiArtworks.styleId, aiStyles.id))
-      .where(eq(aiArtworks.userId, userId))
+      .where(and(eq(aiArtworks.userId, userId), isNull(aiArtworks.deletedAt)))
       .orderBy(desc(aiArtworks.createdAt))
       .limit(limit)
       .offset(offset);
@@ -108,7 +116,7 @@ export class AIArtworkService {
     const [result] = await db
       .select({ count: sql<number>`count(*)` })
       .from(aiArtworks)
-      .where(eq(aiArtworks.userId, userId));
+      .where(and(eq(aiArtworks.userId, userId), isNull(aiArtworks.deletedAt)));
 
     return result.count;
   }
@@ -154,10 +162,7 @@ export class AIStyleService {
 
   // Get style by ID
   static async getStyleById(id: string) {
-    const [style] = await db
-      .select()
-      .from(aiStyles)
-      .where(eq(aiStyles.id, id));
+    const [style] = await db.select().from(aiStyles).where(eq(aiStyles.id, id));
 
     return style;
   }
@@ -233,8 +238,11 @@ export class UserCreditsService {
   static async deductCredits(userId: string, creditsToUse: number) {
     // Check if user has enough credits
     const userCreditsRecord = await this.getUserCredits(userId);
-    
-    if (!userCreditsRecord || userCreditsRecord.remainingCredits < creditsToUse) {
+
+    if (
+      !userCreditsRecord ||
+      userCreditsRecord.remainingCredits < creditsToUse
+    ) {
       throw new Error("Insufficient credits");
     }
 
@@ -268,13 +276,16 @@ export class AIWorkflowService {
     styleId: string;
     generationParams: AIGenerationParams;
     creditsRequired?: number;
+    isPrivate?: boolean;
+    title?: string;
+    description?: string;
   }) {
     const creditsRequired = params.creditsRequired || 1;
 
     // Check if user has enough credits
     const hasCredits = await UserCreditsService.hasEnoughCredits(
-      params.userId, 
-      creditsRequired
+      params.userId,
+      creditsRequired,
     );
 
     if (!hasCredits) {
@@ -288,6 +299,9 @@ export class AIWorkflowService {
       styleId: params.styleId,
       generationParams: params.generationParams,
       creditsUsed: creditsRequired,
+      isPrivate: params.isPrivate,
+      title: params.title,
+      description: params.description,
     });
 
     // Deduct credits
@@ -298,11 +312,15 @@ export class AIWorkflowService {
 
   // Complete artwork generation
   static async completeGeneration(
-    artworkId: string, 
-    result: AIGenerationResult
+    artworkId: string,
+    result: AIGenerationResult,
   ) {
-    const status: AIArtworkStatus = result.status === "completed" ? "completed" : 
-                                   result.status === "failed" ? "failed" : "processing";
+    const status: AIArtworkStatus =
+      result.status === "completed"
+        ? "completed"
+        : result.status === "failed"
+          ? "failed"
+          : "processing";
 
     // If generation failed, refund the credits
     if (status === "failed") {
@@ -311,8 +329,8 @@ export class AIWorkflowService {
       if (artwork && artwork.artwork.creditsUsed > 0) {
         // Refund the credits back to the user
         await UserCreditsService.addCredits(
-          artwork.artwork.userId, 
-          artwork.artwork.creditsUsed
+          artwork.artwork.userId,
+          artwork.artwork.creditsUsed,
         );
       }
     }
@@ -322,7 +340,8 @@ export class AIWorkflowService {
       status,
       generatedImages: result.images,
       errorMessage: result.error,
-      completedAt: status === "completed" || status === "failed" ? new Date() : undefined,
+      completedAt:
+        status === "completed" || status === "failed" ? new Date() : undefined,
     });
   }
 }

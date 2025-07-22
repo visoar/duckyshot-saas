@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get("category");
 
     let styles;
-    
+
     if (category) {
       // Get styles by category
       styles = await AIStyleService.getStylesByCategory(category);
@@ -18,25 +18,27 @@ export async function GET(request: NextRequest) {
     }
 
     // Group styles by category for better organization
-    const stylesByCategory = styles.reduce((acc, style) => {
-      if (!acc[style.category]) {
-        acc[style.category] = [];
-      }
-      acc[style.category].push(style);
-      return acc;
-    }, {} as Record<string, typeof styles>);
+    const stylesByCategory = styles.reduce(
+      (acc, style) => {
+        if (!acc[style.category]) {
+          acc[style.category] = [];
+        }
+        acc[style.category].push(style);
+        return acc;
+      },
+      {} as Record<string, typeof styles>,
+    );
 
     return NextResponse.json({
       styles,
       stylesByCategory,
       categories: STYLE_CATEGORIES,
     });
-
   } catch (error) {
     console.error("Styles API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

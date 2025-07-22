@@ -13,12 +13,24 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronDown, Menu, UserCircle, ExternalLink } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  ChevronDown,
+  Menu,
+  UserCircle,
+  ExternalLink,
+  Settings,
+  LogOut,
+  CreditCard,
+} from "lucide-react";
 import { APP_NAME } from "@/lib/config/constants";
 import { isAdminRole, UserRole } from "@/lib/config/roles";
+import { CreditsDisplay } from "@/components/ui/credits-display";
+import { getUserAvatarUrl } from "@/lib/avatar";
 
 interface NavItem {
   title: string;
@@ -30,118 +42,42 @@ interface NavItem {
   external?: boolean;
 }
 
-const navigationItems: NavItem[] = [
+// Navigation focused on core product features only
+const unifiedNavItems: NavItem[] = [
   {
-    title: "Features",
-    items: [
-      {
-        title: "Authentication",
-        href: "/login",
-        description: "Secure user authentication with magic links",
-      },
-      {
-        title: "Billing",
-        href: "/dashboard/settings?page=billing",
-        description: "Subscription management and payments",
-      },
-      {
-        title: "Dashboard",
-        href: "/dashboard",
-        description: "User dashboard and settings",
-      },
-    ],
+    title: "Create",
+    href: "/ai-studio",
+  },
+  {
+    title: "Explore",
+    href: "/gallery",
+  },
+  {
+    title: "My Art",
+    href: "/artworks",
   },
   {
     title: "Pricing",
     href: "/pricing",
-  },
-  {
-    title: "About",
-    href: "/about",
-  },
-  {
-    title: "Blog",
-    href: "/blog",
-  },
-  {
-    title: "Contact",
-    href: "/contact",
-  },
-];
-
-// Dashboard navigation for logged-in users
-const dashboardNavItems: NavItem[] = [
-  {
-    title: "AI Studio",
-    href: "/dashboard/ai-studio",
-  },
-  {
-    title: "Artworks",
-    href: "/dashboard/artworks",
-  },
-  {
-    title: "Pricing",
-    href: "/pricing",
-  },
-  {
-    title: "Settings",
-    href: "/dashboard/settings",
-  },
-];
-
-const dashboardAdminNavItems: NavItem[] = [
-  {
-    title: "Admin",
-    items: [
-      {
-        title: "Overview",
-        href: "/dashboard/admin",
-        description: "Admin dashboard overview",
-      },
-      {
-        title: "Users",
-        href: "/dashboard/admin/users",
-        description: "Manage users",
-      },
-      {
-        title: "Payments",
-        href: "/dashboard/admin/payments",
-        description: "View payments",
-      },
-      {
-        title: "Subscriptions",
-        href: "/dashboard/admin/subscriptions",
-        description: "Manage subscriptions",
-      },
-      {
-        title: "Uploads",
-        href: "/dashboard/admin/uploads",
-        description: "Manage uploads",
-      },
-    ],
   },
 ];
 
 const mobileNavItems: NavItem[] = [
   {
-    title: "Features",
-    href: "/features",
+    title: "Create",
+    href: "/ai-studio",
+  },
+  {
+    title: "Explore",
+    href: "/gallery",
+  },
+  {
+    title: "My Art",
+    href: "/artworks",
   },
   {
     title: "Pricing",
     href: "/pricing",
-  },
-  {
-    title: "About",
-    href: "/about",
-  },
-  {
-    title: "Blog",
-    href: "/blog",
-  },
-  {
-    title: "Contact",
-    href: "/contact",
   },
 ];
 
@@ -226,6 +162,117 @@ function NavigationDropdown({ item }: { item: NavItem }) {
   );
 }
 
+// User Avatar Dropdown component for authenticated users
+function UserAvatarDropdown({
+  session,
+  isPending,
+}: {
+  session: Session | null;
+  isPending: boolean;
+}) {
+  const [mounted, setMounted] = useState(false);
+  const user = session?.user;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || isPending || !user) {
+    return <Skeleton className="h-8 w-8 rounded-full" />;
+  }
+
+  const isAdmin = isAdminRole((user as { role?: UserRole }).role || "user");
+  const avatarUrl = getUserAvatarUrl(
+    (user as { image?: string }).image,
+    (user as { email?: string }).email,
+    (user as { name?: string }).name,
+  );
+  const userInitials =
+    (user as { name?: string }).name
+      ?.split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase() ||
+    (user as { email?: string }).email?.[0]?.toUpperCase() ||
+    "U";
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8">
+            <AvatarImage
+              src={avatarUrl}
+              alt={(user as { name?: string }).name || "User"}
+            />
+            <AvatarFallback className="text-xs font-medium">
+              {userInitials}
+            </AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <div className="flex items-center justify-start gap-2 p-2">
+          <div className="flex flex-col space-y-1 leading-none">
+            {(user as { name?: string }).name && (
+              <p className="text-sm leading-none font-medium">
+                {(user as { name?: string }).name}
+              </p>
+            )}
+            <p className="text-muted-foreground text-xs leading-none">
+              {(user as { email?: string }).email}
+            </p>
+          </div>
+        </div>
+        <DropdownMenuSeparator />
+        <div className="px-2 py-1">
+          <CreditsDisplay compact />
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard" className="flex items-center">
+            <UserCircle className="mr-2 h-4 w-4" />
+            Dashboard
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/dashboard/settings" className="flex items-center">
+            <Settings className="mr-2 h-4 w-4" />
+            Settings
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/pricing" className="flex items-center">
+            <CreditCard className="mr-2 h-4 w-4" />
+            Billing
+          </Link>
+        </DropdownMenuItem>
+        {isAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/admin" className="flex items-center">
+                <UserCircle className="mr-2 h-4 w-4" />
+                Admin Panel
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link
+            href="/api/auth/signout"
+            className="flex items-center text-red-600"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Sign Out
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 // Auth buttons component to handle loading state
 function AuthButtons({
   session,
@@ -252,12 +299,7 @@ function AuthButtons({
   if (session?.user && session?.session) {
     return (
       <div className="hidden items-center gap-2 md:flex">
-        <Button asChild size="sm">
-          <Link href="/dashboard">
-            <UserCircle className="mr-2 h-4 w-4" />
-            Dashboard
-          </Link>
-        </Button>
+        <UserAvatarDropdown session={session} isPending={isPending} />
       </div>
     );
   }
@@ -298,14 +340,73 @@ function MobileAuthButtons({
   }
 
   if (session?.user && session?.session) {
+    const user = session.user;
+    const isAdmin = isAdminRole((user as { role?: UserRole }).role || "user");
+
     return (
       <div className="mt-8 space-y-3">
-        <Button asChild className="w-full">
-          <Link href="/dashboard">
-            <UserCircle className="mr-2 h-4 w-4" />
-            Dashboard
-          </Link>
-        </Button>
+        <div className="bg-muted/50 flex items-center justify-center gap-3 rounded-lg border p-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage
+              src={getUserAvatarUrl(
+                (user as { image?: string }).image,
+                (user as { email?: string }).email,
+                (user as { name?: string }).name,
+              )}
+              alt={(user as { name?: string }).name || "User"}
+            />
+            <AvatarFallback className="text-sm font-medium">
+              {(user as { name?: string }).name
+                ?.split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase() ||
+                (user as { email?: string }).email?.[0]?.toUpperCase() ||
+                "U"}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            {(user as { name?: string }).name && (
+              <p className="text-sm font-medium">
+                {(user as { name?: string }).name}
+              </p>
+            )}
+            <p className="text-muted-foreground text-xs">
+              {(user as { email?: string }).email}
+            </p>
+          </div>
+        </div>
+        <div className="flex justify-center">
+          <CreditsDisplay />
+        </div>
+        <div className="space-y-2">
+          <Button asChild className="w-full">
+            <Link href="/dashboard">
+              <UserCircle className="mr-2 h-4 w-4" />
+              Dashboard
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full">
+            <Link href="/dashboard/settings">
+              <Settings className="mr-2 h-4 w-4" />
+              Settings
+            </Link>
+          </Button>
+          {isAdmin && (
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/dashboard/admin">
+                <UserCircle className="mr-2 h-4 w-4" />
+                Admin Panel
+              </Link>
+            </Button>
+          )}
+          <Button asChild variant="ghost" className="w-full text-red-600">
+            <Link href="/api/auth/signout">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -330,15 +431,6 @@ function MobileNavigation({
   onClose: () => void;
 }) {
   const { data: session, isPending } = useSession();
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-  
-  const isAdmin =
-    mounted && session?.user &&
-    isAdminRole(((session.user as { role?: UserRole }).role) || "user");
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -351,76 +443,17 @@ function MobileNavigation({
 
         <div className="flex flex-col p-6">
           <nav className="space-y-4">
-            {/* Show dashboard nav for authenticated users */}
-            {mounted && session?.user ? (
-              <>
-                {dashboardNavItems.map((item, index) => (
-                  <Link
-                    key={index}
-                    href={item.href!}
-                    className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
-                    onClick={onClose}
-                  >
-                    {item.title}
-                  </Link>
-                ))}
-                {/* Admin navigation */}
-                {isAdmin && (
-                  <>
-                    <div className="text-muted-foreground border-border border-t pt-4 text-xs font-semibold">
-                      Admin
-                    </div>
-                    <Link
-                      href="/dashboard/admin"
-                      className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
-                      onClick={onClose}
-                    >
-                      Overview
-                    </Link>
-                    <Link
-                      href="/dashboard/admin/users"
-                      className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
-                      onClick={onClose}
-                    >
-                      Users
-                    </Link>
-                    <Link
-                      href="/dashboard/admin/payments"
-                      className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
-                      onClick={onClose}
-                    >
-                      Payments
-                    </Link>
-                    <Link
-                      href="/dashboard/admin/subscriptions"
-                      className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
-                      onClick={onClose}
-                    >
-                      Subscriptions
-                    </Link>
-                    <Link
-                      href="/dashboard/admin/uploads"
-                      className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
-                      onClick={onClose}
-                    >
-                      Uploads
-                    </Link>
-                  </>
-                )}
-              </>
-            ) : (
-              /* Show public nav for non-authenticated users */
-              mobileNavItems.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.href!}
-                  className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
-                  onClick={onClose}
-                >
-                  {item.title}
-                </Link>
-              ))
-            )}
+            {/* Show appropriate nav based on auth status */}
+            {mobileNavItems.map((item, index) => (
+              <Link
+                key={index}
+                href={item.href!}
+                className="text-foreground hover:text-primary block py-2 text-sm font-medium transition-colors"
+                onClick={onClose}
+              >
+                {item.title}
+              </Link>
+            ))}
           </nav>
 
           <MobileAuthButtons session={session} isPending={isPending} />
@@ -433,13 +466,10 @@ function MobileNavigation({
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const { data: session, isPending } = useSession();
 
   useEffect(() => {
-    setMounted(true);
-    
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
@@ -456,71 +486,22 @@ export function Header() {
           isScrolled && "border-border/80 bg-background/80 shadow-sm",
         )}
       >
-        <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <Logo className="text-primary h-6 w-6" variant="icon-only" />
-              <span className="text-foreground text-xl font-bold">
-                {APP_NAME}
-              </span>
-            </Link>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center">
+            {/* Left side - Logo + Navigation */}
+            <div className="flex items-center gap-6 lg:gap-8">
+              {/* Logo */}
+              <Link href="/" className="flex flex-shrink-0 items-center gap-2">
+                <Logo className="text-primary h-6 w-6" variant="icon-only" />
+                <span className="text-foreground text-xl font-bold">
+                  {APP_NAME}
+                </span>
+              </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden items-center gap-1 md:flex">
-              {/* Show dashboard nav for authenticated users */}
-              {mounted && session?.user ? (
-                <>
-                  {dashboardNavItems.map((item, index) => (
-                    <Button
-                      key={index}
-                      asChild
-                      variant="ghost"
-                      className="h-9 px-3 text-sm font-medium"
-                    >
-                      <Link
-                        href={item.href!}
-                        className={cn(
-                          "text-muted-foreground transition-colors",
-                          pathname === item.href && "text-foreground",
-                        )}
-                      >
-                        {item.title}
-                      </Link>
-                    </Button>
-                  ))}
-                  {/* Admin navigation for admin users */}
-                  {mounted && session?.user &&
-                    isAdminRole(
-                      ((session.user as { role?: UserRole }).role) || "user",
-                    ) &&
-                    dashboardAdminNavItems.map((item, index) => (
-                      <div key={`admin-${index}`}>
-                        {item.items ? (
-                          <NavigationDropdown item={item} />
-                        ) : (
-                          <Button
-                            asChild
-                            variant="ghost"
-                            className="h-9 px-3 text-sm font-medium"
-                          >
-                            <Link
-                              href={item.href!}
-                              className={cn(
-                                "text-muted-foreground transition-colors",
-                                pathname === item.href && "text-foreground",
-                              )}
-                            >
-                              {item.title}
-                            </Link>
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                </>
-              ) : (
-                /* Show public nav for non-authenticated users */
-                navigationItems.map((item, index) => (
+              {/* Desktop Navigation */}
+              <nav className="hidden items-center gap-2 md:flex">
+                {/* Unified navigation for all users */}
+                {unifiedNavItems.map((item, index) => (
                   <div key={index}>
                     {item.items ? (
                       <NavigationDropdown item={item} />
@@ -528,7 +509,7 @@ export function Header() {
                       <Button
                         asChild
                         variant="ghost"
-                        className="h-9 px-3 text-sm font-medium"
+                        className="h-9 px-4 text-sm font-medium"
                       >
                         <Link
                           href={item.href!}
@@ -542,12 +523,12 @@ export function Header() {
                       </Button>
                     )}
                   </div>
-                ))
-              )}
-            </nav>
+                ))}
+              </nav>
+            </div>
 
             {/* Right side actions */}
-            <div className="flex items-center gap-3">
+            <div className="ml-auto flex items-center gap-2 md:gap-3">
               {/* Theme toggle */}
               <ModeToggle variant="ghost" size="icon" />
 
@@ -558,7 +539,7 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="md:hidden"
+                className="ml-1 md:hidden"
                 onClick={() => setIsMobileMenuOpen(true)}
               >
                 <Menu className="h-5 w-5" />

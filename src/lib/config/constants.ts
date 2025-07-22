@@ -1,8 +1,6 @@
 // Brand Configuration
 export const APP_NAME =
-  process.env.NODE_ENV === "development"
-    ? "DEV - DuckyShot"
-    : "DuckyShot";
+  process.env.NODE_ENV === "development" ? "DEV - DuckyShot" : "DuckyShot";
 export const APP_DESCRIPTION =
   "Transform your pet into stunning AI art. Create magical portraits with our advanced AI technology and turn them into custom merchandise.";
 export const COMPANY_NAME = "DuckyShot";

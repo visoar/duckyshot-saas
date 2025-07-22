@@ -78,7 +78,10 @@ export const auth = betterAuth({
             await UserCreditsService.initializeUserCredits(user.id, 3); // 3 free credits
             console.log(`Initialized credits for new user: ${user.id}`);
           } catch (error) {
-            console.error(`Failed to initialize credits for user ${user.id}:`, error);
+            console.error(
+              `Failed to initialize credits for user ${user.id}:`,
+              error,
+            );
           }
         },
       },

@@ -11,7 +11,7 @@ async function seedAIStyles() {
     // Upsert all default styles
     for (const style of DEFAULT_AI_STYLES) {
       console.log(`📝 Upserting style: ${style.name} (${style.id})`);
-      
+
       await AIStyleService.upsertStyle({
         id: style.id,
         name: style.name,
@@ -22,22 +22,23 @@ async function seedAIStyles() {
         sortOrder: style.sortOrder,
         metadata: style.metadata,
       });
-      
+
       console.log(`✅ Style "${style.name}" upserted successfully`);
     }
 
     console.log("\n🎉 AI Styles seeding completed!");
     console.log(`📊 Total styles processed: ${DEFAULT_AI_STYLES.length}`);
-    
+
     // Show summary by category
-    const categories = [...new Set(DEFAULT_AI_STYLES.map(s => s.category))];
+    const categories = [...new Set(DEFAULT_AI_STYLES.map((s) => s.category))];
     console.log("\n📋 Styles by category:");
-    
+
     for (const category of categories) {
-      const stylesInCategory = DEFAULT_AI_STYLES.filter(s => s.category === category);
+      const stylesInCategory = DEFAULT_AI_STYLES.filter(
+        (s) => s.category === category,
+      );
       console.log(`  • ${category}: ${stylesInCategory.length} styles`);
     }
-
   } catch (error) {
     console.error("❌ Error seeding AI styles:", error);
     process.exit(1);

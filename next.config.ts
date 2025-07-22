@@ -28,7 +28,7 @@ const remotePatterns = [
   {
     protocol: "https" as const,
     hostname: "gen-image.ullrai.com",
-  }
+  },
 ];
 
 if (r2Hostname) {

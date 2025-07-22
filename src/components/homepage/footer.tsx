@@ -37,19 +37,10 @@ const footerSections: FooterSection[] = [
   {
     title: "Product",
     links: [
-      { name: "Features", href: "/#features" },
+      { name: "AI Studio", href: "/ai-studio" },
+      { name: "Gallery", href: "/gallery" },
       { name: "Pricing", href: "/pricing" },
-      { name: "Documentation", href: "/docs" },
-      { name: "Changelog", href: "/changelog" },
-    ],
-  },
-  {
-    title: "Other Products",
-    links: [
-      { name: "PixMiller", href: "https://pixmiller.com/", external: true },
-      { name: "HeadShots.fun", href: "https://headshots.fun/", external: true },
-      { name: "To Markdown", href: "https://to-markdown.com/", external: true },
-      { name: "HiPNG.com", href: "https://hipng.com/", external: true },
+      { name: "Features", href: "/#features" },
     ],
   },
   {
@@ -62,20 +53,21 @@ const footerSections: FooterSection[] = [
     ],
   },
   {
-    title: "Resources",
+    title: "Support",
     links: [
       { name: "Help Center", href: "/help" },
       { name: "Community", href: "/community" },
-      { name: "Tutorials", href: "/tutorials" },
-      { name: "Templates", href: "/templates" },
+      { name: "Documentation", href: "/docs" },
+      { name: "Status", href: "/status" },
     ],
   },
   {
     title: "Legal",
     links: [
-      { name: "Privacy", href: "/privacy" },
-      { name: "Terms", href: "/terms" },
+      { name: "Privacy Policy", href: "/privacy" },
+      { name: "Terms of Service", href: "/terms" },
       { name: "Security", href: "/security" },
+      { name: "Cookie Policy", href: "/cookies" },
     ],
   },
 ];
@@ -175,7 +167,7 @@ export function Footer() {
 
             {/* Links sections */}
             <div className="lg:col-span-4">
-              <div className="grid grid-cols-2 gap-8 sm:grid-cols-5">
+              <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
                 {footerSections.map((section) => (
                   <div key={section.title}>
                     <h3 className="text-foreground mb-4 text-sm font-semibold">

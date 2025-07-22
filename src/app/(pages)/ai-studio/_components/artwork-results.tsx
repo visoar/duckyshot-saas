@@ -1,14 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   ArrowLeft,
   Download,
-  Share2,
   ShoppingBag,
   RotateCcw,
   Heart,
@@ -40,7 +45,9 @@ export function ArtworkResults({
   onRestart,
   onBack,
 }: ArtworkResultsProps) {
-  const [selectedImage, setSelectedImage] = useState<ArtworkResult | null>(null);
+  const [selectedImage, setSelectedImage] = useState<ArtworkResult | null>(
+    null,
+  );
   const [viewMode, setViewMode] = useState<"grid" | "comparison">("comparison");
 
   const handleDownload = async (artwork: ArtworkResult) => {
@@ -48,9 +55,9 @@ export function ArtworkResults({
       const response = await fetch(artwork.url);
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.download = `pet-artwork-${artwork.style.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}.jpg`;
+      link.download = `pet-artwork-${artwork.style.name.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}.jpg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -65,24 +72,7 @@ export function ArtworkResults({
     for (const artwork of results) {
       await handleDownload(artwork);
       // Small delay between downloads
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
-  };
-
-  const handleShare = async (artwork: ArtworkResult) => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `My pet as ${artwork.style.name} art!`,
-          text: `Check out this amazing AI artwork of my pet in ${artwork.style.name} style!`,
-          url: artwork.url,
-        });
-      } catch {
-        // Fallback to clipboard
-        await copyToClipboard(artwork.url);
-      }
-    } else {
-      await copyToClipboard(artwork.url);
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
   };
 
@@ -101,18 +91,19 @@ export function ArtworkResults({
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
+    <div className="mx-auto max-w-6xl space-y-8">
       {/* Success Header */}
-      <div className="text-center space-y-4">
+      <div className="space-y-4 text-center">
         <div className="flex items-center justify-center gap-2 text-2xl">
           <span>🎉</span>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+          <h2 className="from-primary to-primary/80 bg-gradient-to-r bg-clip-text text-3xl font-bold text-transparent">
             Your Masterpiece is Ready!
           </h2>
           <span>🎨</span>
         </div>
         <p className="text-muted-foreground text-lg">
-          Your pet has been transformed into beautiful {results[0]?.style.name} artwork
+          Your pet has been transformed into beautiful {results[0]?.style.name}{" "}
+          artwork
         </p>
       </div>
 
@@ -156,49 +147,51 @@ export function ArtworkResults({
         <div className="space-y-6">
           {/* Before/After Comparison */}
           <Card className="p-6">
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid gap-8 md:grid-cols-2">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-muted-foreground">Original Photo</h3>
+                  <h3 className="text-muted-foreground font-semibold">
+                    Original Photo
+                  </h3>
                   <Badge variant="outline" className="text-xs">
                     {(originalImage.file.size / (1024 * 1024)).toFixed(1)} MB
                   </Badge>
                 </div>
-                <div className="aspect-[4/3] rounded-xl overflow-hidden border">
-                  <Image 
+                <div className="aspect-[4/3] overflow-hidden rounded-xl border">
+                  <Image
                     src={originalImage.url}
                     alt="Original pet photo"
                     width={400}
                     height={400}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover"
                   />
                 </div>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-primary">AI Generated Art</h3>
+                  <h3 className="text-primary font-semibold">
+                    AI Generated Art
+                  </h3>
                   <div className="flex items-center gap-2">
                     {results[0] && isStylePremium(results[0].style) && (
                       <Crown className="h-4 w-4 text-yellow-500" />
                     )}
-                    <Badge className="text-xs">
-                      {results[0]?.style.name}
-                    </Badge>
+                    <Badge className="text-xs">{results[0]?.style.name}</Badge>
                   </div>
                 </div>
-                <div className="aspect-[4/3] rounded-xl overflow-hidden border group relative">
-                  <Image 
+                <div className="group relative aspect-[4/3] overflow-hidden rounded-xl border">
+                  <Image
                     src={results[0]?.url}
                     alt="AI generated artwork"
                     width={400}
                     height={400}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                   <Button
                     size="sm"
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100"
                     onClick={() => setSelectedImage(results[0])}
                   >
                     <Maximize2 className="h-4 w-4" />
@@ -218,23 +211,27 @@ export function ArtworkResults({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
                   {results.map((artwork, index) => (
                     <div
                       key={artwork.id}
-                      className="group relative aspect-[4/3] rounded-lg overflow-hidden cursor-pointer border hover:border-primary/50 transition-colors"
+                      className="group hover:border-primary/50 relative aspect-[4/3] cursor-pointer overflow-hidden rounded-lg border transition-colors"
                       onClick={() => setSelectedImage(artwork)}
                     >
-                      <Image 
+                      <Image
                         src={artwork.url}
                         alt={`Variation ${index + 1}`}
                         width={200}
                         height={200}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
                       />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                          <Button size="sm" variant="secondary" className="text-xs">
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/20">
+                        <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            className="text-xs"
+                          >
                             <Maximize2 className="h-3 w-3" />
                           </Button>
                         </div>
@@ -250,19 +247,22 @@ export function ArtworkResults({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {results.map((artwork, index) => (
-            <Card key={artwork.id} className="group overflow-hidden hover:shadow-lg transition-all">
+            <Card
+              key={artwork.id}
+              className="group overflow-hidden transition-all hover:shadow-lg"
+            >
               <div className="relative aspect-[4/3]">
-                <Image 
+                <Image
                   src={artwork.url}
                   alt={`${artwork.style.name} artwork ${index + 1}`}
                   width={300}
                   height={300}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40">
+                  <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                     <Button
                       size="sm"
                       variant="secondary"
@@ -279,33 +279,23 @@ export function ArtworkResults({
                     </Button>
                   </div>
                 </div>
-                
-                <Badge className="absolute top-2 left-2">
-                  #{index + 1}
-                </Badge>
+
+                <Badge className="absolute top-2 left-2">#{index + 1}</Badge>
                 {isStylePremium(artwork.style) && (
                   <Crown className="absolute top-2 right-2 h-4 w-4 text-yellow-500" />
                 )}
               </div>
-              
+
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="font-semibold">{artwork.style.name}</h4>
-                    <p className="text-sm text-muted-foreground">{artwork.style.category}</p>
+                    <p className="text-muted-foreground text-sm">
+                      {artwork.style.category}
+                    </p>
                   </div>
                   <div className="flex gap-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleShare(artwork)}
-                    >
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => handleCreateProducts()}
-                    >
+                    <Button size="sm" onClick={() => handleCreateProducts()}>
                       <ShoppingBag className="h-4 w-4" />
                     </Button>
                   </div>
@@ -317,75 +307,95 @@ export function ArtworkResults({
       )}
 
       {/* Action Buttons */}
-      <div className="flex flex-wrap gap-4 justify-center">
+      <div className="flex flex-wrap justify-center gap-4">
         <Button size="lg" onClick={handleDownloadAll} className="gap-2">
           <Download className="h-5 w-5" />
           Download All ({results.length})
         </Button>
-        
+
         <Button size="lg" variant="outline" className="gap-2">
           <ShoppingBag className="h-5 w-5" />
           Create Products
         </Button>
-        
+
         <Button size="lg" variant="outline" className="gap-2">
           <Heart className="h-5 w-5" />
           Save to Favorites
         </Button>
-        
-        <Button size="lg" variant="outline" onClick={onRestart} className="gap-2">
+
+        <Button
+          size="lg"
+          variant="outline"
+          onClick={onRestart}
+          className="gap-2"
+        >
           <RotateCcw className="h-5 w-5" />
           Generate More
         </Button>
       </div>
 
       {/* Generation Summary */}
-      <Card className="bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
+      <Card className="border-green-200 bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:border-green-800 dark:from-green-950/20 dark:to-emerald-950/20">
         <CardContent className="p-6">
           <div className="flex items-center justify-center gap-8 text-center">
             <div>
-              <div className="text-2xl font-bold text-green-600">{results.length > 0 ? getStyleCredits() * results.length : 0}</div>
-              <div className="text-sm text-muted-foreground">Credits Used</div>
+              <div className="text-2xl font-bold text-green-600">
+                {results.length > 0 ? getStyleCredits() * results.length : 0}
+              </div>
+              <div className="text-muted-foreground text-sm">Credits Used</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-green-600">{results.length}</div>
-              <div className="text-sm text-muted-foreground">Artworks Created</div>
+              <div className="text-2xl font-bold text-green-600">
+                {results.length}
+              </div>
+              <div className="text-muted-foreground text-sm">
+                Artworks Created
+              </div>
             </div>
             <div>
               <div className="text-2xl font-bold text-green-600">~30s</div>
-              <div className="text-sm text-muted-foreground">Generation Time</div>
+              <div className="text-muted-foreground text-sm">
+                Generation Time
+              </div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-green-600 flex items-center justify-center gap-1">
+              <div className="flex items-center justify-center gap-1 text-2xl font-bold text-green-600">
                 <Star className="h-5 w-5" />
                 {results[0]?.style.name}
               </div>
-              <div className="text-sm text-muted-foreground">Style Applied</div>
+              <div className="text-muted-foreground text-sm">Style Applied</div>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Image Preview Modal */}
-      <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-5xl max-h-[90vh] p-0 overflow-hidden">
+      <Dialog
+        open={!!selectedImage}
+        onOpenChange={() => setSelectedImage(null)}
+      >
+        <DialogContent className="max-h-[90vh] max-w-5xl overflow-hidden p-0">
           <DialogTitle className="sr-only">
             {selectedImage?.style.name} Artwork Preview
           </DialogTitle>
           {selectedImage && (
-            <div className="space-y-4 p-6 max-h-[90vh] overflow-y-auto">
+            <div className="max-h-[90vh] space-y-4 overflow-y-auto p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Palette className="h-5 w-5" />
                   <div>
-                    <h3 className="font-semibold">{selectedImage.style.name}</h3>
-                    <p className="text-sm text-muted-foreground">{selectedImage.style.category}</p>
+                    <h3 className="font-semibold">
+                      {selectedImage.style.name}
+                    </h3>
+                    <p className="text-muted-foreground text-sm">
+                      {selectedImage.style.category}
+                    </p>
                   </div>
                   {isStylePremium(selectedImage.style) && (
                     <Crown className="h-5 w-5 text-yellow-500" />
                   )}
                 </div>
-                
+
                 <div className="flex gap-2">
                   <Button
                     size="sm"
@@ -410,22 +420,18 @@ export function ArtworkResults({
                 </div>
               </div>
 
-              <div className="w-full max-w-4xl mx-auto rounded-lg overflow-hidden">
-                <Image 
+              <div className="mx-auto w-full max-w-4xl overflow-hidden rounded-lg">
+                <Image
                   src={selectedImage.url}
                   alt={`${selectedImage.style.name} artwork`}
                   width={800}
                   height={600}
-                  className="w-full h-auto object-contain max-h-[60vh]"
+                  className="h-auto max-h-[60vh] w-full object-contain"
                 />
               </div>
 
               <div className="flex justify-center gap-3">
-                <Button onClick={() => handleShare(selectedImage)} className="gap-2">
-                  <Share2 className="h-4 w-4" />
-                  Share Artwork
-                </Button>
-                <Button 
+                <Button
                   variant="outline"
                   onClick={() => handleCreateProducts()}
                   className="gap-2"

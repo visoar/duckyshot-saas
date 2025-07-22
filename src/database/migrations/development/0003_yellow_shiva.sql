@@ -1,0 +1,1 @@
+ALTER TABLE "ai_artworks" ADD COLUMN "deletedAt" timestamp;

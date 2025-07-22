@@ -25,7 +25,9 @@ export interface AIGenerationResult {
 
 // Abstract AI Provider Interface
 export abstract class AIProvider {
-  abstract generateImages(params: AIGenerationParams): Promise<AIGenerationResult>;
+  abstract generateImages(
+    params: AIGenerationParams,
+  ): Promise<AIGenerationResult>;
   abstract getStatus(jobId: string): Promise<AIGenerationResult>;
 }
 
@@ -43,8 +45,8 @@ export class FalAIProvider extends AIProvider {
    * Upload images from URLs to R2 storage
    */
   private async uploadImagesToR2(
-    imageUrls: string[], 
-    userId: string
+    imageUrls: string[],
+    userId: string,
   ): Promise<{ success: boolean; r2Urls?: string[]; error?: string }> {
     try {
       const uploadPromises = imageUrls.map(async (imageUrl, index) => {
@@ -53,18 +55,18 @@ export class FalAIProvider extends AIProvider {
         const uuid = randomUUID();
         const fileExtension = getFileExtension("image/jpeg"); // Default to jpeg for AI generated images
         const key = `ai-generated/${userId}/${timestamp}-${uuid}-${index}.${fileExtension}`;
-        
+
         const result = await uploadFromUrl(imageUrl, key, "image/jpeg");
-        
+
         if (!result.success) {
           throw new Error(`Failed to upload image ${index}: ${result.error}`);
         }
-        
+
         return result.url!;
       });
 
       const r2Urls = await Promise.all(uploadPromises);
-      
+
       return {
         success: true,
         r2Urls,
@@ -73,16 +75,21 @@ export class FalAIProvider extends AIProvider {
       console.error("Error uploading images to R2:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Failed to upload images to R2",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to upload images to R2",
       };
     }
   }
 
-  async generateImages(params: AIGenerationParams): Promise<AIGenerationResult> {
+  async generateImages(
+    params: AIGenerationParams,
+  ): Promise<AIGenerationResult> {
     try {
       // Dynamically import fal client to avoid SSR issues
       const { fal } = await import("@fal-ai/client");
-      
+
       // Configure the client with API key
       fal.config({
         credentials: this.apiKey,
@@ -101,7 +108,10 @@ export class FalAIProvider extends AIProvider {
         logs: true,
         onQueueUpdate: (update) => {
           if (update.status === "IN_PROGRESS") {
-            console.log("Generation in progress:", update.logs?.map(log => log.message).join(", "));
+            console.log(
+              "Generation in progress:",
+              update.logs?.map((log) => log.message).join(", "),
+            );
           }
         },
       });
@@ -111,12 +121,14 @@ export class FalAIProvider extends AIProvider {
       }
 
       // Extract fal image URLs
-      const falImageUrls = result.data.images.map((img: { url: string }) => img.url);
-      
+      const falImageUrls = result.data.images.map(
+        (img: { url: string }) => img.url,
+      );
+
       // Upload images to R2 storage (we need userId from context)
       // For now, we'll return fal URLs and handle R2 upload in the service layer
       // This allows us to access userId from the API context
-      
+
       return {
         id: result.requestId || Date.now().toString(),
         status: "completed",
@@ -137,7 +149,7 @@ export class FalAIProvider extends AIProvider {
    */
   async uploadGeneratedImagesToR2(
     falImageUrls: string[],
-    userId: string
+    userId: string,
   ): Promise<{ success: boolean; r2Urls?: string[]; error?: string }> {
     return this.uploadImagesToR2(falImageUrls, userId);
   }
@@ -145,7 +157,7 @@ export class FalAIProvider extends AIProvider {
   async getStatus(jobId: string): Promise<AIGenerationResult> {
     try {
       const { fal } = await import("@fal-ai/client");
-      
+
       fal.config({
         credentials: this.apiKey,
       });
@@ -163,9 +175,13 @@ export class FalAIProvider extends AIProvider {
         return {
           id: jobId,
           status: "completed",
-          images: result.data?.images?.map((img: { url: string }) => img.url) || [],
+          images:
+            result.data?.images?.map((img: { url: string }) => img.url) || [],
         };
-      } else if (status.status && ["TIMEOUT", "FAILED", "CANCELLED"].includes(status.status as string)) {
+      } else if (
+        status.status &&
+        ["TIMEOUT", "FAILED", "CANCELLED"].includes(status.status as string)
+      ) {
         return {
           id: jobId,
           status: "failed",
@@ -198,16 +214,19 @@ export class ReplicateProvider extends AIProvider {
     this.apiToken = apiToken;
   }
 
-  async generateImages(params: AIGenerationParams): Promise<AIGenerationResult> {
+  async generateImages(
+    params: AIGenerationParams,
+  ): Promise<AIGenerationResult> {
     try {
       const response = await fetch(this.baseUrl, {
         method: "POST",
         headers: {
-          "Authorization": `Token ${this.apiToken}`,
+          Authorization: `Token ${this.apiToken}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          version: "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478",
+          version:
+            "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478",
           input: {
             image: params.imageUrl,
             prompt: params.stylePrompt,
@@ -226,7 +245,7 @@ export class ReplicateProvider extends AIProvider {
       }
 
       const result = await response.json();
-      
+
       return {
         id: result.id,
         status: result.status === "succeeded" ? "completed" : "processing",
@@ -246,7 +265,7 @@ export class ReplicateProvider extends AIProvider {
     try {
       const response = await fetch(`${this.baseUrl}/${jobId}`, {
         headers: {
-          "Authorization": `Token ${this.apiToken}`,
+          Authorization: `Token ${this.apiToken}`,
         },
       });
 
@@ -255,11 +274,15 @@ export class ReplicateProvider extends AIProvider {
       }
 
       const result = await response.json();
-      
+
       return {
         id: result.id,
-        status: result.status === "succeeded" ? "completed" : 
-                result.status === "failed" ? "failed" : "processing",
+        status:
+          result.status === "succeeded"
+            ? "completed"
+            : result.status === "failed"
+              ? "failed"
+              : "processing",
         images: result.output || [],
         error: result.error,
         progress: result.logs ? 0.5 : 0, // Simple progress estimation
@@ -280,7 +303,7 @@ export class AIService {
 
   constructor() {
     const aiProvider = env.AI_PROVIDER;
-    
+
     switch (aiProvider) {
       case "fal":
         if (!env.FAL_AI_API_KEY) {
@@ -290,7 +313,9 @@ export class AIService {
         break;
       case "replicate":
         if (!env.REPLICATE_API_TOKEN) {
-          throw new Error("REPLICATE_API_TOKEN is required for Replicate provider");
+          throw new Error(
+            "REPLICATE_API_TOKEN is required for Replicate provider",
+          );
         }
         this.provider = new ReplicateProvider(env.REPLICATE_API_TOKEN);
         break;
@@ -299,7 +324,9 @@ export class AIService {
     }
   }
 
-  async generatePetArt(params: AIGenerationParams): Promise<AIGenerationResult> {
+  async generatePetArt(
+    params: AIGenerationParams,
+  ): Promise<AIGenerationResult> {
     return this.provider.generateImages(params);
   }
 
@@ -313,17 +340,17 @@ export class AIService {
    */
   async uploadGeneratedImagesToR2(
     falImageUrls: string[],
-    userId: string
+    userId: string,
   ): Promise<{ success: boolean; r2Urls?: string[]; error?: string }> {
     if (this.provider instanceof FalAIProvider) {
       return this.provider.uploadGeneratedImagesToR2(falImageUrls, userId);
     }
-    
+
     // For other providers, we can implement similar logic
     // For now, just return the original URLs
     return {
       success: false,
-      error: "Image upload to R2 not supported for this provider"
+      error: "Image upload to R2 not supported for this provider",
     };
   }
 }

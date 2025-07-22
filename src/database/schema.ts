@@ -183,7 +183,7 @@ export const uploads = pgTable(
 // AI generation status enum
 export const aiGenerationStatusEnum = pgEnum("ai_generation_status", [
   "pending",
-  "processing", 
+  "processing",
   "completed",
   "failed",
 ]);
@@ -232,6 +232,13 @@ export const aiArtworks = pgTable(
     processingStartedAt: timestamp("processingStartedAt"),
     completedAt: timestamp("completedAt"),
     creditsUsed: integer("creditsUsed").notNull().default(1),
+    // Privacy and sharing settings
+    isPublic: boolean("isPublic").notNull().default(false), // Whether artwork is visible in public gallery
+    isPrivate: boolean("isPrivate").notNull().default(true), // Private generation (paid feature)
+    title: text("title"), // Optional title set by user
+    description: text("description"), // Optional description set by user
+    sharedAt: timestamp("sharedAt"), // When artwork was shared to public gallery
+    deletedAt: timestamp("deletedAt"), // Soft delete timestamp
     createdAt: timestamp("createdAt").notNull().defaultNow(),
     updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   },
@@ -241,6 +248,9 @@ export const aiArtworks = pgTable(
       statusIdx: index("ai_artworks_status_idx").on(table.status),
       styleIdx: index("ai_artworks_styleId_idx").on(table.styleId),
       createdAtIdx: index("ai_artworks_createdAt_idx").on(table.createdAt),
+      isPublicIdx: index("ai_artworks_isPublic_idx").on(table.isPublic),
+      isPrivateIdx: index("ai_artworks_isPrivate_idx").on(table.isPrivate),
+      sharedAtIdx: index("ai_artworks_sharedAt_idx").on(table.sharedAt),
     };
   },
 );
@@ -272,7 +282,7 @@ export const userCredits = pgTable(
 export const productCategoryEnum = pgEnum("product_category", [
   "apparel",
   "home",
-  "accessories", 
+  "accessories",
   "stationery",
   "digital",
 ]);
@@ -327,7 +337,9 @@ export const shippingAddresses = pgTable(
   (table) => {
     return {
       userIdx: index("shipping_addresses_userId_idx").on(table.userId),
-      isDefaultIdx: index("shipping_addresses_isDefault_idx").on(table.isDefault),
+      isDefaultIdx: index("shipping_addresses_isDefault_idx").on(
+        table.isDefault,
+      ),
     };
   },
 );
@@ -338,7 +350,7 @@ export const orderStatusEnum = pgEnum("order_status", [
   "paid",
   "processing",
   "production",
-  "shipped", 
+  "shipped",
   "delivered",
   "cancelled",
   "refunded",
@@ -354,27 +366,31 @@ export const productOrders = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     orderNumber: text("orderNumber").notNull().unique(), // Human-readable order number
     status: orderStatusEnum("status").notNull().default("pending_payment"),
-    
+
     // Payment integration
     paymentId: text("paymentId").references(() => payments.paymentId),
     totalAmount: decimal("totalAmount", { precision: 10, scale: 2 }).notNull(),
-    shippingCost: decimal("shippingCost", { precision: 10, scale: 2 }).notNull().default("0"),
-    taxAmount: decimal("taxAmount", { precision: 10, scale: 2 }).notNull().default("0"),
+    shippingCost: decimal("shippingCost", { precision: 10, scale: 2 })
+      .notNull()
+      .default("0"),
+    taxAmount: decimal("taxAmount", { precision: 10, scale: 2 })
+      .notNull()
+      .default("0"),
     currency: text("currency").notNull().default("USD"),
-    
+
     // Shipping information
     shippingAddressId: uuid("shippingAddressId")
       .notNull()
       .references(() => shippingAddresses.id, { onDelete: "restrict" }),
     trackingNumber: text("trackingNumber"),
     shippingProvider: text("shippingProvider"),
-    
+
     // Fulfillment data
     fulfillmentOrderId: text("fulfillmentOrderId"), // External fulfillment service order ID
     estimatedDeliveryDate: timestamp("estimatedDeliveryDate"),
     shippedAt: timestamp("shippedAt"),
     deliveredAt: timestamp("deliveredAt"),
-    
+
     createdAt: timestamp("createdAt").notNull().defaultNow(),
     updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   },
@@ -382,7 +398,9 @@ export const productOrders = pgTable(
     return {
       userIdx: index("product_orders_userId_idx").on(table.userId),
       statusIdx: index("product_orders_status_idx").on(table.status),
-      orderNumberIdx: index("product_orders_orderNumber_idx").on(table.orderNumber),
+      orderNumberIdx: index("product_orders_orderNumber_idx").on(
+        table.orderNumber,
+      ),
       createdAtIdx: index("product_orders_createdAt_idx").on(table.createdAt),
     };
   },
@@ -399,8 +417,9 @@ export const orderItems = pgTable(
     productId: text("productId")
       .notNull()
       .references(() => products.id, { onDelete: "restrict" }),
-    artworkId: uuid("artworkId")
-      .references(() => aiArtworks.id, { onDelete: "restrict" }), // Optional: if custom artwork
+    artworkId: uuid("artworkId").references(() => aiArtworks.id, {
+      onDelete: "restrict",
+    }), // Optional: if custom artwork
     quantity: integer("quantity").notNull().default(1),
     unitPrice: decimal("unitPrice", { precision: 10, scale: 2 }).notNull(),
     totalPrice: decimal("totalPrice", { precision: 10, scale: 2 }).notNull(),

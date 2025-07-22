@@ -4,7 +4,13 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -23,7 +29,11 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import type { AIStyle } from "@/lib/ai/styles";
 import type { GenerationSettings } from "./ai-studio-workflow";
-import { isStylePremium, isStylePopular, getStyleCredits } from "@/lib/ai/utils";
+import {
+  isStylePremium,
+  isStylePopular,
+  getStyleCredits,
+} from "@/lib/ai/utils";
 
 interface StylesResponse {
   styles: AIStyle[];
@@ -57,7 +67,9 @@ export function StyleSelection({
   const [error, setError] = useState<string | null>(null);
   const [previewStyle, setPreviewStyle] = useState<AIStyle | null>(null);
   const [numImages] = useState(1);
-  const [generationMode, setGenerationMode] = useState<"fast" | "quality">("fast");
+  const [generationMode, setGenerationMode] = useState<"fast" | "quality">(
+    "fast",
+  );
 
   // Fetch styles on component mount
   useEffect(() => {
@@ -65,11 +77,11 @@ export function StyleSelection({
       try {
         setLoading(true);
         const response = await fetch("/api/ai/styles");
-        
+
         if (!response.ok) {
           throw new Error("Failed to fetch AI styles");
         }
-        
+
         const data: StylesResponse = await response.json();
         setStylesData(data);
       } catch (err) {
@@ -85,28 +97,28 @@ export function StyleSelection({
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex items-center gap-6">
           <Button variant="ghost" onClick={onBack} className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             Change Photo
           </Button>
           <div className="flex items-center gap-4">
-            <Skeleton className="w-16 h-16 rounded-xl" />
+            <Skeleton className="h-16 w-16 rounded-xl" />
             <div>
-              <Skeleton className="h-8 w-64 mb-2" />
+              <Skeleton className="mb-2 h-8 w-64" />
               <Skeleton className="h-4 w-48" />
             </div>
           </div>
         </div>
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-6">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid gap-8 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <Card key={i} className="overflow-hidden">
                   <Skeleton className="aspect-square w-full" />
                   <CardContent className="p-4">
-                    <Skeleton className="h-5 w-20 mb-2" />
+                    <Skeleton className="mb-2 h-5 w-20" />
                     <Skeleton className="h-4 w-full" />
                   </CardContent>
                 </Card>
@@ -127,20 +139,20 @@ export function StyleSelection({
 
   if (error) {
     return (
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex items-center gap-6">
           <Button variant="ghost" onClick={onBack} className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             Change Photo
           </Button>
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-muted">
-              <Image 
-                src={uploadedImage.url} 
+            <div className="border-muted h-16 w-16 overflow-hidden rounded-xl border-2">
+              <Image
+                src={uploadedImage.url}
                 alt="Uploaded pet"
                 width={64}
                 height={64}
-                className="w-full h-full object-cover"
+                className="h-full w-full object-cover"
               />
             </div>
             <div>
@@ -153,8 +165,10 @@ export function StyleSelection({
         </div>
         <Card>
           <CardContent className="p-6 text-center">
-            <div className="text-destructive mb-2">Failed to load AI styles</div>
-            <div className="text-sm text-muted-foreground">{error}</div>
+            <div className="text-destructive mb-2">
+              Failed to load AI styles
+            </div>
+            <div className="text-muted-foreground text-sm">{error}</div>
             <Button
               variant="outline"
               size="sm"
@@ -174,8 +188,8 @@ export function StyleSelection({
   }
 
   const categories = stylesData.categories;
-  
-  const getStylesByCategory = (category: string) => 
+
+  const getStylesByCategory = (category: string) =>
     stylesData.stylesByCategory[category] || [];
 
   const totalCredits = selectedStyle ? getStyleCredits() * numImages : 0;
@@ -183,33 +197,33 @@ export function StyleSelection({
 
   const handleGenerate = () => {
     if (!selectedStyle || !canGenerate) return;
-    
+
     const settings: GenerationSettings = {
       numImages,
       mode: generationMode,
       style: selectedStyle,
     };
-    
+
     onStartGeneration(settings);
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       {/* Header with uploaded image */}
       <div className="flex items-center gap-6">
         <Button variant="ghost" onClick={onBack} className="gap-2">
           <ArrowLeft className="h-4 w-4" />
           Change Photo
         </Button>
-        
+
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-xl overflow-hidden border-2 border-muted">
-            <Image 
-              src={uploadedImage.url} 
+          <div className="border-muted h-16 w-16 overflow-hidden rounded-xl border-2">
+            <Image
+              src={uploadedImage.url}
               alt="Uploaded pet"
               width={64}
               height={64}
-              className="w-full h-full object-cover"
+              className="h-full w-full object-cover"
             />
           </div>
           <div>
@@ -221,61 +235,75 @@ export function StyleSelection({
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid gap-8 lg:grid-cols-3">
         {/* Styles Grid */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6 lg:col-span-2">
           <Tabs defaultValue={categories[0]?.id} className="w-full">
-            <TabsList className="grid w-full" style={{gridTemplateColumns: `repeat(${categories.length}, 1fr)`}}>
+            <TabsList
+              className="grid w-full"
+              style={{
+                gridTemplateColumns: `repeat(${categories.length}, 1fr)`,
+              }}
+            >
               {categories.map((category) => (
-                <TabsTrigger key={category.id} value={category.id} className="text-xs capitalize">
+                <TabsTrigger
+                  key={category.id}
+                  value={category.id}
+                  className="text-xs capitalize"
+                >
                   {category.name}
                   {category.id === "special" && (
-                    <Crown className="h-3 w-3 ml-1 text-yellow-500" />
+                    <Crown className="ml-1 h-3 w-3 text-yellow-500" />
                   )}
                 </TabsTrigger>
               ))}
             </TabsList>
 
             {categories.map((category) => (
-              <TabsContent key={category.id} value={category.id} className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-6">
+              <TabsContent
+                key={category.id}
+                value={category.id}
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-2 gap-4 pt-6 md:grid-cols-3">
                   {getStylesByCategory(category.id).map((style) => (
-                    <Card 
+                    <Card
                       key={style.id}
                       className={cn(
-                        "group cursor-pointer transition-all duration-300 hover:shadow-lg -py-6 -gap-6",
-                        selectedStyle?.id === style.id && "ring-2 ring-primary shadow-lg scale-105"
+                        "group -py-6 -gap-6 cursor-pointer transition-all duration-300 hover:shadow-lg",
+                        selectedStyle?.id === style.id &&
+                          "ring-primary scale-105 shadow-lg ring-2",
                       )}
                       onClick={() => onStyleSelect(style)}
                     >
                       <div className="relative">
-                        <div className="aspect-square rounded-t-lg overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10">
+                        <div className="from-primary/5 to-primary/10 aspect-square overflow-hidden rounded-t-lg bg-gradient-to-br">
                           {style.previewImageUrl ? (
-                            <Image 
+                            <Image
                               src={style.previewImageUrl}
                               alt={style.name}
                               width={200}
                               height={200}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              className="h-full w-full object-cover transition-transform group-hover:scale-105"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Palette className="h-8 w-8 text-primary" />
+                            <div className="flex h-full w-full items-center justify-center">
+                              <Palette className="text-primary h-8 w-8" />
                             </div>
                           )}
                         </div>
-                        
+
                         {/* Badges */}
                         <div className="absolute top-2 right-2 flex gap-1">
                           {isStylePopular(style) && (
-                            <Badge className="bg-orange-500 text-white text-xs">
-                              <Star className="h-3 w-3 mr-1" />
+                            <Badge className="bg-orange-500 text-xs text-white">
+                              <Star className="mr-1 h-3 w-3" />
                               Popular
                             </Badge>
                           )}
                           {isStylePremium(style) && (
-                            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
-                              <Crown className="h-3 w-3 mr-1" />
+                            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-xs text-white">
+                              <Crown className="mr-1 h-3 w-3" />
                               Premium
                             </Badge>
                           )}
@@ -283,25 +311,25 @@ export function StyleSelection({
 
                         {/* Selection indicator */}
                         {selectedStyle?.id === style.id && (
-                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center rounded-t-lg">
-                            <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                              <Check className="h-5 w-5 text-primary-foreground" />
+                          <div className="bg-primary/20 absolute inset-0 flex items-center justify-center rounded-t-lg">
+                            <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
+                              <Check className="text-primary-foreground h-5 w-5" />
                             </div>
                           </div>
                         )}
                       </div>
-                      
+
                       <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="mb-2 flex items-center justify-between">
                           <h4 className="font-semibold">{style.name}</h4>
                           <Badge variant="outline" className="text-xs">
                             {getStyleCredits()} credit/image
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                        <p className="text-muted-foreground mb-3 line-clamp-2 text-sm">
                           {style.description}
                         </p>
-                        
+
                         <Button
                           variant="ghost"
                           size="sm"
@@ -309,9 +337,9 @@ export function StyleSelection({
                             e.stopPropagation();
                             setPreviewStyle(style);
                           }}
-                          className="text-xs w-full"
+                          className="w-full text-xs"
                         >
-                          <Eye className="h-3 w-3 mr-1" />
+                          <Eye className="mr-1 h-3 w-3" />
                           Preview
                         </Button>
                       </CardContent>
@@ -336,7 +364,7 @@ export function StyleSelection({
             <CardContent className="space-y-4">
               {/* Generation mode */}
               <div>
-                <label className="text-sm font-medium mb-2 block">
+                <label className="mb-2 block text-sm font-medium">
                   Generation Mode
                 </label>
                 <div className="space-y-2">
@@ -346,30 +374,34 @@ export function StyleSelection({
                     onClick={() => setGenerationMode("fast")}
                     className="w-full justify-start text-xs"
                   >
-                    <Zap className="h-3 w-3 mr-2" />
+                    <Zap className="mr-2 h-3 w-3" />
                     Fast (30s)
                   </Button>
                   <Button
-                    variant={generationMode === "quality" ? "default" : "outline"}
+                    variant={
+                      generationMode === "quality" ? "default" : "outline"
+                    }
                     size="sm"
                     onClick={() => setGenerationMode("quality")}
                     className="w-full justify-start text-xs"
                   >
-                    <Star className="h-3 w-3 mr-2" />
+                    <Star className="mr-2 h-3 w-3" />
                     Quality (60s)
                   </Button>
                 </div>
               </div>
 
               {/* Cost calculation */}
-              <div className="p-3 bg-muted/50 rounded-lg">
-                <div className="flex justify-between items-center">
+              <div className="bg-muted/50 rounded-lg p-3">
+                <div className="flex items-center justify-between">
                   <span className="text-sm">Total Cost:</span>
                   <span className="text-sm font-bold">
-                    {selectedStyle ? `${totalCredits} credits` : 'Select a style first'}
+                    {selectedStyle
+                      ? `${totalCredits} credits`
+                      : "Select a style first"}
                   </span>
                 </div>
-                <div className="flex justify-between items-center text-xs text-muted-foreground">
+                <div className="text-muted-foreground flex items-center justify-between text-xs">
                   <span>You have:</span>
                   <span>{userCredits.remaining} credits</span>
                 </div>
@@ -384,30 +416,30 @@ export function StyleSelection({
                 <CardTitle className="text-lg">Selected Style</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10">
+                <div className="from-primary/5 to-primary/10 aspect-square overflow-hidden rounded-lg bg-gradient-to-br">
                   {selectedStyle.previewImageUrl ? (
-                    <Image 
+                    <Image
                       src={selectedStyle.previewImageUrl}
                       alt={selectedStyle.name}
                       width={200}
                       height={200}
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Palette className="h-8 w-8 text-primary" />
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Palette className="text-primary h-8 w-8" />
                     </div>
                   )}
                 </div>
-                
+
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="mb-2 flex items-center gap-2">
                     <h4 className="font-semibold">{selectedStyle.name}</h4>
                     {isStylePremium(selectedStyle) && (
                       <Crown className="h-4 w-4 text-yellow-500" />
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     {selectedStyle.description}
                   </p>
                 </div>
@@ -419,12 +451,15 @@ export function StyleSelection({
                   size="lg"
                 >
                   <Wand2 className="h-4 w-4" />
-                  {selectedStyle ? `Generate Art (${totalCredits} credits)` : 'Select a style to continue'}
+                  {selectedStyle
+                    ? `Generate Art (${totalCredits} credits)`
+                    : "Select a style to continue"}
                 </Button>
 
                 {!canGenerate && userCredits.remaining < totalCredits && (
-                  <p className="text-xs text-destructive text-center">
-                    Insufficient credits. Need {totalCredits - userCredits.remaining} more.
+                  <p className="text-destructive text-center text-xs">
+                    Insufficient credits. Need{" "}
+                    {totalCredits - userCredits.remaining} more.
                   </p>
                 )}
               </CardContent>
@@ -435,7 +470,9 @@ export function StyleSelection({
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Credits remaining:</span>
+                <span className="text-muted-foreground text-sm">
+                  Credits remaining:
+                </span>
                 <span className="font-bold">{userCredits.remaining}</span>
               </div>
             </CardContent>
@@ -451,7 +488,9 @@ export function StyleSelection({
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   {previewStyle.name}
-                  {isStylePremium(previewStyle) && <Crown className="h-5 w-5 text-yellow-500" />}
+                  {isStylePremium(previewStyle) && (
+                    <Crown className="h-5 w-5 text-yellow-500" />
+                  )}
                 </DialogTitle>
                 <DialogDescription>
                   {previewStyle.description}
@@ -461,18 +500,18 @@ export function StyleSelection({
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <h4 className="font-medium">Style Preview</h4>
-                  <div className="aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10">
+                  <div className="from-primary/5 to-primary/10 aspect-square overflow-hidden rounded-lg bg-gradient-to-br">
                     {previewStyle.previewImageUrl ? (
-                      <Image 
+                      <Image
                         src={previewStyle.previewImageUrl}
                         alt={previewStyle.name}
                         width={300}
                         height={300}
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Palette className="h-12 w-12 text-primary" />
+                      <div className="flex h-full w-full items-center justify-center">
+                        <Palette className="text-primary h-12 w-12" />
                       </div>
                     )}
                   </div>
@@ -480,7 +519,7 @@ export function StyleSelection({
 
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium mb-2">Style Details</h4>
+                    <h4 className="mb-2 font-medium">Style Details</h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span>Category:</span>
@@ -488,7 +527,9 @@ export function StyleSelection({
                       </div>
                       <div className="flex justify-between">
                         <span>Credits:</span>
-                        <span className="font-medium">{getStyleCredits()} credit/image</span>
+                        <span className="font-medium">
+                          {getStyleCredits()} credit/image
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span>Generation time:</span>
@@ -501,7 +542,7 @@ export function StyleSelection({
                   </div>
 
                   <div className="space-y-2">
-                    <Button 
+                    <Button
                       onClick={() => {
                         onStyleSelect(previewStyle);
                         setPreviewStyle(null);
@@ -510,8 +551,8 @@ export function StyleSelection({
                     >
                       Select This Style
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setPreviewStyle(null)}
                       className="w-full"
                     >

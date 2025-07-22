@@ -27,11 +27,12 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     name: "Oil Painting",
     description: "Convert this to a classical oil painting masterpiece",
     category: "classic",
-    previewImageUrl:"https://gen-image.ullrai.com/q/oil_painting_cat",
+    previewImageUrl: "https://gen-image.ullrai.com/q/oil_painting_cat",
     isActive: true,
     sortOrder: 1,
     metadata: {
-      prompt: "oil painting, classical art style, rich textures, masterpiece, detailed brushstrokes",
+      prompt:
+        "oil painting, classical art style, rich textures, masterpiece, detailed brushstrokes",
       negativePrompt: "cartoon, anime, digital art, photograph",
       guidance: 7.5,
       strength: 0.8,
@@ -42,11 +43,12 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     name: "Watercolor",
     description: "Convert this to Soft, flowing watercolor painting style",
     category: "classic",
-    previewImageUrl:"https://gen-image.ullrai.com/q/watercolor_cat",
+    previewImageUrl: "https://gen-image.ullrai.com/q/watercolor_cat",
     isActive: true,
     sortOrder: 2,
     metadata: {
-      prompt: "watercolor painting, soft colors, flowing paint, artistic, delicate brushwork",
+      prompt:
+        "watercolor painting, soft colors, flowing paint, artistic, delicate brushwork",
       negativePrompt: "sharp edges, digital art, photograph, realistic",
       guidance: 7.0,
       strength: 0.75,
@@ -57,11 +59,12 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     name: "Pencil Sketch",
     description: "Convert this to Detailed pencil drawing with shading",
     category: "classic",
-    previewImageUrl:"https://gen-image.ullrai.com/q/pencil_sketch_cat",
+    previewImageUrl: "https://gen-image.ullrai.com/q/pencil_sketch_cat",
     isActive: true,
     sortOrder: 3,
     metadata: {
-      prompt: "pencil sketch, detailed drawing, graphite, shading, artistic sketch",
+      prompt:
+        "pencil sketch, detailed drawing, graphite, shading, artistic sketch",
       negativePrompt: "color, photograph, digital art, painting",
       guidance: 6.5,
       strength: 0.7,
@@ -74,7 +77,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     name: "Cartoon",
     description: "Convert this to Fun and playful cartoon style",
     category: "modern",
-    previewImageUrl:"https://gen-image.ullrai.com/q/cartoon_cat",
+    previewImageUrl: "https://gen-image.ullrai.com/q/cartoon_cat",
     isActive: true,
     sortOrder: 4,
     metadata: {
@@ -89,7 +92,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     name: "Anime",
     description: "Convert this to Japanese anime and manga style",
     category: "modern",
-    previewImageUrl:"https://gen-image.ullrai.com/q/anime_cat",
+    previewImageUrl: "https://gen-image.ullrai.com/q/anime_cat",
     isActive: true,
     sortOrder: 5,
     metadata: {
@@ -104,7 +107,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     name: "Pop Art",
     description: "Convert this to Vibrant pop art with bold colors",
     category: "modern",
-    previewImageUrl:"https://gen-image.ullrai.com/q/pop_art_cat",
+    previewImageUrl: "https://gen-image.ullrai.com/q/pop_art_cat",
     isActive: true,
     sortOrder: 6,
     metadata: {
@@ -121,11 +124,12 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     name: "Cyberpunk",
     description: "Convert this to Futuristic cyberpunk aesthetic",
     category: "special",
-    previewImageUrl:"https://gen-image.ullrai.com/q/cyberpunk_cat",
+    previewImageUrl: "https://gen-image.ullrai.com/q/cyberpunk_cat",
     isActive: true,
     sortOrder: 7,
     metadata: {
-      prompt: "cyberpunk style, neon lights, futuristic, sci-fi, glowing effects, digital",
+      prompt:
+        "cyberpunk style, neon lights, futuristic, sci-fi, glowing effects, digital",
       negativePrompt: "natural, organic, vintage, classical",
       guidance: 8.0,
       strength: 0.85,
@@ -136,7 +140,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     name: "Pixel Art",
     description: "Convert this to Retro 8-bit pixel art style",
     category: "special",
-    previewImageUrl:"https://gen-image.ullrai.com/q/pixel_art_cat",
+    previewImageUrl: "https://gen-image.ullrai.com/q/pixel_art_cat",
     isActive: true,
     sortOrder: 8,
     metadata: {
@@ -151,11 +155,12 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     name: "Van Gogh Style",
     description: "Convert this to Swirling brushstrokes like Van Gogh",
     category: "special",
-    previewImageUrl:"https://gen-image.ullrai.com/q/van-gogh_cat",
+    previewImageUrl: "https://gen-image.ullrai.com/q/van-gogh_cat",
     isActive: true,
     sortOrder: 9,
     metadata: {
-      prompt: "Van Gogh style, swirling brushstrokes, post-impressionist, textured paint, expressive",
+      prompt:
+        "Van Gogh style, swirling brushstrokes, post-impressionist, textured paint, expressive",
       negativePrompt: "smooth, digital, photograph, realistic",
       guidance: 7.5,
       strength: 0.8,
@@ -166,11 +171,12 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     name: "Studio Ghibli",
     description: "Convert this to Magical Studio Ghibli animation style",
     category: "special",
-    previewImageUrl:"https://gen-image.ullrai.com/q/ghibli_cat",
+    previewImageUrl: "https://gen-image.ullrai.com/q/ghibli_cat",
     isActive: true,
     sortOrder: 10,
     metadata: {
-      prompt: "Studio Ghibli style, Miyazaki, magical, whimsical, soft colors, fantasy",
+      prompt:
+        "Studio Ghibli style, Miyazaki, magical, whimsical, soft colors, fantasy",
       negativePrompt: "realistic, dark, scary, photograph",
       guidance: 8.0,
       strength: 0.8,
@@ -180,31 +186,53 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
 
 // Style Categories
 export const STYLE_CATEGORIES = [
-  { id: "classic", name: "Classic Art", description: "Convert this to Traditional art styles" },
-  { id: "modern", name: "Modern", description: "Convert this to Contemporary digital styles" },
-  { id: "special", name: "Special", description: "Convert this to Unique and themed styles" },
-  { id: "seasonal", name: "Seasonal", description: "Convert this to Holiday and seasonal themes" },
+  {
+    id: "classic",
+    name: "Classic Art",
+    description: "Convert this to Traditional art styles",
+  },
+  {
+    id: "modern",
+    name: "Modern",
+    description: "Convert this to Contemporary digital styles",
+  },
+  {
+    id: "special",
+    name: "Special",
+    description: "Convert this to Unique and themed styles",
+  },
+  {
+    id: "seasonal",
+    name: "Seasonal",
+    description: "Convert this to Holiday and seasonal themes",
+  },
 ] as const;
 
 // Utility functions
 export function getStyleById(styleId: string): AIStyle | undefined {
-  return DEFAULT_AI_STYLES.find(style => style.id === styleId);
+  return DEFAULT_AI_STYLES.find((style) => style.id === styleId);
 }
 
 export function getStylesByCategory(category: string): AIStyle[] {
-  return DEFAULT_AI_STYLES.filter(style => style.category === category && style.isActive);
+  return DEFAULT_AI_STYLES.filter(
+    (style) => style.category === category && style.isActive,
+  );
 }
 
 export function getAllActiveStyles(): AIStyle[] {
-  return DEFAULT_AI_STYLES.filter(style => style.isActive)
-    .sort((a, b) => a.sortOrder - b.sortOrder);
+  return DEFAULT_AI_STYLES.filter((style) => style.isActive).sort(
+    (a, b) => a.sortOrder - b.sortOrder,
+  );
 }
 
 // Generate style prompt for AI
-export function generateStylePrompt(style: AIStyle, petDescription?: string): string {
+export function generateStylePrompt(
+  style: AIStyle,
+  petDescription?: string,
+): string {
   const basePrompt = style.metadata.prompt;
   const petDescriptor = petDescription || "adorable pet";
-  
+
   return `${petDescriptor}, ${basePrompt}, high quality, detailed, masterpiece`;
 }
 
@@ -212,6 +240,6 @@ export function generateStylePrompt(style: AIStyle, petDescription?: string): st
 export function generateNegativePrompt(style: AIStyle): string {
   const baseNegative = style.metadata.negativePrompt || "";
   const commonNegative = "blurry, low quality, distorted, ugly, deformed";
-  
+
   return `${baseNegative}, ${commonNegative}`.trim();
 }

@@ -51,18 +51,13 @@ const navigation: {
   },
   {
     title: "AI Studio",
-    url: "/dashboard/ai-studio",
+    url: "/ai-studio",
     icon: Sparkles,
   },
   {
     title: "My Artworks",
-    url: "/dashboard/artworks",
+    url: "/artworks",
     icon: Image,
-  },
-  {
-    title: "Upload",
-    url: "/dashboard/upload",
-    icon: Upload,
   },
   {
     title: "Settings",

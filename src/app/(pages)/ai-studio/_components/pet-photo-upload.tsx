@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -40,11 +46,11 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
 
   const handleFileSelect = (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    
+
     const file = files[0];
-    
+
     // Validate file type
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file (JPG, PNG, or WEBP)");
       return;
     }
@@ -57,7 +63,7 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
     }
 
     setSelectedFile(file);
-    
+
     // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -85,11 +91,11 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
     if (!selectedFile) return;
     setIsUploading(true);
     setUploadProgress(0);
-    
+
     try {
       // Simulate progress for better UX
       const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
+        setUploadProgress((prev) => {
           if (prev >= 90) {
             clearInterval(progressInterval);
             return 90;
@@ -100,20 +106,24 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
 
       // Create form data for upload
       const formData = new FormData();
-      formData.append('files', selectedFile);
-      
+      formData.append("files", selectedFile);
+
       // Upload to our file upload endpoint
-      const response = await fetch('/api/upload/server-upload', {
-        method: 'POST',
+      const response = await fetch("/api/upload/server-upload", {
+        method: "POST",
         body: formData,
       });
-      
+
       clearInterval(progressInterval);
       setUploadProgress(100);
-      
+
       if (response.ok) {
         const data = await response.json();
-        if (data.results && data.results.length > 0 && data.results[0].success) {
+        if (
+          data.results &&
+          data.results.length > 0 &&
+          data.results[0].success
+        ) {
           // Convert the response format to match our expected UploadedFile interface
           const uploadedFile = {
             url: data.results[0].url,
@@ -124,20 +134,23 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
           };
           handleUploadComplete([uploadedFile]);
         } else {
-          throw new Error(data.results?.[0]?.error || 'Upload failed');
+          throw new Error(data.results?.[0]?.error || "Upload failed");
         }
       } else {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Upload failed with status ${response.status}`);
+        throw new Error(
+          errorData.error || `Upload failed with status ${response.status}`,
+        );
       }
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error("Upload error:", error);
       setUploadProgress(0);
-      
+
       // Show specific error message to user
-      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+      const errorMessage =
+        error instanceof Error ? error.message : "Upload failed";
       toast.error(`Upload failed: ${errorMessage}`);
-      
+
       handleUploadError();
     }
   };
@@ -149,32 +162,30 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={onBack} className="gap-2">
           <ArrowLeft className="h-4 w-4" />
           Back to Start
         </Button>
-        
         <div className="text-center">
           <h2 className="text-2xl font-bold">Upload Your Pet&apos;s Photo</h2>
           <p className="text-muted-foreground">
             Choose a clear, well-lit photo for the best artistic results
           </p>
         </div>
-        
         <div className="w-20" /> {/* Spacer for centering */}
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8">
+      <div className="grid gap-8 lg:grid-cols-2">
         {/* Upload Section */}
         <div className="space-y-6">
           {!selectedFile ? (
-            <Card className="border-2 border-dashed border-primary/30 hover:border-primary/50 transition-colors">
+            <Card className="border-primary/30 hover:border-primary/50 border-2 border-dashed transition-colors">
               <CardContent className="p-8">
                 <div
-                  className="text-center cursor-pointer"
+                  className="cursor-pointer text-center"
                   onClick={() => fileInputRef.current?.click()}
                   onDrop={(e) => {
                     e.preventDefault();
@@ -183,12 +194,14 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
                   onDragOver={(e) => e.preventDefault()}
                 >
                   <div className="space-y-4">
-                    <div className="w-20 h-20 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center">
-                      <Upload className="h-10 w-10 text-primary" />
+                    <div className="bg-primary/10 mx-auto flex h-20 w-20 items-center justify-center rounded-2xl">
+                      <Upload className="text-primary h-10 w-10" />
                     </div>
-                    
+
                     <div>
-                      <h3 className="text-xl font-semibold mb-2">Drop your photo here</h3>
+                      <h3 className="mb-2 text-xl font-semibold">
+                        Drop your photo here
+                      </h3>
                       <p className="text-muted-foreground mb-4">
                         or click to browse your files
                       </p>
@@ -201,7 +214,7 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
                     </div>
                   </div>
                 </div>
-                
+
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -225,22 +238,22 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+                <div className="bg-muted aspect-square overflow-hidden rounded-lg">
                   {previewUrl ? (
                     <Image
                       src={previewUrl}
                       alt="Selected pet photo"
                       width={400}
                       height={400}
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <ImageIcon className="h-12 w-12 text-muted-foreground" />
+                    <div className="flex h-full w-full items-center justify-center">
+                      <ImageIcon className="text-muted-foreground h-12 w-12" />
                     </div>
                   )}
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{selectedFile.name}</span>
@@ -248,11 +261,11 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
                       {(selectedFile.size / (1024 * 1024)).toFixed(1)} MB
                     </span>
                   </div>
-                  
+
                   {isUploading && (
                     <div className="space-y-2">
                       <Progress value={uploadProgress} className="w-full" />
-                      <div className="text-xs text-center text-muted-foreground">
+                      <div className="text-muted-foreground text-center text-xs">
                         Uploading... {uploadProgress}%
                       </div>
                     </div>
@@ -286,7 +299,7 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
           {/* Example Photos */}
           <Card className="bg-muted/30">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
                 <Camera className="h-5 w-5" />
                 Example Photos
               </CardTitle>
@@ -300,18 +313,18 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
                   { id: 1, desc: "Clear front view, good lighting" },
                   { id: 2, desc: "Simple background, well focused" },
                   { id: 3, desc: "High resolution, sharp details" },
-                  { id: 4, desc: "Natural pose, full pet visible" }
+                  { id: 4, desc: "Natural pose, full pet visible" },
                 ].map((example) => (
                   <div
                     key={example.id}
-                    className="aspect-square rounded-lg overflow-hidden border-2 border-dashed border-muted-foreground/20 bg-muted/30 flex flex-col items-center justify-center p-2 text-center"
+                    className="border-muted-foreground/20 bg-muted/30 flex aspect-square flex-col items-center justify-center overflow-hidden rounded-lg border-2 border-dashed p-2 text-center"
                     title={example.desc}
                   >
-                    <Camera className="h-8 w-8 text-muted-foreground mb-1" />
-                    <div className="text-xs text-muted-foreground font-medium">
+                    <Camera className="text-muted-foreground mb-1 h-8 w-8" />
+                    <div className="text-muted-foreground text-xs font-medium">
                       Example {example.id}
                     </div>
-                    <div className="text-xs text-muted-foreground/70 mt-1 leading-tight">
+                    <div className="text-muted-foreground/70 mt-1 text-xs leading-tight">
                       {example.desc}
                     </div>
                   </div>
@@ -323,9 +336,9 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
 
         {/* Tips Section */}
         <div className="space-y-6">
-          <Card className="bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
+          <Card className="border-green-200 bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:border-green-800 dark:from-green-950/20 dark:to-emerald-950/20">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
                 <Sparkles className="h-5 w-5 text-green-600" />
                 Photo Guidelines
               </CardTitle>
@@ -333,40 +346,40 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
             <CardContent className="space-y-4">
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
                   <div>
                     <div className="font-medium">High Resolution</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       At least 512x512 pixels for crisp artwork
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
                   <div>
                     <div className="font-medium">Clear Focus</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       Your pet should be the main subject and well-lit
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
                   <div>
                     <div className="font-medium">Simple Background</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       Avoid busy backgrounds for cleaner results
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                  <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
                   <div>
                     <div className="font-medium">Good Lighting</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       Natural light works best, avoid flash
                     </div>
                   </div>
@@ -381,37 +394,45 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                  <ImageIcon className="h-5 w-5 text-primary" />
+                <div className="bg-muted/50 flex items-center gap-2 rounded-lg p-3">
+                  <ImageIcon className="text-primary h-5 w-5" />
                   <div>
                     <div className="font-medium">JPEG/JPG</div>
-                    <div className="text-xs text-muted-foreground">Most common format</div>
+                    <div className="text-muted-foreground text-xs">
+                      Most common format
+                    </div>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                  <ImageIcon className="h-5 w-5 text-primary" />
+
+                <div className="bg-muted/50 flex items-center gap-2 rounded-lg p-3">
+                  <ImageIcon className="text-primary h-5 w-5" />
                   <div>
                     <div className="font-medium">PNG</div>
-                    <div className="text-xs text-muted-foreground">High quality</div>
+                    <div className="text-muted-foreground text-xs">
+                      High quality
+                    </div>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                  <ImageIcon className="h-5 w-5 text-primary" />
+
+                <div className="bg-muted/50 flex items-center gap-2 rounded-lg p-3">
+                  <ImageIcon className="text-primary h-5 w-5" />
                   <div>
                     <div className="font-medium">WEBP</div>
-                    <div className="text-xs text-muted-foreground">Modern format</div>
+                    <div className="text-muted-foreground text-xs">
+                      Modern format
+                    </div>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-                  <div className="w-5 h-5 rounded bg-orange-500 flex items-center justify-center text-white text-xs font-bold">
+
+                <div className="bg-muted/50 flex items-center gap-2 rounded-lg p-3">
+                  <div className="flex h-5 w-5 items-center justify-center rounded bg-orange-500 text-xs font-bold text-white">
                     20
                   </div>
                   <div>
                     <div className="font-medium">MB Limit</div>
-                    <div className="text-xs text-muted-foreground">Maximum size</div>
+                    <div className="text-muted-foreground text-xs">
+                      Maximum size
+                    </div>
                   </div>
                 </div>
               </div>
