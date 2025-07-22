@@ -109,7 +109,7 @@ export class FalAIProvider extends AIProvider {
         onQueueUpdate: (update) => {
           if (update.status === "IN_PROGRESS") {
             console.log(
-              "Generation in progress:",
+              "Generation in progress",
               update.logs?.map((log) => log.message).join(", "),
             );
           }

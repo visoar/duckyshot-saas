@@ -25,14 +25,14 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "oil-painting",
     name: "Oil Painting",
-    description: "Convert this to a classical oil painting masterpiece",
+    description: "A classical oil painting masterpiece",
     category: "classic",
     previewImageUrl: "https://gen-image.ullrai.com/q/oil_painting_cat",
     isActive: true,
     sortOrder: 1,
     metadata: {
       prompt:
-        "oil painting, classical art style, rich textures, masterpiece, detailed brushstrokes",
+        "Convert this to oil painting, classical art style, rich textures, masterpiece, detailed brushstrokes",
       negativePrompt: "cartoon, anime, digital art, photograph",
       guidance: 7.5,
       strength: 0.8,
@@ -41,14 +41,14 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "watercolor",
     name: "Watercolor",
-    description: "Convert this to Soft, flowing watercolor painting style",
+    description: "Soft, flowing watercolor painting style",
     category: "classic",
     previewImageUrl: "https://gen-image.ullrai.com/q/watercolor_cat",
     isActive: true,
     sortOrder: 2,
     metadata: {
       prompt:
-        "watercolor painting, soft colors, flowing paint, artistic, delicate brushwork",
+        "Convert this to watercolor painting, soft colors, flowing paint, artistic, delicate brushwork",
       negativePrompt: "sharp edges, digital art, photograph, realistic",
       guidance: 7.0,
       strength: 0.75,
@@ -57,14 +57,14 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "pencil-sketch",
     name: "Pencil Sketch",
-    description: "Convert this to Detailed pencil drawing with shading",
+    description: "Detailed pencil drawing with shading",
     category: "classic",
     previewImageUrl: "https://gen-image.ullrai.com/q/pencil_sketch_cat",
     isActive: true,
     sortOrder: 3,
     metadata: {
       prompt:
-        "pencil sketch, detailed drawing, graphite, shading, artistic sketch",
+        "Convert this to pencil sketch, detailed drawing, graphite, shading, artistic sketch",
       negativePrompt: "color, photograph, digital art, painting",
       guidance: 6.5,
       strength: 0.7,
@@ -75,7 +75,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "cartoon",
     name: "Cartoon",
-    description: "Convert this to Fun and playful cartoon style",
+    description: "Fun and playful cartoon style",
     category: "modern",
     previewImageUrl: "https://gen-image.ullrai.com/q/cartoon_cat",
     isActive: true,
@@ -90,7 +90,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "anime",
     name: "Anime",
-    description: "Convert this to Japanese anime and manga style",
+    description: "Japanese anime and manga style",
     category: "modern",
     previewImageUrl: "https://gen-image.ullrai.com/q/anime_cat",
     isActive: true,
@@ -105,7 +105,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "pop-art",
     name: "Pop Art",
-    description: "Convert this to Vibrant pop art with bold colors",
+    description: "Vibrant pop art with bold colors",
     category: "modern",
     previewImageUrl: "https://gen-image.ullrai.com/q/pop_art_cat",
     isActive: true,
@@ -122,14 +122,14 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "cyberpunk",
     name: "Cyberpunk",
-    description: "Convert this to Futuristic cyberpunk aesthetic",
+    description: "Futuristic cyberpunk aesthetic",
     category: "special",
     previewImageUrl: "https://gen-image.ullrai.com/q/cyberpunk_cat",
     isActive: true,
     sortOrder: 7,
     metadata: {
       prompt:
-        "cyberpunk style, neon lights, futuristic, sci-fi, glowing effects, digital",
+        "Convert this to cyberpunk style, neon lights, futuristic, sci-fi, glowing effects, digital",
       negativePrompt: "natural, organic, vintage, classical",
       guidance: 8.0,
       strength: 0.85,
@@ -138,7 +138,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "pixel-art",
     name: "Pixel Art",
-    description: "Convert this to Retro 8-bit pixel art style",
+    description: "Retro 8-bit pixel art style",
     category: "special",
     previewImageUrl: "https://gen-image.ullrai.com/q/pixel_art_cat",
     isActive: true,
@@ -153,14 +153,14 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "van-gogh",
     name: "Van Gogh Style",
-    description: "Convert this to Swirling brushstrokes like Van Gogh",
+    description: "Swirling brushstrokes like Van Gogh",
     category: "special",
     previewImageUrl: "https://gen-image.ullrai.com/q/van-gogh_cat",
     isActive: true,
     sortOrder: 9,
     metadata: {
       prompt:
-        "Van Gogh style, swirling brushstrokes, post-impressionist, textured paint, expressive",
+        "Convert this to Van Gogh style, swirling brushstrokes, post-impressionist, textured paint, expressive",
       negativePrompt: "smooth, digital, photograph, realistic",
       guidance: 7.5,
       strength: 0.8,
@@ -169,14 +169,14 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
   {
     id: "studio-ghibli",
     name: "Studio Ghibli",
-    description: "Convert this to Magical Studio Ghibli animation style",
+    description: "Magical Studio Ghibli animation style",
     category: "special",
     previewImageUrl: "https://gen-image.ullrai.com/q/ghibli_cat",
     isActive: true,
     sortOrder: 10,
     metadata: {
       prompt:
-        "Studio Ghibli style, Miyazaki, magical, whimsical, soft colors, fantasy",
+        "Convert this to Studio Ghibli style, Miyazaki, magical, whimsical, soft colors, fantasy",
       negativePrompt: "realistic, dark, scary, photograph",
       guidance: 8.0,
       strength: 0.8,
@@ -189,22 +189,22 @@ export const STYLE_CATEGORIES = [
   {
     id: "classic",
     name: "Classic Art",
-    description: "Convert this to Traditional art styles",
+    description: "Traditional art styles",
   },
   {
     id: "modern",
     name: "Modern",
-    description: "Convert this to Contemporary digital styles",
+    description: "Contemporary digital styles",
   },
   {
     id: "special",
     name: "Special",
-    description: "Convert this to Unique and themed styles",
+    description: "Unique and themed styles",
   },
   {
     id: "seasonal",
     name: "Seasonal",
-    description: "Convert this to Holiday and seasonal themes",
+    description: "Holiday and seasonal themes",
   },
 ] as const;
 

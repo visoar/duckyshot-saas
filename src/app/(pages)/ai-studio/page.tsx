@@ -1,13 +1,8 @@
 import React from "react";
 import { createMetadata } from "@/lib/metadata";
 import { AIStudioWorkflow } from "./_components/ai-studio-workflow";
-import { BackgroundPattern } from "@/components/ui/background-pattern";
 import {
   Sparkles,
-  Wand2,
-  Star,
-  Heart,
-  Zap,
   Upload,
   Palette,
 } from "lucide-react";
@@ -28,9 +23,25 @@ export const metadata = createMetadata({
 export default function AIStudioPage() {
   return (
     <section className="flex min-h-screen flex-col">
+      {/* Header Section */}
+      <div className="bg-gradient-to-b from-primary/5 to-transparent py-12">
+        <div className="mx-auto max-w-4xl px-4 text-center">
+          <div className="bg-primary/10 inline-flex items-center gap-2 rounded-full px-4 py-2 mb-6">
+            <Sparkles className="text-primary h-4 w-4" />
+            <span className="text-sm font-medium">AI Art Studio</span>
+          </div>
+          <h1 className="from-primary via-primary/80 to-primary/60 bg-gradient-to-r bg-clip-text text-4xl font-bold text-transparent md:text-5xl mb-6">
+            Transform Pet Into Magical Artwork
+          </h1>
+          <p className="text-muted-foreground text-xl mb-8">
+            Upload your pet&apos;s photo and watch our AI create stunning artwork in 10+ artistic styles.
+          </p>
+        </div>
+      </div>
+
       {/* Main Studio Section */}
       <div className="bg-background/50 relative flex-1">
-        <div className="mx-auto max-w-6xl px-4 py-16">
+        <div className="mx-auto max-w-6xl px-4 py-8">
           <AIStudioWorkflow />
         </div>
       </div>

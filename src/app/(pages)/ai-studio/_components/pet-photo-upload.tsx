@@ -26,7 +26,7 @@ import Image from "next/image";
 
 interface PetPhotoUploadProps {
   onImageUpload: (file: File, url: string) => void;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 interface UploadedFile {
@@ -164,21 +164,14 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={onBack} className="gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Start
-        </Button>
-        <div className="text-center">
-          <h2 className="text-2xl font-bold">Upload Your Pet&apos;s Photo</h2>
-          <p className="text-muted-foreground">
-            Choose a clear, well-lit photo for the best artistic results
-          </p>
-        </div>
-        <div className="w-20" /> {/* Spacer for centering */}
+      <div className="text-center">
+        <h2 className="text-2xl font-bold mb-2">Upload Your Pet&apos;s Photo</h2>
+        <p className="text-muted-foreground">
+          Choose a clear, well-lit photo for the best artistic results
+        </p>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-2">
+      <div>
         {/* Upload Section */}
         <div className="space-y-6">
           {!selectedFile ? (
@@ -329,112 +322,6 @@ export function PetPhotoUpload({ onImageUpload, onBack }: PetPhotoUploadProps) {
                     </div>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Tips Section */}
-        <div className="space-y-6">
-          <Card className="border-green-200 bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:border-green-800 dark:from-green-950/20 dark:to-emerald-950/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Sparkles className="h-5 w-5 text-green-600" />
-                Photo Guidelines
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-start gap-3">
-                  <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
-                  <div>
-                    <div className="font-medium">High Resolution</div>
-                    <div className="text-muted-foreground text-sm">
-                      At least 512x512 pixels for crisp artwork
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
-                  <div>
-                    <div className="font-medium">Clear Focus</div>
-                    <div className="text-muted-foreground text-sm">
-                      Your pet should be the main subject and well-lit
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
-                  <div>
-                    <div className="font-medium">Simple Background</div>
-                    <div className="text-muted-foreground text-sm">
-                      Avoid busy backgrounds for cleaner results
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
-                  <div>
-                    <div className="font-medium">Good Lighting</div>
-                    <div className="text-muted-foreground text-sm">
-                      Natural light works best, avoid flash
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Supported Formats</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-muted/50 flex items-center gap-2 rounded-lg p-3">
-                  <ImageIcon className="text-primary h-5 w-5" />
-                  <div>
-                    <div className="font-medium">JPEG/JPG</div>
-                    <div className="text-muted-foreground text-xs">
-                      Most common format
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-muted/50 flex items-center gap-2 rounded-lg p-3">
-                  <ImageIcon className="text-primary h-5 w-5" />
-                  <div>
-                    <div className="font-medium">PNG</div>
-                    <div className="text-muted-foreground text-xs">
-                      High quality
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-muted/50 flex items-center gap-2 rounded-lg p-3">
-                  <ImageIcon className="text-primary h-5 w-5" />
-                  <div>
-                    <div className="font-medium">WEBP</div>
-                    <div className="text-muted-foreground text-xs">
-                      Modern format
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-muted/50 flex items-center gap-2 rounded-lg p-3">
-                  <div className="flex h-5 w-5 items-center justify-center rounded bg-orange-500 text-xs font-bold text-white">
-                    20
-                  </div>
-                  <div>
-                    <div className="font-medium">MB Limit</div>
-                    <div className="text-muted-foreground text-xs">
-                      Maximum size
-                    </div>
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>

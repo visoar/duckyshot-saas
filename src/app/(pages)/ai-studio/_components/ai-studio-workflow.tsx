@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, Palette, Wand2, Sparkles, Play } from "lucide-react";
+import { Upload, Palette, Wand2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
@@ -10,11 +10,9 @@ import { PetPhotoUpload } from "./pet-photo-upload";
 import { StyleSelection } from "./style-selection";
 import { GenerationProgress } from "./generation-progress";
 import { ArtworkResults } from "./artwork-results";
-import { QuickStart } from "./quick-start";
 import type { AIStyle } from "@/lib/ai/styles";
 
 export type WorkflowStep =
-  | "start"
   | "upload"
   | "style"
   | "generate"
@@ -53,7 +51,7 @@ export function AIStudioWorkflow() {
   const router = useRouter();
 
   const [state, setState] = useState<WorkflowState>({
-    currentStep: "start",
+    currentStep: "upload",
     isGenerating: false,
     generationProgress: 0,
   });
@@ -230,7 +228,7 @@ export function AIStudioWorkflow() {
 
   const handleRestart = useCallback(async () => {
     setState({
-      currentStep: "start",
+      currentStep: "upload",
       isGenerating: false,
       generationProgress: 0,
     });
@@ -242,7 +240,6 @@ export function AIStudioWorkflow() {
   // Step progress indicator
   const renderStepIndicator = () => {
     const steps = [
-      { key: "start", label: "Start", icon: Play },
       { key: "upload", label: "Upload", icon: Upload },
       { key: "style", label: "Style", icon: Palette },
       { key: "generate", label: "Generate", icon: Wand2 },
@@ -261,8 +258,8 @@ export function AIStudioWorkflow() {
           const isCompleted = index < currentIndex;
           const isAccessible =
             index <= currentIndex ||
-            (state.uploadedImage && index <= 2) ||
-            (state.selectedStyle && index <= 3);
+            (state.uploadedImage && index <= 1) ||
+            (state.selectedStyle && index <= 2);
 
           return (
             <div key={step.key} className="flex items-center">
@@ -302,19 +299,11 @@ export function AIStudioWorkflow() {
   // Main content renderer
   const renderStepContent = () => {
     switch (state.currentStep) {
-      case "start":
-        return (
-          <QuickStart
-            onGetStarted={() => goToStep("upload")}
-            userCredits={userCredits}
-          />
-        );
-
       case "upload":
         return (
           <PetPhotoUpload
             onImageUpload={handleImageUpload}
-            onBack={() => goToStep("start")}
+            onBack={undefined}
           />
         );
 
