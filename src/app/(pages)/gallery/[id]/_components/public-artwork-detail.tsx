@@ -94,7 +94,14 @@ export function PublicArtworkDetail({ artworkId }: PublicArtworkDetailProps) {
 
   const handleDownload = async (imageUrl: string) => {
     try {
-      const response = await fetch(imageUrl);
+      // Use proxy API route to avoid CORS issues
+      const proxyUrl = `/api/download?url=${encodeURIComponent(imageUrl)}`;
+      const response = await fetch(proxyUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.statusText}`);
+      }
+      
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
 
@@ -107,6 +114,7 @@ export function PublicArtworkDetail({ artworkId }: PublicArtworkDetailProps) {
       document.body.removeChild(a);
     } catch (error) {
       console.error("Download failed:", error);
+      alert("Failed to download image. Please try again.");
     }
   };
 

@@ -24,6 +24,7 @@ import {
   Zap,
   Clock,
   Palette,
+  Coins,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -34,6 +35,56 @@ import {
   isStylePopular,
   getStyleCredits,
 } from "@/lib/ai/utils";
+
+interface StyleImageProps {
+  style: AIStyle;
+  size: number;
+  className?: string;
+}
+
+function StyleImage({ style, size, className }: StyleImageProps) {
+  return (
+    <div className={cn("from-primary/5 to-primary/10 aspect-square overflow-hidden bg-gradient-to-br", className)}>
+      {style.previewImageUrl ? (
+        <Image
+          src={style.previewImageUrl}
+          alt={style.name}
+          width={size}
+          height={size}
+          className="h-full w-full object-cover"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center">
+          <Palette className="text-primary h-8 w-8" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface StyleBadgesProps {
+  style: AIStyle;
+  className?: string;
+}
+
+function StyleBadges({ style, className }: StyleBadgesProps) {
+  return (
+    <div className={cn("flex gap-1", className)}>
+      {isStylePopular(style) && (
+        <Badge className="bg-orange-500 text-xs text-white">
+          <Star className="mr-1 h-3 w-3" />
+          Popular
+        </Badge>
+      )}
+      {isStylePremium(style) && (
+        <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-xs text-white">
+          <Crown className="mr-1 h-3 w-3" />
+          Premium
+        </Badge>
+      )}
+    </div>
+  );
+}
 
 interface StylesResponse {
   styles: AIStyle[];
@@ -277,37 +328,14 @@ export function StyleSelection({
                       onClick={() => onStyleSelect(style)}
                     >
                       <div className="relative">
-                        <div className="from-primary/5 to-primary/10 aspect-square overflow-hidden rounded-t-lg bg-gradient-to-br">
-                          {style.previewImageUrl ? (
-                            <Image
-                              src={style.previewImageUrl}
-                              alt={style.name}
-                              width={200}
-                              height={200}
-                              className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center">
-                              <Palette className="text-primary h-8 w-8" />
-                            </div>
-                          )}
-                        </div>
+                        <StyleImage 
+                          style={style} 
+                          size={200} 
+                          className="rounded-t-lg transition-transform group-hover:scale-105" 
+                        />
 
                         {/* Badges */}
-                        <div className="absolute top-2 right-2 flex gap-1">
-                          {isStylePopular(style) && (
-                            <Badge className="bg-orange-500 text-xs text-white">
-                              <Star className="mr-1 h-3 w-3" />
-                              Popular
-                            </Badge>
-                          )}
-                          {isStylePremium(style) && (
-                            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-xs text-white">
-                              <Crown className="mr-1 h-3 w-3" />
-                              Premium
-                            </Badge>
-                          )}
-                        </div>
+                        <StyleBadges style={style} className="absolute top-2 right-2" />
 
                         {/* Selection indicator */}
                         {selectedStyle?.id === style.id && (
@@ -323,10 +351,10 @@ export function StyleSelection({
                         <div className="mb-2 flex items-center justify-between">
                           <h4 className="font-semibold">{style.name}</h4>
                           <Badge variant="outline" className="text-xs">
-                            {getStyleCredits()} credit/image
+                            <Coins />{getStyleCredits()}
                           </Badge>
                         </div>
-                        <p className="text-muted-foreground mb-3 line-clamp-2 text-sm">
+                        <p className="text-muted-foreground mb-3 line-clamp-2 text-xs">
                           {style.description}
                         </p>
 
@@ -416,32 +444,19 @@ export function StyleSelection({
                 <CardTitle className="text-lg">Selected Style</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="from-primary/5 to-primary/10 aspect-square overflow-hidden rounded-lg bg-gradient-to-br">
-                  {selectedStyle.previewImageUrl ? (
-                    <Image
-                      src={selectedStyle.previewImageUrl}
-                      alt={selectedStyle.name}
-                      width={200}
-                      height={200}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <Palette className="text-primary h-8 w-8" />
+                <div className="flex gap-3">
+                  <StyleImage style={selectedStyle} size={80} className="rounded-lg" />
+                  <div>
+                    <div className="mb-2 flex items-center gap-2">
+                      <h4 className="font-semibold">{selectedStyle.name}</h4>
+                      {isStylePremium(selectedStyle) && (
+                        <Crown className="h-4 w-4 text-yellow-500" />
+                      )}
                     </div>
-                  )}
-                </div>
-
-                <div>
-                  <div className="mb-2 flex items-center gap-2">
-                    <h4 className="font-semibold">{selectedStyle.name}</h4>
-                    {isStylePremium(selectedStyle) && (
-                      <Crown className="h-4 w-4 text-yellow-500" />
-                    )}
+                    <p className="text-muted-foreground text-sm">
+                      {selectedStyle.description}
+                    </p>
                   </div>
-                  <p className="text-muted-foreground text-sm">
-                    {selectedStyle.description}
-                  </p>
                 </div>
 
                 <Button
@@ -466,17 +481,6 @@ export function StyleSelection({
             </Card>
           )}
 
-          {/* Credits info */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-sm">
-                  Credits remaining:
-                </span>
-                <span className="font-bold">{userCredits.remaining}</span>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
 
@@ -500,21 +504,7 @@ export function StyleSelection({
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <h4 className="font-medium">Style Preview</h4>
-                  <div className="from-primary/5 to-primary/10 aspect-square overflow-hidden rounded-lg bg-gradient-to-br">
-                    {previewStyle.previewImageUrl ? (
-                      <Image
-                        src={previewStyle.previewImageUrl}
-                        alt={previewStyle.name}
-                        width={300}
-                        height={300}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center">
-                        <Palette className="text-primary h-12 w-12" />
-                      </div>
-                    )}
-                  </div>
+                  <StyleImage style={previewStyle} size={300} className="rounded-lg" />
                 </div>
 
                 <div className="space-y-4">

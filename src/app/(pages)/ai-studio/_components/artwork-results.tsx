@@ -19,11 +19,9 @@ import {
   Heart,
   Star,
   Maximize2,
-  Eye,
   Copy,
   ExternalLink,
   Plus,
-  Sparkles,
   Crown,
   Palette,
 } from "lucide-react";
@@ -48,11 +46,17 @@ export function ArtworkResults({
   const [selectedImage, setSelectedImage] = useState<ArtworkResult | null>(
     null,
   );
-  const [viewMode, setViewMode] = useState<"grid" | "comparison">("comparison");
 
   const handleDownload = async (artwork: ArtworkResult) => {
     try {
-      const response = await fetch(artwork.url);
+      // Use proxy API route to avoid CORS issues
+      const proxyUrl = `/api/download?url=${encodeURIComponent(artwork.url)}`;
+      const response = await fetch(proxyUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.statusText}`);
+      }
+      
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -63,7 +67,8 @@ export function ArtworkResults({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       toast.success("Artwork downloaded successfully!");
-    } catch {
+    } catch (error) {
+      console.error("Download failed:", error);
       toast.error("Failed to download artwork. Please try again.");
     }
   };
@@ -107,29 +112,9 @@ export function ArtworkResults({
         </p>
       </div>
 
-      {/* View Mode Toggle */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant={viewMode === "comparison" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("comparison")}
-            className="gap-2"
-          >
-            <Eye className="h-4 w-4" />
-            Comparison
-          </Button>
-          <Button
-            variant={viewMode === "grid" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("grid")}
-            className="gap-2"
-          >
-            <Sparkles className="h-4 w-4" />
-            Gallery
-          </Button>
-        </div>
-
+      {/* Navigation Buttons */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div></div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={onBack} className="gap-2">
             <ArrowLeft className="h-4 w-4" />
@@ -143,8 +128,7 @@ export function ArtworkResults({
       </div>
 
       {/* Results Display */}
-      {viewMode === "comparison" ? (
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* Before/After Comparison */}
           <Card className="p-6">
             <div className="grid gap-8 md:grid-cols-2">
@@ -246,68 +230,9 @@ export function ArtworkResults({
             </Card>
           )}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {results.map((artwork, index) => (
-            <Card
-              key={artwork.id}
-              className="group overflow-hidden transition-all hover:shadow-lg"
-            >
-              <div className="relative aspect-[4/3]">
-                <Image
-                  src={artwork.url}
-                  alt={`${artwork.style.name} artwork ${index + 1}`}
-                  width={300}
-                  height={300}
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40">
-                  <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => setSelectedImage(artwork)}
-                    >
-                      <Maximize2 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => handleDownload(artwork)}
-                    >
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <Badge className="absolute top-2 left-2">#{index + 1}</Badge>
-                {isStylePremium(artwork.style) && (
-                  <Crown className="absolute top-2 right-2 h-4 w-4 text-yellow-500" />
-                )}
-              </div>
-
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-semibold">{artwork.style.name}</h4>
-                    <p className="text-muted-foreground text-sm">
-                      {artwork.style.category}
-                    </p>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button size="sm" onClick={() => handleCreateProducts()}>
-                      <ShoppingBag className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
 
       {/* Action Buttons */}
-      <div className="flex flex-wrap justify-center gap-4">
+      <div className="flex flex-wrap justify-center gap-3 sm:gap-4">
         <Button size="lg" onClick={handleDownloadAll} className="gap-2">
           <Download className="h-5 w-5" />
           Download All ({results.length})
@@ -337,33 +262,33 @@ export function ArtworkResults({
       {/* Generation Summary */}
       <Card className="border-green-200 bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:border-green-800 dark:from-green-950/20 dark:to-emerald-950/20">
         <CardContent className="p-6">
-          <div className="flex items-center justify-center gap-8 text-center">
+          <div className="grid grid-cols-2 gap-4 md:flex md:items-center md:justify-center md:gap-8 text-center">
             <div>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-xl sm:text-2xl font-bold text-green-600">
                 {results.length > 0 ? getStyleCredits() * results.length : 0}
               </div>
-              <div className="text-muted-foreground text-sm">Credits Used</div>
+              <div className="text-muted-foreground text-xs sm:text-sm">Credits Used</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-xl sm:text-2xl font-bold text-green-600">
                 {results.length}
               </div>
-              <div className="text-muted-foreground text-sm">
+              <div className="text-muted-foreground text-xs sm:text-sm">
                 Artworks Created
               </div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-green-600">~30s</div>
-              <div className="text-muted-foreground text-sm">
+              <div className="text-xl sm:text-2xl font-bold text-green-600">~30s</div>
+              <div className="text-muted-foreground text-xs sm:text-sm">
                 Generation Time
               </div>
             </div>
             <div>
-              <div className="flex items-center justify-center gap-1 text-2xl font-bold text-green-600">
-                <Star className="h-5 w-5" />
-                {results[0]?.style.name}
+              <div className="flex items-center justify-center gap-1 text-xl sm:text-2xl font-bold text-green-600">
+                <Star className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="truncate">{results[0]?.style.name}</span>
               </div>
-              <div className="text-muted-foreground text-sm">Style Applied</div>
+              <div className="text-muted-foreground text-xs sm:text-sm">Style Applied</div>
             </div>
           </div>
         </CardContent>

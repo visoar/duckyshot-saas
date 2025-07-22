@@ -105,7 +105,14 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
 
   const handleDownload = async (imageUrl: string) => {
     try {
-      const response = await fetch(imageUrl);
+      // Use proxy API route to avoid CORS issues
+      const proxyUrl = `/api/download?url=${encodeURIComponent(imageUrl)}`;
+      const response = await fetch(proxyUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.statusText}`);
+      }
+      
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
 
@@ -118,6 +125,7 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
       document.body.removeChild(a);
     } catch (error) {
       console.error("Download failed:", error);
+      alert("Failed to download image. Please try again.");
     }
   };
 
@@ -356,7 +364,7 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Image Display */}
           <div className="space-y-4">
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden -p-6">
               <div className="bg-muted relative aspect-square">
                 {artwork.status === "completed" &&
                 artwork.generatedImages &&
@@ -435,7 +443,7 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
 
           {/* Artwork Info */}
           <div className="space-y-6">
-            <div>
+            {/* <div>
               <h1 className="mb-2 text-3xl font-bold">
                 {artwork.title || artwork.style?.name || "AI Artwork"}
               </h1>
@@ -444,11 +452,11 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
                   {artwork.description}
                 </p>
               )}
-            </div>
+            </div> */}
 
             {/* Artwork Details */}
             <Card>
-              <CardContent className="space-y-4 p-6">
+              <CardContent className="space-y-4">
                 <h3 className="mb-4 text-lg font-semibold">Artwork Details</h3>
 
                 <div className="space-y-3">
@@ -483,14 +491,6 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
                   </div>
 
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Credits Used</span>
-                    <div className="flex items-center gap-1">
-                      <Sparkles className="h-3 w-3" />
-                      <span className="text-sm">{artwork.creditsUsed}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Created</span>
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
@@ -499,7 +499,7 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
                       </span>
                     </div>
                   </div>
-
+{/* 
                   {artwork.completedAt && (
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Completed</span>
@@ -522,24 +522,14 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
                         </span>
                       </div>
                     </div>
-                  )}
+                  )} */}
 
-                  {artwork.generatedImages && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">
-                        Images Generated
-                      </span>
-                      <span className="text-sm">
-                        {artwork.generatedImages.length}
-                      </span>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>
 
             {/* Original Image */}
-            {artwork.originalImage && (
+            {/* {artwork.originalImage && (
               <Card>
                 <CardContent className="p-6">
                   <h3 className="mb-4 text-lg font-semibold">Original Image</h3>
@@ -555,7 +545,7 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
                   </p>
                 </CardContent>
               </Card>
-            )}
+            )} */}
           </div>
         </div>
       </div>

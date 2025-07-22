@@ -165,7 +165,7 @@ export function AIStudioWorkflow() {
             uploadId: successfulUpload.uploadId,
             styleId: state.selectedStyle.id,
             numImages: settings.numImages,
-            petDescription: "adorable pet", // Could be enhanced to get from user input
+            petDescription: "", // Could be enhanced to get from user input
           }),
         });
 

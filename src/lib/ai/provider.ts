@@ -100,9 +100,10 @@ export class FalAIProvider extends AIProvider {
         input: {
           prompt: params.stylePrompt,
           image_url: params.imageUrl,
+          image_prompt_strength: params.strength || 0.1,
           guidance_scale: params.guidance || 3.5,
           num_images: params.numImages || 2,
-          safety_tolerance: "2",
+          safety_tolerance: "6",
           seed: params.seed,
         },
         logs: true,

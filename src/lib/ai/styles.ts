@@ -32,42 +32,39 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     sortOrder: 1,
     metadata: {
       prompt:
-        "Convert this to oil painting, classical art style, rich textures, masterpiece, detailed brushstrokes",
-      negativePrompt: "cartoon, anime, digital art, photograph",
-      guidance: 7.5,
-      strength: 0.8,
+        "Make this oil painting, classical art style, rich textures, masterpiece, detailed brushstrokes",
+      guidance: 4.0,
+      strength: 0.15,
     },
   },
   {
     id: "watercolor",
     name: "Watercolor",
-    description: "Soft, flowing watercolor painting style",
+    description: "Soft, flowing watercolor painting",
     category: "classic",
     previewImageUrl: "https://gen-image.ullrai.com/q/watercolor_cat",
     isActive: true,
     sortOrder: 2,
     metadata: {
       prompt:
-        "Convert this to watercolor painting, soft colors, flowing paint, artistic, delicate brushwork",
-      negativePrompt: "sharp edges, digital art, photograph, realistic",
-      guidance: 7.0,
-      strength: 0.75,
+        "Make this watercolor painting, soft colors, flowing paint, artistic, delicate brushwork",
+      guidance: 3.5,
+      strength: 0.15,
     },
   },
   {
     id: "pencil-sketch",
     name: "Pencil Sketch",
-    description: "Detailed pencil drawing with shading",
+    description: "Pencil drawing with shading",
     category: "classic",
     previewImageUrl: "https://gen-image.ullrai.com/q/pencil_sketch_cat",
     isActive: true,
     sortOrder: 3,
     metadata: {
       prompt:
-        "Convert this to pencil sketch, detailed drawing, graphite, shading, artistic sketch",
-      negativePrompt: "color, photograph, digital art, painting",
-      guidance: 6.5,
-      strength: 0.7,
+        "Make this pencil sketch, detailed drawing, graphite, shading, artistic sketch",
+      guidance: 4.5,
+      strength: 0.15,
     },
   },
 
@@ -81,10 +78,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     isActive: true,
     sortOrder: 4,
     metadata: {
-      prompt: "cartoon style, animated, cute, colorful, Disney-like, adorable",
-      negativePrompt: "realistic, photograph, dark, scary",
-      guidance: 8.0,
-      strength: 0.85,
+      prompt: "Make this cartoon style, animated, cute, colorful, Disney-like, adorable",
+      guidance: 5.0,
+      strength: 0.15,
     },
   },
   {
@@ -96,10 +92,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     isActive: true,
     sortOrder: 5,
     metadata: {
-      prompt: "anime style, manga, kawaii, big eyes, Japanese animation style",
-      negativePrompt: "realistic, photograph, western cartoon",
-      guidance: 8.5,
-      strength: 0.8,
+      prompt: "Make this anime style, manga, kawaii, big eyes, Japanese animation style",
+      guidance: 5.5,
+      strength: 0.15,
     },
   },
   {
@@ -111,10 +106,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     isActive: true,
     sortOrder: 6,
     metadata: {
-      prompt: "pop art style, Andy Warhol, bright colors, high contrast, retro",
-      negativePrompt: "realistic, muted colors, photograph",
-      guidance: 7.5,
-      strength: 0.8,
+      prompt: "Make this pop art style, Andy Warhol, bright colors, high contrast, retro",
+      guidance: 4.5,
+      strength: 0.15,
     },
   },
 
@@ -129,10 +123,9 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     sortOrder: 7,
     metadata: {
       prompt:
-        "Convert this to cyberpunk style, neon lights, futuristic, sci-fi, glowing effects, digital",
-      negativePrompt: "natural, organic, vintage, classical",
-      guidance: 8.0,
-      strength: 0.85,
+        "Make this cyberpunk style, neon lights, futuristic, sci-fi, glowing effects, digital",
+      guidance: 6.0,
+      strength: 0.15,
     },
   },
   {
@@ -144,42 +137,39 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     isActive: true,
     sortOrder: 8,
     metadata: {
-      prompt: "pixel art, 8-bit, retro gaming, pixelated, arcade style",
-      negativePrompt: "smooth, high resolution, realistic, photograph",
+      prompt: "Make this pixel art, 8-bit, retro gaming, pixelated, arcade style",
       guidance: 7.0,
-      strength: 0.9,
+      strength: 0.15,
     },
   },
   {
     id: "van-gogh",
     name: "Van Gogh Style",
-    description: "Swirling brushstrokes like Van Gogh",
+    description: "Swirling like Van Gogh",
     category: "special",
     previewImageUrl: "https://gen-image.ullrai.com/q/van-gogh_cat",
     isActive: true,
     sortOrder: 9,
     metadata: {
       prompt:
-        "Convert this to Van Gogh style, swirling brushstrokes, post-impressionist, textured paint, expressive",
-      negativePrompt: "smooth, digital, photograph, realistic",
-      guidance: 7.5,
-      strength: 0.8,
+        "Make this Van Gogh style, swirling brushstrokes, post-impressionist, textured paint, expressive",
+      guidance: 4.0,
+      strength: 0.15,
     },
   },
   {
     id: "studio-ghibli",
     name: "Studio Ghibli",
-    description: "Magical Studio Ghibli animation style",
+    description: "Magical Studio Ghibli style",
     category: "special",
     previewImageUrl: "https://gen-image.ullrai.com/q/ghibli_cat",
     isActive: true,
     sortOrder: 10,
     metadata: {
       prompt:
-        "Convert this to Studio Ghibli style, Miyazaki, magical, whimsical, soft colors, fantasy",
-      negativePrompt: "realistic, dark, scary, photograph",
-      guidance: 8.0,
-      strength: 0.8,
+        "Make this Studio Ghibli style, Miyazaki, magical, whimsical, soft colors, fantasy",
+      guidance: 5.0,
+      strength: 0.15,
     },
   },
 ];
@@ -231,9 +221,12 @@ export function generateStylePrompt(
   petDescription?: string,
 ): string {
   const basePrompt = style.metadata.prompt;
-  const petDescriptor = petDescription || "adorable pet";
 
-  return `${petDescriptor}, ${basePrompt}, high quality, detailed, masterpiece`;
+  if (!petDescription) {
+    return basePrompt;
+  }
+
+  return `${petDescription}, ${basePrompt}`;
 }
 
 // Generate negative prompt for AI

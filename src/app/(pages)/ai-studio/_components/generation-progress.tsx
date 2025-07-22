@@ -120,7 +120,7 @@ export function GenerationProgress({
         </div>
 
         <div className="space-y-4">
-          <h2 className="from-primary to-primary/80 bg-gradient-to-r bg-clip-text text-3xl font-bold text-transparent">
+          <h2 className="from-primary to-primary/80 bg-gradient-to-r bg-clip-text text-2xl font-bold text-transparent">
             Creating Your Masterpiece...
           </h2>
 
