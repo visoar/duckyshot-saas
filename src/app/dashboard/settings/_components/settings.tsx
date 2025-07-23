@@ -17,9 +17,6 @@ const AccountPage = dynamic(() =>
 const AppearancePage = dynamic(() =>
   import("./appearance-page").then((mod) => mod.AppearancePage),
 );
-const NotificationPage = dynamic(() =>
-  import("./notifications-page").then((mod) => mod.NotificationPage),
-);
 const BillingPage = dynamic(() =>
   import("./billing-page").then((mod) => mod.BillingPage),
 );
@@ -31,7 +28,7 @@ interface BillingPageProps {
 }
 
 // Union type for all possible page props
-export type SettingsPageProps = BillingPageProps | Record<string, never>; // For pages with no props like AccountPage, NotificationPage, and AppearancePage
+export type SettingsPageProps = BillingPageProps | Record<string, never>;
 
 // Unified tab configuration
 interface SettingsTabConfig {
@@ -53,12 +50,6 @@ const settingsTabsConfig: SettingsTabConfig[] = [
     value: "billing",
     icon: CreditCard,
     component: BillingPage as FC<SettingsPageProps>,
-  },
-  {
-    name: "Emails & Notifications",
-    value: "notifications",
-    icon: Bell,
-    component: NotificationPage as FC<SettingsPageProps>,
   },
   {
     name: "Appearance",

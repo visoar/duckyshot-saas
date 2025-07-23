@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Target, Lightbulb, Heart, Globe, Award, Sparkles } from "lucide-react";
+import { Target, Heart, Globe, Award, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { createMetadata } from "@/lib/metadata";

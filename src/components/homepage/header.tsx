@@ -49,12 +49,12 @@ const unifiedNavItems: NavItem[] = [
     href: "/ai-studio",
   },
   {
-    title: "Explore",
-    href: "/gallery",
+    title: "My Artworks",
+    href: "/artworks",
   },
   {
-    title: "My Art",
-    href: "/artworks",
+    title: "Gallery",
+    href: "/gallery",
   },
   {
     title: "Pricing",
@@ -68,12 +68,12 @@ const mobileNavItems: NavItem[] = [
     href: "/ai-studio",
   },
   {
-    title: "Explore",
-    href: "/gallery",
+    title: "My Artworks",
+    href: "/artworks",
   },
   {
-    title: "My Art",
-    href: "/artworks",
+    title: "Gallery",
+    href: "/gallery",
   },
   {
     title: "Pricing",

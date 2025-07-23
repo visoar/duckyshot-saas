@@ -2,20 +2,20 @@
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   Palette,
-  Sparkles,
-  ArrowRight,
-  Star,
-  Crown,
-  CheckCircle,
+  // Sparkles,
+  // ArrowRight,
+  // Star,
+  // Crown,
+  // CheckCircle,
   Brush,
   Zap,
   Wand2
 } from "lucide-react";
-import Link from "next/link";
+// import Link from "next/link";
 import { DEFAULT_AI_STYLES, STYLE_CATEGORIES, getStylesByCategory } from "@/lib/ai/styles";
 
 // Category design system

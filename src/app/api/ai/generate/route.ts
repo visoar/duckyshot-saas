@@ -24,17 +24,25 @@ const generateRequestSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  console.log("🚀 AI Generate API called");
+  
   try {
     // Authenticate user
+    console.log("🔍 Checking authentication...");
     const session = await auth.api.getSession({ headers: request.headers });
     if (!session?.user?.id) {
+      console.log("❌ Authentication failed");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userId = session.user.id;
+    console.log("✅ User authenticated:", userId);
 
     // Parse and validate request body
+    console.log("📋 Parsing request body...");
     const body = await request.json();
+    console.log("📋 Request body:", body);
+    
     const {
       uploadId,
       styleId,
@@ -44,13 +52,17 @@ export async function POST(request: NextRequest) {
       title,
       description,
     } = generateRequestSchema.parse(body);
+    
+    console.log("✅ Request validated - uploadId:", uploadId, "styleId:", styleId, "numImages:", numImages);
 
     // Check if user has enough credits
+    console.log("💳 Checking user credits...");
     const hasCredits = await UserCreditsService.hasEnoughCredits(
       userId,
       numImages,
     );
     if (!hasCredits) {
+      console.log("❌ Insufficient credits");
       return NextResponse.json(
         {
           error: "Insufficient credits",
@@ -60,6 +72,7 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+    console.log("✅ Credits check passed");
 
     // Get style information
     const style = getStyleById(styleId);
@@ -111,8 +124,10 @@ export async function POST(request: NextRequest) {
 
     // Start AI generation (async)
     // In a real implementation, this would be queued for background processing
+    console.log("🎨 Starting AI generation with params:", generationParams);
     try {
       const result = await aiService.generatePetArt(generationParams);
+      console.log("✅ AI generation completed:", result);
 
       // If generation was successful, upload images to R2
       let finalImages = result.images;

@@ -176,7 +176,7 @@ export function SimpleJourney() {
           </h2>
 
           <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto">
-            Upload your pet's photo, choose an AI art style, then download digital files or order custom merchandise. 
+            Upload your pet&apos;s photo, choose an AI art style, then download digital files or order custom merchandise. 
             From canvas prints to mugs, we make it easy to celebrate your pet.
           </p>
         </div>

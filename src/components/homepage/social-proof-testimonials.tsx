@@ -261,8 +261,8 @@ export function SocialProofUnified() {
           </p>
           <div className="bg-primary/5 border-primary/20 mx-auto max-w-2xl rounded-lg sm:rounded-xl border p-6 sm:p-8">
             <p className="text-muted-foreground text-sm sm:text-base italic leading-relaxed">
-              "DuckyShot has revolutionized how pet parents celebrate their furry friends. 
-              The AI quality and custom merchandise options make it the perfect gift for any pet lover."
+              &ldquo;DuckyShot has revolutionized how pet parents celebrate their furry friends. 
+              The AI quality and custom merchandise options make it the perfect gift for any pet lover.&rdquo;
             </p>
             <p className="text-foreground mt-3 sm:mt-4 text-sm font-medium">
               - Featured in Pet Parent Magazine
@@ -273,7 +273,7 @@ export function SocialProofUnified() {
         {/* Bottom CTA */}
         <div className="mt-12 sm:mt-16 text-center">
           <p className="text-muted-foreground text-sm sm:text-base">
-            Want to share your pet's AI artwork story?
+            Want to share your pet&apos;s AI artwork story?
             <a
               href="mailto:hello@duckyshot.com"
               className="text-primary ml-1 hover:underline font-medium"

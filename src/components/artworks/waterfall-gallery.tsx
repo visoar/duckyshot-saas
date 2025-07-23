@@ -9,7 +9,7 @@ import {
   Download,
   Trash2,
   Calendar,
-  Sparkles,
+  // Sparkles,
   Clock,
   CheckCircle,
   XCircle,
@@ -240,11 +240,11 @@ export function WaterfallGallery({
             {columnArtworks.map((artwork) => (
               <Card
                 key={artwork.id}
-                className="group   overflow-hidden transition-all duration-300 hover:shadow-lg"
+                className="group overflow-hidden transition-all duration-300 hover:shadow-lg"
               >
                 {/* Image */}
                 <div
-                  className="bg-muted relative"
+                  className="bg-muted relative -mt-6"
                   style={{
                     height: imageHeights[artwork.id] || 200,
                   }}

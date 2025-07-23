@@ -12,7 +12,7 @@ import {
   Sparkles,
   ArrowRight,
   Heart,
-  Home,
+  // Home,
   Gift,
   CheckCircle,
   Truck
@@ -51,13 +51,13 @@ const productCategories: ProductCategory[] = [
   {
     id: "apparel",
     name: "Custom Apparel",
-    description: "Wear your pet's artwork with pride on premium clothing and accessories",
+    description: "Wear your pet&apos;s artwork with pride on premium clothing and accessories",
     icon: Shirt,
     color: "from-green-500 to-teal-600",
     products: [
       { name: "T-Shirts", description: "Soft cotton tees with vibrant prints", popular: true },
       { name: "Hoodies", description: "Cozy hooded sweatshirts for all seasons" },
-      { name: "Tank Tops", description: "Lightweight summer wear with your pet's art" },
+      { name: "Tank Tops", description: "Lightweight summer wear with your pet&apos;s art" },
       { name: "Tote Bags", description: "Eco-friendly bags for everyday use" }
     ],
     useCases: ["Pet owner gifts", "Family reunions", "Memorial wear", "Casual everyday"]
@@ -65,7 +65,7 @@ const productCategories: ProductCategory[] = [
   {
     id: "drinkware",
     name: "Drinkware & Kitchen",
-    description: "Start every day with your pet's smiling face on premium drinkware",
+    description: "Start every day with your pet&apos;s smiling face on premium drinkware",
     icon: Coffee,
     color: "from-orange-500 to-red-600",
     products: [
@@ -79,12 +79,12 @@ const productCategories: ProductCategory[] = [
   {
     id: "stationery",
     name: "Cards & Stationery",
-    description: "Share your pet's beauty with greeting cards and personalized stationery",
+    description: "Share your pet&apos;s beauty with greeting cards and personalized stationery",
     icon: Calendar,
     color: "from-pink-500 to-rose-600",
     products: [
       { name: "Greeting Cards", description: "Premium cards for any occasion", popular: true },
-      { name: "Thank You Cards", description: "Express gratitude with your pet's portrait" },
+      { name: "Thank You Cards", description: "Express gratitude with your pet&apos;s portrait" },
       { name: "Postcards", description: "Share memories with friends and family" },
       { name: "Stickers", description: "Fun stickers for laptops, phones, and more" }
     ],
@@ -235,7 +235,7 @@ export function DigitalToPhysicalShowcase() {
           </h2>
 
           <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto">
-            Don't just admire your pet's AI artwork on screen. Transform it into beautiful physical products 
+            Don&apos;t just admire your pet&apos;s AI artwork on screen. Transform it into beautiful physical products 
             you can touch, display, and gift. From canvas wall art to custom apparel and drinkware.
           </p>
         </div>
@@ -272,7 +272,7 @@ export function DigitalToPhysicalShowcase() {
               Custom Products for Every Need
             </h3>
             <p className="text-muted-foreground text-base sm:text-lg max-w-3xl mx-auto leading-relaxed">
-              Whether you want to decorate your home, create meaningful gifts, or wear your pet's art with pride, 
+              Whether you want to decorate your home, create meaningful gifts, or wear your pet&apos;s art with pride, 
               we have the perfect products for every occasion and space.
             </p>
           </div>
@@ -343,7 +343,7 @@ export function DigitalToPhysicalShowcase() {
             </h3>
             <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Start with AI art creation, then browse our full product catalog. 
-              Transform your pet's personality into something you can hold, display, and treasure forever.
+              Transform your pet&apos;s personality into something you can hold, display, and treasure forever.
             </p>
           </div>
 

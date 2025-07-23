@@ -121,6 +121,43 @@ export class AIArtworkService {
     return result.count;
   }
 
+  // Get user artwork statistics
+  static async getUserArtworkStats(userId: string) {
+    const [totalResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(aiArtworks)
+      .where(and(eq(aiArtworks.userId, userId), isNull(aiArtworks.deletedAt)));
+
+    const [publicResult] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(aiArtworks)
+      .where(and(
+        eq(aiArtworks.userId, userId),
+        eq(aiArtworks.isPublic, true),
+        isNull(aiArtworks.deletedAt)
+      ));
+
+    const styleUsage = await db
+      .select({
+        styleName: aiStyles.name,
+        count: sql<number>`count(*)`,
+      })
+      .from(aiArtworks)
+      .leftJoin(aiStyles, eq(aiArtworks.styleId, aiStyles.id))
+      .where(and(eq(aiArtworks.userId, userId), isNull(aiArtworks.deletedAt)))
+      .groupBy(aiStyles.name)
+      .orderBy(sql`count(*) DESC`)
+      .limit(3);
+
+    return {
+      totalArtworks: totalResult.count,
+      publicArtworks: publicResult.count,
+      favoriteStyles: styleUsage.map(s => s.styleName).filter(Boolean),
+      totalLikes: 0, // TODO: Implement likes system
+      recentLikes: 0, // TODO: Implement likes system
+    };
+  }
+
   // Get pending artworks for processing
   static async getPendingArtworks(limit = 10) {
     const artworks = await db

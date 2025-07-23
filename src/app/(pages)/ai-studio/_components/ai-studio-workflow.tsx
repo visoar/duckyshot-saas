@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, Palette, Wand2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -42,11 +42,13 @@ interface WorkflowState {
   results?: ArtworkResult[];
   isGenerating: boolean;
   generationProgress: number;
+  generationError?: string;
 }
 
 export function AIStudioWorkflow() {
   const { data: session } = useSession();
   const router = useRouter();
+  const workflowRef = useRef<HTMLDivElement>(null);
 
   const [state, setState] = useState<WorkflowState>({
     currentStep: "upload",
@@ -55,6 +57,7 @@ export function AIStudioWorkflow() {
   });
 
   const [userCredits, setUserCredits] = useState({ remaining: 0, total: 0 });
+  const prevStepRef = useRef<WorkflowStep>("upload");
 
   // Load user credits function (extracted for reuse)
   const loadUserCredits = useCallback(async () => {
@@ -83,6 +86,21 @@ export function AIStudioWorkflow() {
   useEffect(() => {
     loadUserCredits();
   }, [loadUserCredits]);
+
+  // Auto-scroll to workflow top when step actually changes (not on initial mount)
+  useEffect(() => {
+    if (prevStepRef.current !== state.currentStep && workflowRef.current) {
+      // Add small delay to ensure DOM has updated after state change
+      requestAnimationFrame(() => {
+        workflowRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "nearest"
+        });
+      });
+    }
+    prevStepRef.current = state.currentStep;
+  }, [state.currentStep]);
 
   // Navigation handlers
   const goToStep = useCallback((step: WorkflowStep) => {
@@ -130,33 +148,51 @@ export function AIStudioWorkflow() {
 
         setState((prev) => ({ ...prev, generationProgress: 30 }));
 
-        // Then call the AI generation API
-        const generateResponse = await fetch("/api/ai/generate", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            uploadId: uploadId,
-            styleId: settings.style.id,
-            numImages: settings.numImages,
-            petDescription: "", // Could be enhanced to get from user input
-          }),
-        });
+        // Start progress simulation while waiting for API
+        const progressInterval = setInterval(() => {
+          setState((prev) => {
+            if (prev.generationProgress < 85) {
+              return { ...prev, generationProgress: prev.generationProgress + 1 };
+            }
+            return prev;
+          });
+        }, 500); // Update every 500ms
 
-        setState((prev) => ({ ...prev, generationProgress: 60 }));
+        try {
+          // Create an AbortController for timeout handling
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute timeout
 
-        if (!generateResponse.ok) {
-          const errorData = await generateResponse.json();
-          throw new Error(errorData.error || "AI generation failed");
-        }
+          // Then call the AI generation API
+          const generateResponse = await fetch("/api/ai/generate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              uploadId: uploadId,
+              styleId: settings.style.id,
+              numImages: settings.numImages,
+              petDescription: "", // Could be enhanced to get from user input
+            }),
+            signal: controller.signal,
+          });
 
-        const generationData = await generateResponse.json();
-        setState((prev) => ({ ...prev, generationProgress: 90 }));
+          clearTimeout(timeoutId);
 
-        // Convert API response to ArtworkResult format
-        const results: ArtworkResult[] =
-          generationData.images?.map((imageUrl: string, i: number) => ({
+          clearInterval(progressInterval);
+          setState((prev) => ({ ...prev, generationProgress: 90 }));
+
+          if (!generateResponse.ok) {
+            const errorData = await generateResponse.json();
+            throw new Error(errorData.error || "AI generation failed");
+          }
+
+          const generationData = await generateResponse.json();
+          
+          // Convert API response to ArtworkResult format
+          const results: ArtworkResult[] =
+            generationData.images?.map((imageUrl: string, i: number) => ({
             id: `${generationData.artworkId}-${i}`,
             url: imageUrl,
             originalImageUrl: primaryImage.url,
@@ -165,18 +201,35 @@ export function AIStudioWorkflow() {
             createdAt: new Date(),
           })) || [];
 
-        setState((prev) => ({
-          ...prev,
-          results,
-          isGenerating: false,
-          generationProgress: 100,
-          currentStep: "results",
-        }));
+          setState((prev) => ({
+            ...prev,
+            results,
+            isGenerating: false,
+            generationProgress: 100,
+            currentStep: "results",
+          }));
+        } catch (apiError) {
+          clearInterval(progressInterval);
+          
+          // Handle specific error types
+          if (apiError instanceof Error) {
+            if (apiError.name === 'AbortError') {
+              throw new Error('AI generation timed out after 2 minutes. Please try again.');
+            } else if (apiError.message.includes('fetch')) {
+              throw new Error('Network error occurred. Please check your connection and try again.');
+            }
+          }
+          
+          throw apiError;
+        }
 
         // Reload user credits after successful generation
         await loadUserCredits();
       } catch (error) {
         console.error("Generation failed:", error);
+        
+        // Note: progressInterval is already cleared in the try-catch block above
+        
         setState((prev) => ({
           ...prev,
           isGenerating: false,
@@ -186,10 +239,11 @@ export function AIStudioWorkflow() {
         // Reload user credits after failed generation (credits should be refunded)
         await loadUserCredits();
 
-        // You could add error handling UI here
-        alert(
-          `Generation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-        );
+        // Set error state instead of alert
+        setState((prev) => ({
+          ...prev,
+          generationError: error instanceof Error ? error.message : "Unknown error occurred",
+        }));
       }
     },
     [
@@ -211,11 +265,11 @@ export function AIStudioWorkflow() {
     await loadUserCredits();
   }, [loadUserCredits]);
 
-  // Step progress indicator
+  // Clean step progress indicator
   const renderStepIndicator = () => {
     const steps = [
       { key: "upload", label: "Upload", icon: Upload },
-      { key: "explore", label: "Explore", icon: Palette },
+      { key: "explore", label: "Style", icon: Palette },
       { key: "generate", label: "Generate", icon: Wand2 },
       { key: "results", label: "Results", icon: Sparkles },
     ];
@@ -225,47 +279,57 @@ export function AIStudioWorkflow() {
     );
 
     return (
-      <div className="mb-6 flex items-center justify-center space-x-4">
-        {steps.map((step, index) => {
-          const Icon = step.icon;
-          const isActive = step.key === state.currentStep;
-          const isCompleted = index < currentIndex;
-          const isAccessible =
-            index <= currentIndex ||
-            (state.uploadedImages && index <= 1) ||
-            (state.selectedStyle && index <= 2);
+      <div className="mb-8 flex items-center justify-center">
+        <div className="flex items-center space-x-2">
+          {steps.map((step, index) => {
+            const Icon = step.icon;
+            const isActive = step.key === state.currentStep;
+            const isCompleted = index < currentIndex;
+            const isAccessible =
+              index <= currentIndex ||
+              (state.uploadedImages && index <= 1) ||
+              (state.selectedStyle && index <= 2);
 
-          return (
-            <div key={step.key} className="flex items-center">
-              <Button
-                variant={
-                  isActive ? "default" : isCompleted ? "secondary" : "outline"
-                }
-                size="sm"
-                className={cn(
-                  "h-10 w-10 rounded-full p-0 transition-all",
-                  isActive && "ring-primary ring-2 ring-offset-2",
-                  !isAccessible && "cursor-not-allowed opacity-50",
+            return (
+              <div key={step.key} className="flex items-center">
+                <div className="flex flex-col items-center gap-2">
+                  <Button
+                    variant={
+                      isActive ? "default" : isCompleted ? "secondary" : "outline"
+                    }
+                    size="sm"
+                    className={cn(
+                      "h-8 w-8 rounded-full p-0 transition-all",
+                      isActive && "ring-2 ring-primary ring-offset-2",
+                      !isAccessible && "cursor-not-allowed opacity-50",
+                    )}
+                    onClick={() =>
+                      isAccessible && goToStep(step.key as WorkflowStep)
+                    }
+                    disabled={!isAccessible}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </Button>
+                  <span className={cn(
+                    "text-xs font-medium",
+                    isActive ? "text-primary" : "text-muted-foreground"
+                  )}>
+                    {step.label}
+                  </span>
+                </div>
+
+                {index < steps.length - 1 && (
+                  <div
+                    className={cn(
+                      "mx-4 h-px w-8 transition-colors",
+                      isCompleted ? "bg-primary" : "bg-muted",
+                    )}
+                  />
                 )}
-                onClick={() =>
-                  isAccessible && goToStep(step.key as WorkflowStep)
-                }
-                disabled={!isAccessible}
-              >
-                <Icon className="h-4 w-4" />
-              </Button>
-
-              {index < steps.length - 1 && (
-                <div
-                  className={cn(
-                    "mx-2 h-0.5 w-8 transition-colors",
-                    isCompleted ? "bg-primary" : "bg-muted",
-                  )}
-                />
-              )}
-            </div>
-          );
-        })}
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   };
@@ -299,6 +363,11 @@ export function AIStudioWorkflow() {
             generationSettings={state.generationSettings!}
             uploadedImageUrl={state.uploadedImages![0].url}
             onCancel={() => goToStep("explore")}
+            error={state.generationError}
+            onRetry={() => {
+              setState((prev) => ({ ...prev, generationError: undefined }));
+              handleStartGeneration(state.generationSettings!);
+            }}
           />
         );
 
@@ -312,14 +381,6 @@ export function AIStudioWorkflow() {
             }}
             onRestart={handleRestart}
             onBack={() => goToStep("explore")}
-            onRemixStyle={(baseResult) => {
-              // Navigate back to style selection with remix suggestion
-              setState((prev) => ({ 
-                ...prev, 
-                currentStep: "explore",
-                selectedStyle: baseResult.style 
-              }));
-            }}
           />
         );
 
@@ -329,12 +390,12 @@ export function AIStudioWorkflow() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Enhanced step indicator */}
+    <div ref={workflowRef} className="space-y-6">
+      {/* Clean step indicator */}
       {renderStepIndicator()}
 
-      {/* Main content with better spacing */}
-      <div className="min-h-[600px]">{renderStepContent()}</div>
+      {/* Main content */}
+      <div className="min-h-[500px]">{renderStepContent()}</div>
     </div>
   );
 }

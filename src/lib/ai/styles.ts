@@ -32,7 +32,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     sortOrder: 1,
     metadata: {
       prompt:
-        "Make this oil painting, classical art style, rich textures, masterpiece, detailed brushstrokes",
+        "This character with oil painting, classical art style, rich textures, masterpiece, detailed brushstrokes",
       guidance: 4.0,
       strength: 0.15,
     },
@@ -47,7 +47,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     sortOrder: 2,
     metadata: {
       prompt:
-        "Make this watercolor painting, soft colors, flowing paint, artistic, delicate brushwork",
+        "This character with watercolor painting, soft colors, flowing paint, artistic, delicate brushwork",
       guidance: 3.5,
       strength: 0.15,
     },
@@ -62,7 +62,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     sortOrder: 3,
     metadata: {
       prompt:
-        "Make this pencil sketch, detailed drawing, graphite, shading, artistic sketch",
+        "This character with pencil sketch, detailed drawing, graphite, shading, artistic sketch",
       guidance: 4.5,
       strength: 0.15,
     },
@@ -78,7 +78,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     isActive: true,
     sortOrder: 4,
     metadata: {
-      prompt: "Make this cartoon style, animated, cute, colorful, Disney-like, adorable",
+      prompt: "This character with cartoon style, animated, cute, colorful, Disney-like, adorable",
       guidance: 5.0,
       strength: 0.15,
     },
@@ -92,7 +92,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     isActive: true,
     sortOrder: 5,
     metadata: {
-      prompt: "Make this anime style, manga, kawaii, big eyes, Japanese animation style",
+      prompt: "This character with anime style, manga, kawaii, big eyes, Japanese animation style",
       guidance: 5.5,
       strength: 0.15,
     },
@@ -106,7 +106,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     isActive: true,
     sortOrder: 6,
     metadata: {
-      prompt: "Make this pop art style, Andy Warhol, bright colors, high contrast, retro",
+      prompt: "This character with pop art style, Andy Warhol, bright colors, high contrast, retro",
       guidance: 4.5,
       strength: 0.15,
     },
@@ -123,7 +123,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     sortOrder: 7,
     metadata: {
       prompt:
-        "Make this cyberpunk style, neon lights, futuristic, sci-fi, glowing effects, digital",
+        "This character with cyberpunk style, neon lights, futuristic, sci-fi, glowing effects, digital",
       guidance: 6.0,
       strength: 0.15,
     },
@@ -137,7 +137,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     isActive: true,
     sortOrder: 8,
     metadata: {
-      prompt: "Make this pixel art, 8-bit, retro gaming, pixelated, arcade style",
+      prompt: "This character with pixel art, 8-bit, retro gaming, pixelated, arcade style",
       guidance: 7.0,
       strength: 0.15,
     },
@@ -152,7 +152,7 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     sortOrder: 9,
     metadata: {
       prompt:
-        "Make this Van Gogh style, swirling brushstrokes, post-impressionist, textured paint, expressive",
+        "This character with Van Gogh style, swirling brushstrokes, post-impressionist, textured paint, expressive",
       guidance: 4.0,
       strength: 0.15,
     },
@@ -167,7 +167,84 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     sortOrder: 10,
     metadata: {
       prompt:
-        "Make this Studio Ghibli style, Miyazaki, magical, whimsical, soft colors, fantasy",
+        "This character with Studio Ghibli style, Miyazaki, magical, whimsical, soft colors, fantasy",
+      guidance: 5.0,
+      strength: 0.15,
+    },
+  },
+
+  // Seasonal Styles
+  {
+    id: "spring-blossom",
+    name: "Spring Blossom",
+    description: "Fresh spring vibes with cherry blossoms",
+    category: "seasonal",
+    previewImageUrl: "https://gen-image.ullrai.com/q/spring_blossom_cat",
+    isActive: true,
+    sortOrder: 11,
+    metadata: {
+      prompt:
+        "This character with spring theme painting, cherry blossoms, pink flowers, fresh green leaves, pastel colors, blooming garden, gentle sunlight",
+      guidance: 4.5,
+      strength: 0.15,
+    },
+  },
+  {
+    id: "summer-beach",
+    name: "Summer Beach",
+    description: "Sunny summer beach vacation vibes",
+    category: "seasonal",
+    previewImageUrl: "https://gen-image.ullrai.com/q/summer_beach_cat",
+    isActive: true,
+    sortOrder: 12,
+    metadata: {
+      prompt:
+        "This character with summer beach theme painting, tropical paradise, palm trees, blue ocean, bright sunshine, sandy beach, vacation vibes, colorful",
+      guidance: 4.0,
+      strength: 0.15,
+    },
+  },
+  {
+    id: "autumn-harvest",
+    name: "Autumn Harvest",
+    description: "Cozy autumn with falling leaves",
+    category: "seasonal",
+    previewImageUrl: "https://gen-image.ullrai.com/q/autumn_harvest_cat",
+    isActive: true,
+    sortOrder: 13,
+    metadata: {
+      prompt:
+        "This character with autumn theme painting, falling leaves, orange and red colors, harvest season, pumpkins, warm golden light, cozy atmosphere",
+      guidance: 4.5,
+      strength: 0.15,
+    },
+  },
+  {
+    id: "winter-wonderland",
+    name: "Winter Wonderland",
+    description: "Magical winter snow scene",
+    category: "seasonal",
+    previewImageUrl: "https://gen-image.ullrai.com/q/winter_wonderland_cat",
+    isActive: true,
+    sortOrder: 14,
+    metadata: {
+      prompt:
+        "This character with winter wonderland theme painting, snow falling, white snowflakes, evergreen trees, cozy winter scene, soft blue and white colors, magical atmosphere",
+      guidance: 4.5,
+      strength: 0.15,
+    },
+  },
+  {
+    id: "christmas-holiday",
+    name: "Christmas Holiday",
+    description: "Festive Christmas celebration",
+    category: "seasonal",
+    previewImageUrl: "https://gen-image.ullrai.com/q/christmas_holiday_cat",
+    isActive: true,
+    sortOrder: 15,
+    metadata: {
+      prompt:
+        "This character with Christmas holiday theme painting, Christmas tree, red and green colors, festive decorations, holiday lights, warm cozy feeling, gift boxes, holly",
       guidance: 5.0,
       strength: 0.15,
     },

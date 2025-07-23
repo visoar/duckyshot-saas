@@ -9,21 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
-  ArrowLeft,
   Download,
-  Share2,
   Star,
   Maximize2,
-  Copy,
   Plus,
   Crown,
   Palette,
   Sparkles,
-  Facebook,
-  Twitter,
-  Instagram,
-  MessageCircle,
-  Mail,
   Camera,
   Trophy,
   Scissors,
@@ -38,20 +30,16 @@ interface SpectacularResultsShowcaseProps {
   originalImage: { url: string; file: File };
   onRestart: () => void;
   onBack: () => void;
-  onRemixStyle?: (baseResult: ArtworkResult) => void;
 }
 
 
 export function SpectacularResultsShowcase({
   results,
-  originalImage,
+  // originalImage,
   onRestart,
   onBack,
-  onRemixStyle,
 }: SpectacularResultsShowcaseProps) {
   const [selectedImage, setSelectedImage] = useState<ArtworkResult | null>(null);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [currentShareImage, setCurrentShareImage] = useState<ArtworkResult | null>(null);
 
   const handleDownload = async (artwork: ArtworkResult, format: 'standard' | 'high-res' | 'print' = 'standard') => {
     try {
@@ -94,35 +82,6 @@ export function SpectacularResultsShowcase({
     }
   };
 
-  const handleShare = (artwork: ArtworkResult, platform: string) => {
-    const shareText = `Check out this amazing AI artwork of my pet! 🎨✨ #AIArt #PetPortrait`;
-    const shareUrl = window.location.origin + '/gallery/' + artwork.id; // Assuming public gallery exists
-    
-    switch (platform) {
-      case 'twitter':
-        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`);
-        break;
-      case 'facebook':
-        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`);
-        break;
-      case 'instagram':
-        // Instagram doesn't support direct sharing, so copy to clipboard
-        navigator.clipboard.writeText(`${shareText} ${shareUrl}`);
-        toast.success("Caption copied! Now upload to Instagram and paste the caption.");
-        break;
-      case 'whatsapp':
-        window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`);
-        break;
-      case 'email':
-        window.open(`mailto:?subject=Amazing AI Pet Artwork&body=${encodeURIComponent(shareText + ' ' + shareUrl)}`);
-        break;
-      default:
-        navigator.clipboard.writeText(shareUrl);
-        toast.success("Link copied to clipboard!");
-    }
-    
-    setShowShareModal(false);
-  };
 
   const primaryResult = results[0];
 
@@ -143,11 +102,11 @@ export function SpectacularResultsShowcase({
       </div>
 
       {/* Main Result Display - Left-Right Layout */}
-      <Card className="overflow-hidden">
+      <Card className="-py-6 overflow-hidden">
         <CardContent className="p-0">
           <div className="grid md:grid-cols-2 gap-0">
             {/* Left: Image */}
-            <div className="relative bg-gradient-to-br from-muted/30 to-muted/10 flex items-center justify-center min-h-[400px] md:min-h-[500px]">
+            <div className="relative bg-gradient-to-br from-muted/30 to-muted/10 flex items-center justify-center min-h-[400px] md:min-h-[500px] md:rounded-l-lg overflow-hidden">
               <div className="relative max-w-full max-h-full">
                 <Image
                   src={primaryResult?.url || ''}
@@ -205,44 +164,28 @@ export function SpectacularResultsShowcase({
                   Download Artwork
                 </Button>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={() => {
-                      setCurrentShareImage(primaryResult);
-                      setShowShareModal(true);
-                    }}
-                    className="gap-2"
-                  >
-                    <Share2 className="h-4 w-4" />
-                    Share
-                  </Button>
-
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={() => setSelectedImage(primaryResult)}
-                    className="gap-2"
-                  >
-                    <Maximize2 className="h-4 w-4" />
-                    View Full
-                  </Button>
-                </div>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => setSelectedImage(primaryResult)}
+                  className="w-full gap-2"
+                >
+                  <Maximize2 className="h-4 w-4" />
+                  View Full Size
+                </Button>
               </div>
 
               {/* Secondary Actions */}
-              <div className="space-y-2 pt-4 border-t border-muted">
-                {onRemixStyle && (
-                  <Button
-                    variant="ghost"
-                    onClick={() => onRemixStyle(primaryResult)}
-                    className="w-full gap-2"
-                  >
-                    <Palette className="h-4 w-4" />
-                    Try Different Style
-                  </Button>
-                )}
+              <div className="space-y-3 pt-4 border-t border-muted">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={onBack}
+                  className="w-full gap-2 h-12"
+                >
+                  <Palette className="h-5 w-5" />
+                  Try Different Styles
+                </Button>
 
                 <Button
                   variant="ghost"
@@ -250,7 +193,7 @@ export function SpectacularResultsShowcase({
                   className="w-full gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  Create Another Artwork
+                  Upload New Photo
                 </Button>
               </div>
             </div>
@@ -321,13 +264,6 @@ export function SpectacularResultsShowcase({
       )}
 
 
-      {/* Navigation */}
-      <div className="flex items-center justify-center pt-6">
-        <Button variant="ghost" onClick={onBack} className="gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          Try Different Styles
-        </Button>
-      </div>
 
       {/* Celebration Message */}
       <div className="text-center py-6">
@@ -371,16 +307,6 @@ export function SpectacularResultsShowcase({
                     <Download className="h-4 w-4 mr-2" />
                     HD Download
                   </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      setCurrentShareImage(selectedImage);
-                      setShowShareModal(true);
-                    }}
-                  >
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share
-                  </Button>
                 </div>
               </div>
 
@@ -415,83 +341,6 @@ export function SpectacularResultsShowcase({
         </DialogContent>
       </Dialog>
 
-      {/* Share Modal */}
-      <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
-        <DialogContent className="max-w-md">
-          <div className="space-y-6 p-2">
-            <div className="text-center">
-              <Share2 className="h-12 w-12 mx-auto mb-4 text-primary" />
-              <h3 className="text-xl font-semibold mb-2">Share Your Masterpiece</h3>
-              <p className="text-muted-foreground text-sm">
-                Show off your amazing AI pet artwork to the world!
-              </p>
-            </div>
-
-            {currentShareImage && (
-              <div className="rounded-lg overflow-hidden bg-muted/20 flex items-center justify-center h-32">
-                <Image
-                  src={currentShareImage.url}
-                  alt="Artwork to share"
-                  width={300}
-                  height={200}
-                  className="max-w-full max-h-full object-contain"
-                />
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-3">
-              <Button
-                variant="outline"
-                onClick={() => currentShareImage && handleShare(currentShareImage, 'twitter')}
-                className="gap-2"
-              >
-                <Twitter className="h-4 w-4" />
-                Twitter
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => currentShareImage && handleShare(currentShareImage, 'facebook')}
-                className="gap-2"
-              >
-                <Facebook className="h-4 w-4" />
-                Facebook
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => currentShareImage && handleShare(currentShareImage, 'instagram')}
-                className="gap-2"
-              >
-                <Instagram className="h-4 w-4" />
-                Instagram
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => currentShareImage && handleShare(currentShareImage, 'whatsapp')}
-                className="gap-2"
-              >
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => currentShareImage && handleShare(currentShareImage, 'email')}
-                className="gap-2"
-              >
-                <Mail className="h-4 w-4" />
-                Email
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => currentShareImage && handleShare(currentShareImage, 'copy')}
-                className="gap-2"
-              >
-                <Copy className="h-4 w-4" />
-                Copy Link
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

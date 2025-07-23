@@ -202,7 +202,7 @@ export function EnhancedUploadZone({
           <span className="text-sm font-medium text-primary">AI Magic Awaits</span>
         </div>
         <h2 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-          Upload Your Pet's Photos
+          Upload Your Pet&apos;s Photos
         </h2>
         <p className="text-muted-foreground text-lg">
           Drop your photos here and watch the magic happen!

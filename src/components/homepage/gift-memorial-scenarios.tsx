@@ -247,7 +247,7 @@ function ScenarioCard({ scenario }: { scenario: Scenario }) {
               </div>
             </div>
             <blockquote className="text-xs sm:text-sm text-muted-foreground italic leading-relaxed">
-              "{scenario.story.quote}"
+              &ldquo;{scenario.story.quote}&rdquo;
             </blockquote>
           </div>
         </div>
@@ -296,8 +296,8 @@ export function GiftMemorialScenarios() {
           </h2>
 
           <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
-            Whether you're honoring a cherished memory, celebrating a special milestone, 
-            or creating the perfect gift, your pet's artwork fits every meaningful moment in your life.
+            Whether you&apos;re honoring a cherished memory, celebrating a special milestone, 
+            or creating the perfect gift, your pet&apos;s artwork fits every meaningful moment in your life.
           </p>
         </div>
 
