@@ -97,11 +97,11 @@ export function PublicArtworkDetail({ artworkId }: PublicArtworkDetailProps) {
       // Use proxy API route to avoid CORS issues
       const proxyUrl = `/api/download?url=${encodeURIComponent(imageUrl)}`;
       const response = await fetch(proxyUrl);
-      
+
       if (!response.ok) {
         throw new Error(`Download failed: ${response.statusText}`);
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
 

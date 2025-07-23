@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -65,7 +62,6 @@ interface StylesResponse {
     description: string;
   }>;
 }
-
 
 export function StyleExplorerGrid({
   // uploadedImages,
@@ -142,27 +138,27 @@ export function StyleExplorerGrid({
     return (
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2 mb-4">
+          <div className="bg-muted mb-4 inline-flex items-center gap-2 rounded-full px-4 py-2">
             <Loader2 className="h-4 w-4 animate-spin" />
             <span className="text-sm font-medium">Loading Styles</span>
           </div>
         </div>
-        
+
         <div className="flex items-center justify-between">
           <Button variant="ghost" onClick={onBack} size="sm" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             Back
           </Button>
-          <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+          <div className="bg-muted h-8 w-16 animate-pulse rounded" />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <Card key={i} className="overflow-hidden -py-6">
-              <div className="aspect-square bg-muted animate-pulse" />
+            <Card key={i} className="-py-6 overflow-hidden">
+              <div className="bg-muted aspect-square animate-pulse" />
               <CardContent>
-                <div className="h-4 w-full bg-muted animate-pulse rounded mb-2" />
-                <div className="h-3 w-2/3 bg-muted animate-pulse rounded" />
+                <div className="bg-muted mb-2 h-4 w-full animate-pulse rounded" />
+                <div className="bg-muted h-3 w-2/3 animate-pulse rounded" />
               </CardContent>
             </Card>
           ))}
@@ -180,10 +176,12 @@ export function StyleExplorerGrid({
             Back
           </Button>
         </div>
-        
+
         <Card className="p-8 text-center">
-          <div className="text-destructive mb-4 font-medium">Failed to load styles</div>
-          <div className="text-muted-foreground text-sm mb-4">{error}</div>
+          <div className="text-destructive mb-4 font-medium">
+            Failed to load styles
+          </div>
+          <div className="text-muted-foreground mb-4 text-sm">{error}</div>
           <Button onClick={() => window.location.reload()}>Try Again</Button>
         </Card>
       </div>
@@ -196,7 +194,7 @@ export function StyleExplorerGrid({
   const getCategoryEmoji = (categoryId: string) => {
     const emojiMap: Record<string, string> = {
       classic: "🎨",
-      modern: "✨", 
+      modern: "✨",
       special: "🌟",
       seasonal: "🎄",
     };
@@ -230,8 +228,12 @@ export function StyleExplorerGrid({
       </div>
 
       {/* Simplified category tabs */}
-      <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
-        <TabsList className="grid w-full max-w-lg mx-auto grid-cols-4">
+      <Tabs
+        value={activeCategory}
+        onValueChange={setActiveCategory}
+        className="w-full"
+      >
+        <TabsList className="mx-auto grid w-full max-w-lg grid-cols-4">
           {categories.map((category) => (
             <TabsTrigger
               key={category.id}
@@ -245,44 +247,44 @@ export function StyleExplorerGrid({
 
         {categories.map((category) => (
           <TabsContent key={category.id} value={category.id} className="mt-8">
-
             {/* Clean styles grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
               {currentStyles.map((style) => (
                 <Card
                   key={style.id}
                   className={cn(
-                    "overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md",
-                    selectedStyle?.id === style.id && "ring-2 ring-primary shadow-lg"
+                    "cursor-pointer overflow-hidden transition-all duration-200 hover:shadow-md",
+                    selectedStyle?.id === style.id &&
+                      "ring-primary shadow-lg ring-2",
                   )}
                   onClick={() => handleStyleSelect(style)}
                 >
-                  <div className="relative aspect-square -mt-6">
+                  <div className="relative -mt-6 aspect-square">
                     {style.previewImageUrl ? (
                       <Image
                         src={style.previewImageUrl}
                         alt={style.name}
                         width={300}
                         height={300}
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-muted flex items-center justify-center -mt-6">
-                        <Palette className="h-8 w-8 text-muted-foreground" />
+                      <div className="bg-muted -mt-6 flex h-full w-full items-center justify-center">
+                        <Palette className="text-muted-foreground h-8 w-8" />
                       </div>
                     )}
 
                     {/* Status badges */}
                     <div className="absolute top-2 right-2 flex flex-col gap-1">
                       {isStylePopular(style) && (
-                        <Badge className="bg-orange-500 text-white text-xs px-2 py-0.5">
-                          <Star className="w-3 h-3 mr-1" />
+                        <Badge className="bg-orange-500 px-2 py-0.5 text-xs text-white">
+                          <Star className="mr-1 h-3 w-3" />
                           Hot
                         </Badge>
                       )}
                       {isStylePremium(style) && (
-                        <Badge className="bg-purple-500 text-white text-xs px-2 py-0.5">
-                          <Crown className="w-3 h-3 mr-1" />
+                        <Badge className="bg-purple-500 px-2 py-0.5 text-xs text-white">
+                          <Crown className="mr-1 h-3 w-3" />
                           Pro
                         </Badge>
                       )}
@@ -290,7 +292,7 @@ export function StyleExplorerGrid({
 
                     {/* Selection indicator */}
                     {selectedStyle?.id === style.id && (
-                      <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                      <div className="bg-primary/10 absolute inset-0 flex items-center justify-center">
                         <div className="bg-primary text-primary-foreground rounded-full p-2">
                           <CheckCircle2 className="h-5 w-5" />
                         </div>
@@ -298,7 +300,7 @@ export function StyleExplorerGrid({
                     )}
 
                     {/* Quick preview button */}
-                    <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute right-2 bottom-2 opacity-0 transition-opacity group-hover:opacity-100">
                       <Button
                         size="sm"
                         variant="secondary"
@@ -314,14 +316,19 @@ export function StyleExplorerGrid({
                   </div>
 
                   <CardContent>
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-sm leading-tight">{style.name}</h3>
-                      <Badge variant="outline" className="text-xs px-1.5 py-0.5">
-                        <Coins className="w-3 h-3 mr-1" />
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="text-sm leading-tight font-medium">
+                        {style.name}
+                      </h3>
+                      <Badge
+                        variant="outline"
+                        className="px-1.5 py-0.5 text-xs"
+                      >
+                        <Coins className="mr-1 h-3 w-3" />
                         {getStyleCredits()}
                       </Badge>
                     </div>
-                    <p className="text-muted-foreground text-xs line-clamp-2">
+                    <p className="text-muted-foreground line-clamp-2 text-xs">
                       {style.description}
                     </p>
                   </CardContent>
@@ -338,30 +345,31 @@ export function StyleExplorerGrid({
           <CardContent className="p-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-lg overflow-hidden border">
+                <div className="h-12 w-12 overflow-hidden rounded-lg border">
                   {selectedStyle.previewImageUrl ? (
                     <Image
                       src={selectedStyle.previewImageUrl}
                       alt={selectedStyle.name}
                       width={48}
                       height={48}
-                      className="w-full h-full object-cover"
+                      className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-muted flex items-center justify-center">
-                      <Palette className="h-5 w-5 text-muted-foreground" />
+                    <div className="bg-muted flex h-full w-full items-center justify-center">
+                      <Palette className="text-muted-foreground h-5 w-5" />
                     </div>
                   )}
                 </div>
                 <div>
-                  <div className="font-medium text-sm flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
                     {selectedStyle.name}
                     {isStylePremium(selectedStyle) && (
                       <Crown className="h-4 w-4 text-yellow-500" />
                     )}
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    Cost: {totalCredits} credits • You have {userCredits.remaining}
+                  <div className="text-muted-foreground text-xs">
+                    Cost: {totalCredits} credits • You have{" "}
+                    {userCredits.remaining}
                   </div>
                 </div>
               </div>
@@ -397,18 +405,18 @@ export function StyleExplorerGrid({
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+              <div className="bg-muted aspect-square overflow-hidden rounded-lg">
                 {previewStyle.previewImageUrl ? (
                   <Image
                     src={previewStyle.previewImageUrl}
                     alt={previewStyle.name}
                     width={400}
                     height={400}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Palette className="h-16 w-16 text-muted-foreground" />
+                  <div className="flex h-full w-full items-center justify-center">
+                    <Palette className="text-muted-foreground h-16 w-16" />
                   </div>
                 )}
               </div>
@@ -436,7 +444,7 @@ export function StyleExplorerGrid({
                   }}
                   className="flex-1"
                 >
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
                   Select Style
                 </Button>
                 <Button
@@ -448,7 +456,7 @@ export function StyleExplorerGrid({
                   className="flex-1"
                   disabled={userCredits.remaining < getStyleCredits()}
                 >
-                  <Wand2 className="h-4 w-4 mr-2" />
+                  <Wand2 className="mr-2 h-4 w-4" />
                   Generate Now
                 </Button>
               </div>

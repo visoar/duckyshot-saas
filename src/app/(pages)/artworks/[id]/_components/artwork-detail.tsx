@@ -108,11 +108,11 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
       // Use proxy API route to avoid CORS issues
       const proxyUrl = `/api/download?url=${encodeURIComponent(imageUrl)}`;
       const response = await fetch(proxyUrl);
-      
+
       if (!response.ok) {
         throw new Error(`Download failed: ${response.statusText}`);
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
 
@@ -364,7 +364,7 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Image Display */}
           <div className="space-y-4">
-            <Card className="overflow-hidden -p-6">
+            <Card className="-p-6 overflow-hidden">
               <div className="bg-muted relative aspect-square">
                 {artwork.status === "completed" &&
                 artwork.generatedImages &&
@@ -499,7 +499,7 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
                       </span>
                     </div>
                   </div>
-{/* 
+                  {/* 
                   {artwork.completedAt && (
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Completed</span>
@@ -523,7 +523,6 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
                       </div>
                     </div>
                   )} */}
-
                 </div>
               </CardContent>
             </Card>

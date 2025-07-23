@@ -48,7 +48,11 @@ const GENERATION_STAGES = [
     range: [0, 15],
     color: "text-blue-500",
     bgColor: "bg-blue-500/10",
-    details: ["Detecting facial features", "Analyzing pose and composition", "Understanding lighting"],
+    details: [
+      "Detecting facial features",
+      "Analyzing pose and composition",
+      "Understanding lighting",
+    ],
   },
   {
     name: "Preparing Canvas",
@@ -57,7 +61,11 @@ const GENERATION_STAGES = [
     range: [15, 30],
     color: "text-purple-500",
     bgColor: "bg-purple-500/10",
-    details: ["Creating base layers", "Preparing color palette", "Setting composition guides"],
+    details: [
+      "Creating base layers",
+      "Preparing color palette",
+      "Setting composition guides",
+    ],
   },
   {
     name: "Applying Style",
@@ -66,7 +74,11 @@ const GENERATION_STAGES = [
     range: [30, 70],
     color: "text-orange-500",
     bgColor: "bg-orange-500/10",
-    details: ["Applying brush techniques", "Blending colors", "Creating texture"],
+    details: [
+      "Applying brush techniques",
+      "Blending colors",
+      "Creating texture",
+    ],
   },
   {
     name: "Adding Details",
@@ -82,9 +94,13 @@ const GENERATION_STAGES = [
     description: "Polishing the masterpiece",
     icon: Sparkles,
     range: [90, 100],
-    color: "text-pink-500", 
+    color: "text-pink-500",
     bgColor: "bg-pink-500/10",
-    details: ["Final color grading", "Adding artistic flourishes", "Quality optimization"],
+    details: [
+      "Final color grading",
+      "Adding artistic flourishes",
+      "Quality optimization",
+    ],
   },
 ];
 
@@ -99,7 +115,6 @@ const MOTIVATIONAL_MESSAGES = [
   "Your patience is creating something extraordinary... 🚀",
   "Great art captures the soul - we're capturing your pet's... 🎭",
 ];
-
 
 export function ImmersiveGenerationViewer({
   progress,
@@ -131,8 +146,6 @@ export function ImmersiveGenerationViewer({
     return () => clearInterval(messageInterval);
   }, []);
 
-
-
   // Track elapsed time
   useEffect(() => {
     const timeInterval = setInterval(() => {
@@ -151,17 +164,17 @@ export function ImmersiveGenerationViewer({
       {error && (
         <Card className="border-red-200 bg-red-50">
           <CardContent className="pt-6">
-            <div className="text-center space-y-4">
-              <div className="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+            <div className="space-y-4 text-center">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
                 <X className="h-8 w-8 text-red-600" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-red-900">
                   Generation Failed
                 </h3>
-                <p className="text-red-700 mt-2">{error}</p>
+                <p className="mt-2 text-red-700">{error}</p>
               </div>
-              <div className="flex gap-3 justify-center">
+              <div className="flex justify-center gap-3">
                 {onRetry && (
                   <Button onClick={onRetry} className="gap-2">
                     <Wand2 className="h-4 w-4" />
@@ -181,23 +194,21 @@ export function ImmersiveGenerationViewer({
 
       {/* Simplified Progress */}
       {!error && (
-        <div className="text-center space-y-6">
-          <div className="mx-auto w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
-            <Wand2 className="h-12 w-12 text-primary animate-pulse" />
+        <div className="space-y-6 text-center">
+          <div className="bg-primary/10 mx-auto flex h-24 w-24 items-center justify-center rounded-full">
+            <Wand2 className="text-primary h-12 w-12 animate-pulse" />
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold">
-              Creating Your Artwork
-            </h2>
+            <h2 className="text-2xl font-bold">Creating Your Artwork</h2>
 
             <div className="space-y-3">
               <Progress value={progress} className="h-3" />
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <div className="text-muted-foreground flex items-center justify-between text-sm">
                 <span>{progress}% complete</span>
                 <span>
                   {estimatedRemaining > 0
-                    ? `~${Math.floor(estimatedRemaining / 60)}:${(estimatedRemaining % 60).toString().padStart(2, '0')} remaining`
+                    ? `~${Math.floor(estimatedRemaining / 60)}:${(estimatedRemaining % 60).toString().padStart(2, "0")} remaining`
                     : "Almost ready!"}
                 </span>
               </div>

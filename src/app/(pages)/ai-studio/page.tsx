@@ -1,11 +1,7 @@
 import React from "react";
 import { createMetadata } from "@/lib/metadata";
 import { AIStudioWorkflow } from "./_components/ai-studio-workflow";
-import {
-  Sparkles,
-  Upload,
-  Palette,
-} from "lucide-react";
+import { Sparkles, Upload, Palette } from "lucide-react";
 
 export const metadata = createMetadata({
   title: "AI Art Studio - Transform Your Pet Photos",
@@ -26,15 +22,16 @@ export default function AIStudioPage() {
       {/* Clean header section */}
       <div className="py-12">
         <div className="mx-auto max-w-4xl px-4 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2 mb-6">
-            <Sparkles className="h-4 w-4 text-primary" />
+          <div className="bg-muted mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2">
+            <Sparkles className="text-primary h-4 w-4" />
             <span className="text-sm font-medium">AI Art Studio</span>
           </div>
-          <h1 className="text-4xl font-bold md:text-5xl mb-6">
+          <h1 className="mb-6 text-4xl font-bold md:text-5xl">
             Transform Pet Into Magical Artwork
           </h1>
-          <p className="text-muted-foreground text-lg mb-8">
-            Upload your pet&apos;s photo and create stunning artwork in 50+ artistic styles.
+          <p className="text-muted-foreground mb-8 text-lg">
+            Upload your pet&apos;s photo and create stunning artwork in 50+
+            artistic styles.
           </p>
         </div>
       </div>
@@ -50,9 +47,7 @@ export default function AIStudioPage() {
       <div className="bg-muted/30 py-16">
         <div className="mx-auto max-w-4xl px-4">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-2xl font-bold">
-              How It Works
-            </h2>
+            <h2 className="mb-4 text-2xl font-bold">How It Works</h2>
             <p className="text-muted-foreground">
               Three simple steps to create amazing pet art
             </p>
@@ -60,36 +55,30 @@ export default function AIStudioPage() {
 
           <div className="grid gap-8 md:grid-cols-3">
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <Upload className="h-6 w-6 text-primary" />
+              <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+                <Upload className="text-primary h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-lg font-semibold">
-                1. Upload Photo
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold">1. Upload Photo</h3>
               <p className="text-muted-foreground text-sm">
                 Upload a clear photo of your pet for best results.
               </p>
             </div>
 
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <Palette className="h-6 w-6 text-primary" />
+              <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+                <Palette className="text-primary h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-lg font-semibold">
-                2. Choose Style
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold">2. Choose Style</h3>
               <p className="text-muted-foreground text-sm">
                 Select from 50+ artistic styles and generate instantly.
               </p>
             </div>
 
             <div className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <Sparkles className="h-6 w-6 text-primary" />
+              <div className="bg-primary/10 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+                <Sparkles className="text-primary h-6 w-6" />
               </div>
-              <h3 className="mb-2 text-lg font-semibold">
-                3. Get Your Art
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold">3. Get Your Art</h3>
               <p className="text-muted-foreground text-sm">
                 Download your artwork or order custom products.
               </p>

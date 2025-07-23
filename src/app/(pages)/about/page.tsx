@@ -70,7 +70,8 @@ const milestones = [
   {
     year: "2023",
     title: "DuckyShot Born",
-    description: "Founded with a mission to celebrate pets through AI-powered artwork",
+    description:
+      "Founded with a mission to celebrate pets through AI-powered artwork",
   },
   {
     year: "2024",
@@ -85,7 +86,8 @@ const milestones = [
   {
     year: "2024",
     title: "Custom Merchandise",
-    description: "Launched personalized products to bring pet art into everyday life",
+    description:
+      "Launched personalized products to bring pet art into everyday life",
   },
 ];
 
@@ -99,7 +101,7 @@ export default function AboutPage() {
         <div className="container mx-auto px-6">
           <div className="mx-auto max-w-4xl text-center">
             <div className="border-border bg-background/50 mb-6 inline-flex items-center rounded-full border px-3 py-1 text-sm backdrop-blur-sm">
-              <Heart className="text-pink-500 mr-2 h-3 w-3 fill-current" />
+              <Heart className="mr-2 h-3 w-3 fill-current text-pink-500" />
               <span className="text-muted-foreground">
                 Celebrating the bond between pets and their families
               </span>
@@ -110,9 +112,10 @@ export default function AboutPage() {
             </h1>
 
             <p className="text-muted-foreground mb-8 text-xl leading-relaxed">
-              We&apos;re passionate about helping pet parents celebrate their furry, 
-              feathered, and scaly companions through beautiful AI-generated artwork 
-              and custom merchandise. Every pet deserves to be immortalized as art.
+              We&apos;re passionate about helping pet parents celebrate their
+              furry, feathered, and scaly companions through beautiful
+              AI-generated artwork and custom merchandise. Every pet deserves to
+              be immortalized as art.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4">
@@ -135,7 +138,8 @@ export default function AboutPage() {
               Our Values
             </h2>
             <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-              The principles that guide our mission to celebrate pets through art
+              The principles that guide our mission to celebrate pets through
+              art
             </p>
           </div>
 
@@ -243,7 +247,7 @@ export default function AboutPage() {
               Ready to Transform Your Pet Into Art?
             </h2>
             <p className="text-muted-foreground mb-8 text-lg">
-              Join thousands of pet parents who are already creating beautiful 
+              Join thousands of pet parents who are already creating beautiful
               AI artwork and custom merchandise of their beloved companions.
             </p>
             <div className="flex flex-wrap justify-center gap-4">

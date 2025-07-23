@@ -13,11 +13,7 @@ import { SpectacularResultsShowcase } from "./spectacular-results-showcase";
 import type { AIStyle } from "@/lib/ai/styles";
 import type { UploadedImageFile } from "@/lib/types/upload";
 
-export type WorkflowStep =
-  | "upload"
-  | "explore"
-  | "generate"
-  | "results";
+export type WorkflowStep = "upload" | "explore" | "generate" | "results";
 
 export interface GenerationSettings {
   numImages: number;
@@ -32,7 +28,6 @@ export interface ArtworkResult {
   settings: GenerationSettings;
   createdAt: Date;
 }
-
 
 interface WorkflowState {
   currentStep: WorkflowStep;
@@ -95,7 +90,7 @@ export function AIStudioWorkflow() {
         workflowRef.current?.scrollIntoView({
           behavior: "smooth",
           block: "start",
-          inline: "nearest"
+          inline: "nearest",
         });
       });
     }
@@ -115,7 +110,6 @@ export function AIStudioWorkflow() {
       currentStep: "explore",
     }));
   }, []);
-
 
   const handleStartGeneration = useCallback(
     async (settings: GenerationSettings) => {
@@ -152,7 +146,10 @@ export function AIStudioWorkflow() {
         const progressInterval = setInterval(() => {
           setState((prev) => {
             if (prev.generationProgress < 85) {
-              return { ...prev, generationProgress: prev.generationProgress + 1 };
+              return {
+                ...prev,
+                generationProgress: prev.generationProgress + 1,
+              };
             }
             return prev;
           });
@@ -189,17 +186,17 @@ export function AIStudioWorkflow() {
           }
 
           const generationData = await generateResponse.json();
-          
+
           // Convert API response to ArtworkResult format
           const results: ArtworkResult[] =
             generationData.images?.map((imageUrl: string, i: number) => ({
-            id: `${generationData.artworkId}-${i}`,
-            url: imageUrl,
-            originalImageUrl: primaryImage.url,
-            style: settings.style,
-            settings,
-            createdAt: new Date(),
-          })) || [];
+              id: `${generationData.artworkId}-${i}`,
+              url: imageUrl,
+              originalImageUrl: primaryImage.url,
+              style: settings.style,
+              settings,
+              createdAt: new Date(),
+            })) || [];
 
           setState((prev) => ({
             ...prev,
@@ -210,16 +207,20 @@ export function AIStudioWorkflow() {
           }));
         } catch (apiError) {
           clearInterval(progressInterval);
-          
+
           // Handle specific error types
           if (apiError instanceof Error) {
-            if (apiError.name === 'AbortError') {
-              throw new Error('AI generation timed out after 2 minutes. Please try again.');
-            } else if (apiError.message.includes('fetch')) {
-              throw new Error('Network error occurred. Please check your connection and try again.');
+            if (apiError.name === "AbortError") {
+              throw new Error(
+                "AI generation timed out after 2 minutes. Please try again.",
+              );
+            } else if (apiError.message.includes("fetch")) {
+              throw new Error(
+                "Network error occurred. Please check your connection and try again.",
+              );
             }
           }
-          
+
           throw apiError;
         }
 
@@ -227,9 +228,9 @@ export function AIStudioWorkflow() {
         await loadUserCredits();
       } catch (error) {
         console.error("Generation failed:", error);
-        
+
         // Note: progressInterval is already cleared in the try-catch block above
-        
+
         setState((prev) => ({
           ...prev,
           isGenerating: false,
@@ -242,16 +243,12 @@ export function AIStudioWorkflow() {
         // Set error state instead of alert
         setState((prev) => ({
           ...prev,
-          generationError: error instanceof Error ? error.message : "Unknown error occurred",
+          generationError:
+            error instanceof Error ? error.message : "Unknown error occurred",
         }));
       }
     },
-    [
-      state.uploadedImages,
-      session?.user,
-      router,
-      loadUserCredits,
-    ],
+    [state.uploadedImages, session?.user, router, loadUserCredits],
   );
 
   const handleRestart = useCallback(async () => {
@@ -295,12 +292,16 @@ export function AIStudioWorkflow() {
                 <div className="flex flex-col items-center gap-2">
                   <Button
                     variant={
-                      isActive ? "default" : isCompleted ? "secondary" : "outline"
+                      isActive
+                        ? "default"
+                        : isCompleted
+                          ? "secondary"
+                          : "outline"
                     }
                     size="sm"
                     className={cn(
                       "h-8 w-8 rounded-full p-0 transition-all",
-                      isActive && "ring-2 ring-primary ring-offset-2",
+                      isActive && "ring-primary ring-2 ring-offset-2",
                       !isAccessible && "cursor-not-allowed opacity-50",
                     )}
                     onClick={() =>
@@ -310,10 +311,12 @@ export function AIStudioWorkflow() {
                   >
                     <Icon className="h-4 w-4" />
                   </Button>
-                  <span className={cn(
-                    "text-xs font-medium",
-                    isActive ? "text-primary" : "text-muted-foreground"
-                  )}>
+                  <span
+                    className={cn(
+                      "text-xs font-medium",
+                      isActive ? "text-primary" : "text-muted-foreground",
+                    )}
+                  >
                     {step.label}
                   </span>
                 </div>
