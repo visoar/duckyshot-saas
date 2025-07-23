@@ -9,7 +9,7 @@ import {
 } from "@/lib/ai/styles";
 import { db } from "@/database";
 import { uploads } from "@/database/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or, isNull } from "drizzle-orm";
 import { z } from "zod";
 
 // Request validation schema
@@ -87,11 +87,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid style ID" }, { status: 400 });
     }
 
-    // Get upload information and verify it belongs to the user
+    // Get upload information and verify it belongs to the user or is anonymous
+    // Allow authenticated users to access anonymous uploads (userId is null)
     const [upload] = await db
       .select()
       .from(uploads)
-      .where(and(eq(uploads.id, uploadId), eq(uploads.userId, userId)));
+      .where(
+        and(
+          eq(uploads.id, uploadId),
+          // Allow if upload belongs to user OR if it's an anonymous upload (userId is null)
+          // This enables the flow: anonymous upload -> login -> generate
+          or(eq(uploads.userId, userId), isNull(uploads.userId))
+        )
+      );
 
     if (!upload) {
       return NextResponse.json(
