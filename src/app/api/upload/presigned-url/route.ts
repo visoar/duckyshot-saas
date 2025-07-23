@@ -13,11 +13,9 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. 认证检查
+    // 1. 认证检查 (现在允许匿名用户)
     const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const userId = session?.user?.id || null;
 
     // 2. 解析和验证请求体
     const body = await request.json();
@@ -54,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     // 4. 创建预签名 URL
     const result = await createPresignedUrl({
-      userId: session.user.id,
+      userId,
       fileName,
       contentType,
       size,
@@ -70,7 +68,7 @@ export async function POST(request: NextRequest) {
     // 如果需要更严格的上传状态管理（例如，确认上传完成），则需要额外的步骤。
     if (result.key && result.publicUrl) {
       await db.insert(uploads).values({
-        userId: session.user.id,
+        userId, // 现在可以为null（匿名用户）
         fileKey: result.key,
         url: result.publicUrl,
         fileName,

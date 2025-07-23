@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useSession } from "@/lib/auth/client";
 import {
   Dialog,
   DialogContent,
@@ -69,6 +70,7 @@ export function StyleExplorerGrid({
   onStartGeneration,
   userCredits,
 }: StyleExplorerGridProps) {
+  const { data: session } = useSession();
   const [stylesData, setStylesData] = useState<StylesResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -108,10 +110,11 @@ export function StyleExplorerGrid({
     stylesData?.stylesByCategory[category] || [];
 
   const totalCredits = selectedStyle ? getStyleCredits() * numImages : 0;
-  const canGenerate = selectedStyle && userCredits.remaining >= totalCredits;
+  const isLoggedIn = !!session?.user;
+  const canGenerate = selectedStyle && (isLoggedIn ? userCredits.remaining >= totalCredits : true);
 
   const handleGenerate = () => {
-    if (!selectedStyle || !canGenerate) return;
+    if (!selectedStyle) return;
 
     const settings: GenerationSettings = {
       numImages,
@@ -223,7 +226,7 @@ export function StyleExplorerGrid({
 
         <Badge variant="outline" className="gap-1 px-3 py-1">
           <Coins className="h-4 w-4" />
-          {userCredits.remaining}
+          {isLoggedIn ? userCredits.remaining : "Login to view"}
         </Badge>
       </div>
 
@@ -368,8 +371,7 @@ export function StyleExplorerGrid({
                     )}
                   </div>
                   <div className="text-muted-foreground text-xs">
-                    Cost: {totalCredits} credits • You have{" "}
-                    {userCredits.remaining}
+                    Cost: {totalCredits} credits • {isLoggedIn ? `You have ${userCredits.remaining}` : "Login to generate"}
                   </div>
                 </div>
               </div>
@@ -380,7 +382,7 @@ export function StyleExplorerGrid({
                 className="gap-2"
               >
                 <Wand2 className="h-4 w-4" />
-                Generate Art
+                {isLoggedIn ? "Generate Art" : "Login & Generate"}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
@@ -454,10 +456,10 @@ export function StyleExplorerGrid({
                     setPreviewStyle(null);
                   }}
                   className="flex-1"
-                  disabled={userCredits.remaining < getStyleCredits()}
+                  disabled={isLoggedIn && userCredits.remaining < getStyleCredits()}
                 >
                   <Wand2 className="mr-2 h-4 w-4" />
-                  Generate Now
+                  {isLoggedIn ? "Generate Now" : "Login & Generate"}
                 </Button>
               </div>
             </div>

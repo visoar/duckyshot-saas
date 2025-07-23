@@ -9,7 +9,7 @@ import { z } from "zod";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Mail } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getAvailableSocialProviders } from "@/lib/auth/providers";
 import { AuthFormBase } from "@/components/auth/auth-form-base";
 
@@ -23,6 +23,8 @@ interface AuthFormProps {
 export function AuthForm({ mode, availableProviders }: AuthFormProps) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
 
   const form = useForm<z.infer<typeof authSchema>>({
     resolver: zodResolver(authSchema),
@@ -34,7 +36,7 @@ export function AuthForm({ mode, availableProviders }: AuthFormProps) {
   const onSubmit = async (data: z.infer<typeof authSchema>) => {
     const result = await signIn.magicLink({
       email: data.email,
-      callbackURL: "/dashboard",
+      callbackURL: callbackUrl,
     });
 
     if (result.error) {
@@ -71,7 +73,7 @@ export function AuthForm({ mode, availableProviders }: AuthFormProps) {
       </Link>
     ),
     showTerms: !isLogin,
-    callbackURL: "/dashboard",
+    callbackURL: callbackUrl,
   };
 
   const fields = [

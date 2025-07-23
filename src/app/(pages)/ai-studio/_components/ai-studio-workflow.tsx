@@ -38,6 +38,7 @@ interface WorkflowState {
   isGenerating: boolean;
   generationProgress: number;
   generationError?: string;
+  pendingGeneration?: GenerationSettings; // Store generation settings for post-login execution
 }
 
 export function AIStudioWorkflow() {
@@ -53,6 +54,51 @@ export function AIStudioWorkflow() {
 
   const [userCredits, setUserCredits] = useState({ remaining: 0, total: 0 });
   const prevStepRef = useRef<WorkflowStep>("upload");
+  const handleStartGenerationRef = useRef<((settings: GenerationSettings) => Promise<void>) | null>(null);
+
+  // Save workflow state to localStorage for persistence across login
+  const saveWorkflowState = useCallback((workflowState: Partial<WorkflowState>) => {
+    if (typeof window !== 'undefined') {
+      const stateToSave = {
+        uploadedImages: workflowState.uploadedImages,
+        selectedStyle: workflowState.selectedStyle,
+        pendingGeneration: workflowState.pendingGeneration,
+        currentStep: workflowState.currentStep,
+      };
+      localStorage.setItem('aiStudioWorkflowState', JSON.stringify(stateToSave));
+    }
+  }, []);
+
+  // Load workflow state from localStorage
+  const loadWorkflowState = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      const savedState = localStorage.getItem('aiStudioWorkflowState');
+      if (savedState) {
+        try {
+          const parsedState = JSON.parse(savedState);
+          setState(prev => ({
+            ...prev,
+            ...parsedState,
+            isGenerating: false,
+            generationProgress: 0,
+            generationError: undefined,
+          }));
+          return parsedState;
+        } catch (error) {
+          console.error('Failed to load workflow state:', error);
+          localStorage.removeItem('aiStudioWorkflowState');
+        }
+      }
+    }
+    return null;
+  }, []);
+
+  // Clear saved workflow state
+  const clearWorkflowState = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('aiStudioWorkflowState');
+    }
+  }, []);
 
   // Load user credits function (extracted for reuse)
   const loadUserCredits = useCallback(async () => {
@@ -81,6 +127,31 @@ export function AIStudioWorkflow() {
   useEffect(() => {
     loadUserCredits();
   }, [loadUserCredits]);
+
+  // Load workflow state on component mount
+  useEffect(() => {
+    loadWorkflowState();
+  }, [loadWorkflowState]);
+
+  // Handle pending generation after user logs in
+  useEffect(() => {
+    if (session?.user && state.pendingGeneration && state.uploadedImages && state.uploadedImages.length > 0) {
+      // User just logged in and has pending generation
+      const pendingSettings = state.pendingGeneration;
+      
+      // Clear saved state and pending generation
+      clearWorkflowState();
+      setState(prev => ({
+        ...prev,
+        pendingGeneration: undefined,
+      }));
+      
+      // Trigger the generation using the ref
+      if (handleStartGenerationRef.current) {
+        handleStartGenerationRef.current(pendingSettings);
+      }
+    }
+  }, [session?.user, state.pendingGeneration, state.uploadedImages, clearWorkflowState]);
 
   // Auto-scroll to workflow top when step actually changes (not on initial mount)
   useEffect(() => {
@@ -117,6 +188,18 @@ export function AIStudioWorkflow() {
 
       // Check if user is logged in before starting generation
       if (!session?.user) {
+        // Update state with pending generation
+        setState(prev => {
+          const newState = {
+            ...prev,
+            pendingGeneration: settings,
+            selectedStyle: settings.style,
+          };
+          // Save the state for post-login execution
+          saveWorkflowState(newState);
+          return newState;
+        });
+        
         // Redirect to login with callback to return to AI Studio
         const callbackUrl = encodeURIComponent("/ai-studio");
         router.push(`/login?callbackUrl=${callbackUrl}`);
@@ -248,8 +331,13 @@ export function AIStudioWorkflow() {
         }));
       }
     },
-    [state.uploadedImages, session?.user, router, loadUserCredits],
+    [state.uploadedImages, session?.user, router, loadUserCredits, saveWorkflowState],
   );
+
+  // Update the ref whenever the function changes
+  useEffect(() => {
+    handleStartGenerationRef.current = handleStartGeneration;
+  }, [handleStartGeneration]);
 
   const handleRestart = useCallback(async () => {
     setState({
@@ -258,9 +346,12 @@ export function AIStudioWorkflow() {
       generationProgress: 0,
     });
 
+    // Clear saved workflow state
+    clearWorkflowState();
+
     // Reload user credits when restarting to ensure fresh data
     await loadUserCredits();
-  }, [loadUserCredits]);
+  }, [loadUserCredits, clearWorkflowState]);
 
   // Clean step progress indicator
   const renderStepIndicator = () => {

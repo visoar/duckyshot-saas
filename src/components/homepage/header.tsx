@@ -1,8 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useSession } from "@/lib/auth/client";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession, signOut } from "@/lib/auth/client";
 import { Session } from "@/types/auth";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/logo";
@@ -166,9 +166,13 @@ function NavigationDropdown({ item }: { item: NavItem }) {
 function UserAvatarDropdown({
   session,
   isPending,
+  onSignOut,
+  isSigningOut,
 }: {
   session: Session | null;
   isPending: boolean;
+  onSignOut: () => void;
+  isSigningOut: boolean;
 }) {
   const [mounted, setMounted] = useState(false);
   const user = session?.user;
@@ -259,14 +263,13 @@ function UserAvatarDropdown({
           </>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link
-            href="/api/auth/signout"
-            className="flex items-center text-red-600"
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Link>
+        <DropdownMenuItem 
+          onClick={onSignOut}
+          className="flex items-center text-red-600 cursor-pointer"
+          disabled={isSigningOut}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          {isSigningOut ? "Signing Out..." : "Sign Out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -277,9 +280,13 @@ function UserAvatarDropdown({
 function AuthButtons({
   session,
   isPending,
+  onSignOut,
+  isSigningOut,
 }: {
   session: Session | null;
   isPending: boolean;
+  onSignOut: () => void;
+  isSigningOut: boolean;
 }) {
   const [mounted, setMounted] = useState(false);
 
@@ -299,7 +306,12 @@ function AuthButtons({
   if (session?.user && session?.session) {
     return (
       <div className="hidden items-center gap-2 md:flex">
-        <UserAvatarDropdown session={session} isPending={isPending} />
+        <UserAvatarDropdown 
+          session={session} 
+          isPending={isPending} 
+          onSignOut={onSignOut}
+          isSigningOut={isSigningOut}
+        />
       </div>
     );
   }
@@ -320,9 +332,13 @@ function AuthButtons({
 function MobileAuthButtons({
   session,
   isPending,
+  onSignOut,
+  isSigningOut,
 }: {
   session: Session | null;
   isPending: boolean;
+  onSignOut: () => void;
+  isSigningOut: boolean;
 }) {
   const [mounted, setMounted] = useState(false);
 
@@ -400,11 +416,14 @@ function MobileAuthButtons({
               </Link>
             </Button>
           )}
-          <Button asChild variant="ghost" className="w-full text-red-600">
-            <Link href="/api/auth/signout">
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Link>
+          <Button 
+            variant="ghost" 
+            className="w-full text-red-600"
+            onClick={onSignOut}
+            disabled={isSigningOut}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            {isSigningOut ? "Signing Out..." : "Sign Out"}
           </Button>
         </div>
       </div>
@@ -431,6 +450,26 @@ function MobileNavigation({
   onClose: () => void;
 }) {
   const { data: session, isPending } = useSession();
+  const router = useRouter();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.push("/");
+            onClose();
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Sign out error:", error);
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
@@ -456,7 +495,12 @@ function MobileNavigation({
             ))}
           </nav>
 
-          <MobileAuthButtons session={session} isPending={isPending} />
+          <MobileAuthButtons 
+            session={session} 
+            isPending={isPending} 
+            onSignOut={handleSignOut}
+            isSigningOut={isSigningOut}
+          />
         </div>
       </SheetContent>
     </Sheet>
@@ -466,8 +510,27 @@ function MobileNavigation({
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
   const { data: session, isPending } = useSession();
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.push("/");
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Sign out error:", error);
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -533,7 +596,12 @@ export function Header() {
               <ModeToggle variant="ghost" size="icon" />
 
               {/* Desktop CTA buttons */}
-              <AuthButtons session={session} isPending={isPending} />
+              <AuthButtons 
+                session={session} 
+                isPending={isPending} 
+                onSignOut={handleSignOut}
+                isSigningOut={isSigningOut}
+              />
 
               {/* Mobile menu trigger */}
               <Button

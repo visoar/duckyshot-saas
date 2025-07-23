@@ -160,9 +160,7 @@ export const uploads = pgTable(
   "uploads",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    userId: text("userId")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    userId: text("userId").references(() => users.id, { onDelete: "cascade" }), // Made nullable for anonymous uploads
     fileKey: text("fileKey").notNull(), // Key in R2 storage
     url: text("url").notNull(), // Public access URL
     fileName: text("fileName").notNull(), // Original file name

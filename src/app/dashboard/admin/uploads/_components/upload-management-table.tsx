@@ -27,7 +27,7 @@ import Image from "next/image";
 
 interface Upload {
   id: string;
-  userId: string;
+  userId: string | null;
   fileKey: string;
   url: string;
   fileName: string;
@@ -39,7 +39,7 @@ interface Upload {
     name: string | null;
     email: string | null;
     image?: string | null;
-  };
+  } | null;
 }
 
 interface UploadManagementTableProps {
@@ -175,11 +175,20 @@ export function UploadManagementTable({
       key: "user",
       label: "User",
       render: (upload) => (
-        <UserAvatarCell
-          name={upload.user.name}
-          email={upload.user.email}
-          image={upload.user.image}
-        />
+        upload.user ? (
+          <UserAvatarCell
+            name={upload.user.name}
+            email={upload.user.email}
+            image={upload.user.image}
+          />
+        ) : (
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+              <span className="text-xs text-gray-500">?</span>
+            </div>
+            <span className="text-sm text-gray-500">Anonymous User</span>
+          </div>
+        )
       ),
     },
     {
@@ -311,7 +320,9 @@ export function UploadManagementTable({
                   {formatFileSize(selectedUpload.fileSize)}
                 </p>
                 <Label>User</Label>
-                <p className="truncate text-sm">{selectedUpload.user.email}</p>
+                <p className="truncate text-sm">
+                  {selectedUpload.user ? selectedUpload.user.email : 'Anonymous User'}
+                </p>
               </div>
             </div>
           )}

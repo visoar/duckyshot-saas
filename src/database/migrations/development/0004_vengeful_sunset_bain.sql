@@ -1,0 +1,1 @@
+ALTER TABLE "uploads" ALTER COLUMN "userId" DROP NOT NULL;

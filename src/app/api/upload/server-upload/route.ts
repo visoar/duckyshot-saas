@@ -25,11 +25,9 @@ const r2Client = new S3Client({
 
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
+    // Check authentication (现在允许匿名用户)
     const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const userId = session?.user?.id || null;
 
     // Check if request is multipart/form-data
     const contentType = request.headers.get("content-type");
@@ -70,7 +68,8 @@ export async function POST(request: NextRequest) {
         const fileExtension = getFileExtension(file.type);
         const timestamp = Date.now();
         const uuid = randomUUID();
-        const key = `uploads/${session.user!.id}/${timestamp}-${uuid}.${fileExtension}`;
+        const userPath = userId || 'anonymous';
+        const key = `uploads/${userPath}/${timestamp}-${uuid}.${fileExtension}`;
 
         // Create file stream from the uploaded file
         const fileStream = file.stream();
@@ -97,7 +96,7 @@ export async function POST(request: NextRequest) {
         const [uploadRecord] = await db
           .insert(uploads)
           .values({
-            userId: session.user!.id,
+            userId, // 现在可以为null（匿名用户）
             fileKey: key,
             url: publicUrl,
             fileName: file.name,

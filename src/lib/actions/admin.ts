@@ -431,7 +431,7 @@ export async function getUploads({
       },
     })
     .from(uploads)
-    .innerJoin(users, eq(uploads.userId, users.id))
+    .leftJoin(users, eq(uploads.userId, users.id))
     .where(whereCondition)
     .orderBy(desc(uploads.createdAt))
     .limit(limit)
@@ -440,7 +440,7 @@ export async function getUploads({
   const totalQuery = db
     .select({ total: count() })
     .from(uploads)
-    .innerJoin(users, eq(uploads.userId, users.id))
+    .leftJoin(users, eq(uploads.userId, users.id))
     .where(whereCondition);
 
   const [uploadsData, [{ total: totalCount }]] = await Promise.all([

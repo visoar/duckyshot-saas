@@ -29,7 +29,7 @@ const r2Client = new S3Client({
 export { r2Client };
 
 interface CreatePresignedUrlParams {
-  userId: string;
+  userId: string | null;
   fileName: string;
   contentType: string;
   size: number;
@@ -72,7 +72,8 @@ export async function createPresignedUrl({
     const fileExtension = getFileExtension(contentType);
     const timestamp = Date.now();
     const uuid = randomUUID();
-    const key = `uploads/${userId}/${timestamp}-${uuid}.${fileExtension}`;
+    const userPath = userId || 'anonymous';
+    const key = `uploads/${userPath}/${timestamp}-${uuid}.${fileExtension}`;
 
     // Create presigned URL for PUT operation
     const command = new PutObjectCommand({
