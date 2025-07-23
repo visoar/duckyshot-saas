@@ -291,7 +291,7 @@ function AuthButtons({
     return (
       <div className="hidden items-center gap-2 md:flex">
         {/* <Skeleton className="h-8 w-16" /> */}
-        <Skeleton className="h-8 w-24" />
+        <Skeleton className="h-8 w-8 rounded-full" />
       </div>
     );
   }

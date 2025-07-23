@@ -1,0 +1,314 @@
+import React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  Heart,
+  Gift,
+  Calendar,
+  Home,
+  Coffee,
+  Shirt,
+  Frame,
+  BookOpen,
+  Sparkles,
+  ArrowRight,
+  Star
+} from "lucide-react";
+import Link from "next/link";
+
+interface Scenario {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  occasion: string;
+  icon: React.ComponentType<{ className?: string }>;
+  products: {
+    name: string;
+    icon: React.ComponentType<{ className?: string }>;
+    description: string;
+  }[];
+  story: {
+    name: string;
+    pet: string;
+    quote: string;
+    rating: number;
+  };
+  popular: boolean;
+}
+
+const scenarios: Scenario[] = [
+  {
+    id: "memorial",
+    title: "Forever Memories",
+    subtitle: "Honor your beloved companion",
+    description: "Create a lasting tribute that celebrates the joy and love your pet brought to your life. These artworks become treasured keepsakes that keep their memory alive in your heart and home.",
+    occasion: "Memorial & Remembrance",
+    icon: Heart,
+    products: [
+      {
+        name: "Canvas Prints",
+        icon: Frame,
+        description: "Museum-quality canvas for your wall"
+      },
+      {
+        name: "Photo Books",
+        icon: BookOpen,
+        description: "Artistic memory books to cherish"
+      },
+      {
+        name: "Memorial Cards",
+        icon: Heart,
+        description: "Share beautiful memories with others"
+      }
+    ],
+    story: {
+      name: "Maria S.",
+      pet: "Golden Retriever Max",
+      quote: "Max's Van Gogh portrait hangs in our living room now. Every guest comments on how beautiful it is, and it brings me comfort knowing his spirit lives on through art.",
+      rating: 5
+    },
+    popular: true
+  },
+  {
+    id: "celebration",
+    title: "Birthday Magic",
+    subtitle: "Celebrate your pet's special day",
+    description: "Make your pet's birthday unforgettable with custom artwork that captures their personality. Create gifts for the whole family or party decorations that show how much they mean to you.",
+    occasion: "Birthdays & Celebrations",
+    icon: Gift,
+    products: [
+      {
+        name: "Custom Mugs",
+        icon: Coffee,
+        description: "Start every morning with their smile"
+      },
+      {
+        name: "T-Shirts",
+        icon: Shirt,
+        description: "Wear their art with pride"
+      },
+      {
+        name: "Greeting Cards",
+        icon: Calendar,
+        description: "Share birthday joy with friends"
+      }
+    ],
+    story: {
+      name: "David L.",
+      pet: "French Bulldog Pierre",
+      quote: "Pierre's anime-style birthday portrait was the hit of his birthday party! We ordered mugs for all the guests and everyone still talks about it.",
+      rating: 5
+    },
+    popular: false
+  },
+  {
+    id: "family-gifts",
+    title: "Perfect Gifts",
+    subtitle: "Give something truly meaningful",
+    description: "When words aren't enough, let art speak. These personalized gifts show pet lovers in your life that you understand how special their furry family member is to them.",
+    occasion: "Holidays & Special Occasions",
+    icon: Sparkles,
+    products: [
+      {
+        name: "Canvas Gallery",
+        icon: Frame,
+        description: "Professional gallery-style displays"
+      },
+      {
+        name: "Custom Apparel",
+        icon: Shirt,
+        description: "Unique clothing they'll treasure"
+      },
+      {
+        name: "Home Décor",
+        icon: Home,
+        description: "Beautiful pieces for any room"
+      }
+    ],
+    story: {
+      name: "Jennifer K.",
+      pet: "Rescue Cat Luna",
+      quote: "I gave my mom Luna's watercolor portrait for Mother's Day. She cried happy tears and immediately hung it in her kitchen. Best gift I've ever given!",
+      rating: 5
+    },
+    popular: true
+  },
+  {
+    id: "home-decor",
+    title: "Home Gallery",
+    subtitle: "Transform your space with love",
+    description: "Turn your home into a gallery that celebrates your pets. Create a cohesive collection that showcases your furry family members as the works of art they truly are.",
+    occasion: "Home Decoration & Design",
+    icon: Home,
+    products: [
+      {
+        name: "Matching Sets",
+        icon: Frame,
+        description: "Coordinated artwork collections"
+      },
+      {
+        name: "Various Sizes",
+        icon: Sparkles,
+        description: "From small prints to wall murals"
+      },
+      {
+        name: "Style Themes",
+        icon: Gift,
+        description: "Curated artistic style collections"
+      }
+    ],
+    story: {
+      name: "Robert M.",
+      pet: "Three Cats - Mimi, Coco & Bella",
+      quote: "Our hallway is now a 'Cat Gallery' with all three cats in Renaissance style. It's become the most photographed spot in our house!",
+      rating: 5
+    },
+    popular: false
+  }
+];
+
+function ScenarioCard({ scenario }: { scenario: Scenario }) {
+  const IconComponent = scenario.icon;
+  
+  return (
+    <Card className="relative overflow-hidden transition-all duration-300 hover:shadow-lg group hover:scale-[1.02] bg-card">
+      {scenario.popular && (
+        <div className="absolute top-3 sm:top-4 right-3 sm:right-4 z-10">
+          <Badge className="bg-primary text-primary-foreground shadow-lg">
+            <Star className="w-3 h-3 mr-1 fill-current" />
+            Most Popular
+          </Badge>
+        </div>
+      )}
+      
+      <div className="absolute inset-0 bg-muted/5 group-hover:bg-muted/10 transition-colors duration-300" />
+      
+      <div className="relative p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="space-y-3 sm:space-y-4">
+          <div className="inline-flex h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 items-center justify-center rounded-xl bg-primary shadow-lg transition-transform duration-300 group-hover:scale-110">
+            <IconComponent className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-primary-foreground" />
+          </div>
+          
+          <div className="space-y-2">
+            <Badge variant="secondary" className="text-xs">
+              {scenario.occasion}
+            </Badge>
+            <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground">
+              {scenario.title}
+            </h3>
+            <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">
+              {scenario.subtitle}
+            </p>
+          </div>
+        </div>
+
+        {/* Description */}
+        <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+          {scenario.description}
+        </p>
+
+        {/* Products */}
+        <div className="space-y-2 sm:space-y-3">
+          <h4 className="text-xs sm:text-sm font-semibold text-foreground">Perfect Products:</h4>
+          <div className="grid gap-1 sm:gap-2">
+            {scenario.products.map((product, index) => {
+              const ProductIcon = product.icon;
+              return (
+                <div key={index} className="flex items-center gap-2 sm:gap-3 p-2 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                  <ProductIcon className="h-3 w-3 sm:h-4 sm:w-4 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs sm:text-sm font-medium text-foreground">{product.name}</div>
+                    <div className="text-xs text-muted-foreground line-clamp-1">{product.description}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Story */}
+        <div className="border border-border rounded-lg sm:rounded-xl p-3 sm:p-4 bg-muted/20">
+          <div className="space-y-2 sm:space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
+                <Heart className="w-3 h-3 sm:w-4 sm:h-4 text-primary-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs sm:text-sm font-medium truncate">{scenario.story.name}</div>
+                <div className="text-xs text-muted-foreground line-clamp-1">{scenario.story.pet}</div>
+              </div>
+              <div className="flex shrink-0">
+                {Array.from({ length: scenario.story.rating }).map((_, i) => (
+                  <Star key={i} className="w-3 h-3 fill-primary text-primary" />
+                ))}
+              </div>
+            </div>
+            <blockquote className="text-xs sm:text-sm text-muted-foreground italic leading-relaxed">
+              "{scenario.story.quote}"
+            </blockquote>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <Button 
+          className="w-full group/btn h-10 sm:h-12 text-sm sm:text-base"
+          variant="outline"
+          asChild
+        >
+          <Link href="/ai-studio">
+            <span className="sm:hidden">Create Art</span>
+            <span className="hidden sm:inline">Create for {scenario.title}</span>
+            <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4 transition-transform group-hover/btn:translate-x-1" />
+          </Link>
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+export function GiftMemorialScenarios() {
+  return (
+    <section className="py-16 sm:py-24 lg:py-32 relative overflow-hidden bg-background">
+      {/* Clean Background */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-muted/10" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border))_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border))_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-15" />
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <div className="mx-auto mb-12 sm:mb-16 lg:mb-20 max-w-4xl text-center space-y-4 sm:space-y-6">
+          <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-3 sm:px-4 py-1.5 sm:py-2">
+            <Gift className="mr-2 h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+            <span className="text-xs sm:text-sm font-medium text-primary">
+              Perfect for Every Occasion
+            </span>
+          </div>
+
+          <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl leading-tight">
+            Every Moment Deserves
+            <span className="block text-primary">
+              To Be Celebrated
+            </span>
+          </h2>
+
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+            Whether you're honoring a cherished memory, celebrating a special milestone, 
+            or creating the perfect gift, your pet's artwork fits every meaningful moment in your life.
+          </p>
+        </div>
+
+        {/* Scenarios Grid */}
+        <div className="grid gap-4 sm:gap-6 lg:gap-8 lg:grid-cols-2 mb-12 sm:mb-16 lg:mb-20">
+          {scenarios.map((scenario) => (
+            <ScenarioCard key={scenario.id} scenario={scenario} />
+          ))}
+        </div>
+
+      </div>
+    </section>
+  );
+}

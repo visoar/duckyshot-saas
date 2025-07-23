@@ -2,9 +2,9 @@
 export const APP_NAME =
   process.env.NODE_ENV === "development" ? "DEV - DuckyShot" : "DuckyShot";
 export const APP_DESCRIPTION =
-  "Transform your pet into stunning AI art. Create magical portraits with our advanced AI technology and turn them into custom merchandise.";
+  "Transform your pet photos into stunning AI artwork in Van Gogh, anime, oil painting styles. Order custom canvas prints, mugs, t-shirts, and more. Perfect for gifts, memorials, and home decor.";
 export const COMPANY_NAME = "DuckyShot";
-export const COMPANY_TAGLINE = "AI Pet Art Studio";
+export const COMPANY_TAGLINE = "AI Pet Art & Custom Products Studio";
 
 export const TRIAL_DAYS = 7;
 

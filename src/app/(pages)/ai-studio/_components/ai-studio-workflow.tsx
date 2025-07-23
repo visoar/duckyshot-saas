@@ -6,21 +6,20 @@ import { Upload, Palette, Wand2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth/client";
 import { useRouter } from "next/navigation";
-import { PetPhotoUpload } from "./pet-photo-upload";
-import { StyleSelection } from "./style-selection";
-import { GenerationProgress } from "./generation-progress";
-import { ArtworkResults } from "./artwork-results";
+import { EnhancedUploadZone } from "./enhanced-upload-zone";
+import { StyleExplorerGrid } from "./style-explorer-grid";
+import { ImmersiveGenerationViewer } from "./immersive-generation-viewer";
+import { SpectacularResultsShowcase } from "./spectacular-results-showcase";
 import type { AIStyle } from "@/lib/ai/styles";
 
 export type WorkflowStep =
   | "upload"
-  | "style"
+  | "explore"
   | "generate"
   | "results";
 
 export interface GenerationSettings {
   numImages: number;
-  mode: "fast" | "quality";
   style: AIStyle;
 }
 
@@ -33,12 +32,21 @@ export interface ArtworkResult {
   createdAt: Date;
 }
 
+interface UploadedImageFile {
+  uploadId: string; // UUID from database
+  url: string;
+  key: string;
+  file: File;
+  size: number;
+  contentType: string;
+  fileName: string;
+  qualityScore?: number;
+  suggestions?: string[];
+}
+
 interface WorkflowState {
   currentStep: WorkflowStep;
-  uploadedImage?: {
-    url: string;
-    file: File;
-  };
+  uploadedImages?: UploadedImageFile[];
   selectedStyle?: AIStyle;
   generationSettings?: GenerationSettings;
   results?: ArtworkResult[];
@@ -92,24 +100,18 @@ export function AIStudioWorkflow() {
   }, []);
 
   // Workflow handlers
-  const handleImageUpload = useCallback((file: File, url: string) => {
+  const handleImagesUpload = useCallback((images: UploadedImageFile[]) => {
     setState((prev) => ({
       ...prev,
-      uploadedImage: { file, url },
-      currentStep: "style",
+      uploadedImages: images,
+      currentStep: "explore",
     }));
   }, []);
 
-  const handleStyleSelect = useCallback((style: AIStyle) => {
-    setState((prev) => ({
-      ...prev,
-      selectedStyle: style,
-    }));
-  }, []);
 
   const handleStartGeneration = useCallback(
     async (settings: GenerationSettings) => {
-      if (!state.uploadedImage || !state.selectedStyle) return;
+      if (!state.uploadedImages || state.uploadedImages.length === 0) return;
 
       // Check if user is logged in before starting generation
       if (!session?.user) {
@@ -128,30 +130,13 @@ export function AIStudioWorkflow() {
       }));
 
       try {
-        // First, upload the image to get an upload ID
+        // Use the first uploaded image
+        const primaryImage = state.uploadedImages[0];
         setState((prev) => ({ ...prev, generationProgress: 10 }));
 
-        const formData = new FormData();
-        formData.append("files", state.uploadedImage.file);
-
-        const uploadResponse = await fetch("/api/upload/server-upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!uploadResponse.ok) {
-          throw new Error("Failed to upload image");
-        }
-
-        const uploadData = await uploadResponse.json();
-
-        // Extract uploadId from the first successful upload result
-        const successfulUpload = uploadData.results?.find(
-          (result: { success: boolean; uploadId?: string }) => result.success,
-        );
-        if (!successfulUpload?.uploadId) {
-          throw new Error("No successful upload found");
-        }
+        // Since images are already uploaded, we can use the upload ID
+        // from the database record created during upload
+        const uploadId = primaryImage.uploadId;
 
         setState((prev) => ({ ...prev, generationProgress: 30 }));
 
@@ -162,8 +147,8 @@ export function AIStudioWorkflow() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            uploadId: successfulUpload.uploadId,
-            styleId: state.selectedStyle.id,
+            uploadId: uploadId,
+            styleId: settings.style.id,
             numImages: settings.numImages,
             petDescription: "", // Could be enhanced to get from user input
           }),
@@ -184,8 +169,8 @@ export function AIStudioWorkflow() {
           generationData.images?.map((imageUrl: string, i: number) => ({
             id: `${generationData.artworkId}-${i}`,
             url: imageUrl,
-            originalImageUrl: state.uploadedImage!.url,
-            style: state.selectedStyle!,
+            originalImageUrl: primaryImage.url,
+            style: settings.style,
             settings,
             createdAt: new Date(),
           })) || [];
@@ -218,8 +203,7 @@ export function AIStudioWorkflow() {
       }
     },
     [
-      state.uploadedImage,
-      state.selectedStyle,
+      state.uploadedImages,
       session?.user,
       router,
       loadUserCredits,
@@ -241,7 +225,7 @@ export function AIStudioWorkflow() {
   const renderStepIndicator = () => {
     const steps = [
       { key: "upload", label: "Upload", icon: Upload },
-      { key: "style", label: "Style", icon: Palette },
+      { key: "explore", label: "Explore", icon: Palette },
       { key: "generate", label: "Generate", icon: Wand2 },
       { key: "results", label: "Results", icon: Sparkles },
     ];
@@ -258,7 +242,7 @@ export function AIStudioWorkflow() {
           const isCompleted = index < currentIndex;
           const isAccessible =
             index <= currentIndex ||
-            (state.uploadedImage && index <= 1) ||
+            (state.uploadedImages && index <= 1) ||
             (state.selectedStyle && index <= 2);
 
           return (
@@ -301,40 +285,52 @@ export function AIStudioWorkflow() {
     switch (state.currentStep) {
       case "upload":
         return (
-          <PetPhotoUpload
-            onImageUpload={handleImageUpload}
-            onBack={undefined}
+          <EnhancedUploadZone
+            onImagesUpload={handleImagesUpload}
+            maxFiles={5}
+            showExamples={true}
           />
         );
 
-      case "style":
+      case "explore":
         return (
-          <StyleSelection
-            uploadedImage={state.uploadedImage!}
-            selectedStyle={state.selectedStyle}
-            onStyleSelect={handleStyleSelect}
-            onStartGeneration={handleStartGeneration}
+          <StyleExplorerGrid
+            uploadedImages={state.uploadedImages!}
             onBack={() => goToStep("upload")}
+            onStartGeneration={handleStartGeneration}
             userCredits={userCredits}
           />
         );
 
       case "generate":
         return (
-          <GenerationProgress
+          <ImmersiveGenerationViewer
             progress={state.generationProgress}
-            selectedStyle={state.selectedStyle!}
+            selectedStyle={state.generationSettings!.style}
             generationSettings={state.generationSettings!}
+            uploadedImageUrl={state.uploadedImages![0].url}
+            onCancel={() => goToStep("explore")}
           />
         );
 
       case "results":
         return (
-          <ArtworkResults
+          <SpectacularResultsShowcase
             results={state.results!}
-            originalImage={state.uploadedImage!}
+            originalImage={{
+              url: state.uploadedImages![0].url,
+              file: state.uploadedImages![0].file,
+            }}
             onRestart={handleRestart}
-            onBack={() => goToStep("style")}
+            onBack={() => goToStep("explore")}
+            onRemixStyle={(baseResult) => {
+              // Navigate back to style selection with remix suggestion
+              setState((prev) => ({ 
+                ...prev, 
+                currentStep: "explore",
+                selectedStyle: baseResult.style 
+              }));
+            }}
           />
         );
 

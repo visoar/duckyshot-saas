@@ -19,9 +19,7 @@ pnpm run type-check      # Run TypeScript compiler check
 
 ```bash
 pnpm test                # Run all tests
-pnpm run test:watch      # Run tests in watch mode
 pnpm run test:coverage   # Run tests with coverage report
-pnpm run test -- ComponentName.test.tsx  # Run specific test file
 ```
 
 ### Quality Assurance
@@ -37,7 +35,8 @@ pnpm run build           # Pre-deployment build verification
 
 ```bash
 pnpm run db:generate     # Generate migration files
-pnpm run db:migrate      # Run migrations (production)
+pnpm run db:migrate:dev  # Run migrations (development)
+pnpm run db:migrate:prod # Run migrations (production)
 pnpm run db:push         # Push schema changes (development)
 pnpm run db:studio       # Open Drizzle Studio
 pnpm run db:seed         # Seed database with sample data
@@ -47,6 +46,14 @@ pnpm run db:seed         # Seed database with sample data
 
 ```bash
 pnpm run analyze         # Analyze bundle size with @next/bundle-analyzer
+```
+
+### Admin and Scripts
+
+```bash
+pnpm run set:admin       # Set user as super admin (development)
+pnpm run set:admin:prod  # Set user as super admin (production)
+pnpm run seed:ai-styles  # Seed AI styles data
 ```
 
 ## Architecture Overview
@@ -61,6 +68,8 @@ pnpm run analyze         # Analyze bundle size with @next/bundle-analyzer
 - **CMS**: Keystatic (local development only)
 - **Styling**: Tailwind CSS v4 with shadcn/ui components
 - **Email**: React Email with Resend
+- **AI Integration**: FAL.AI for image generation
+- **Testing**: Jest with React Testing Library
 
 ### Key Patterns
 
@@ -84,9 +93,11 @@ All uploads go through:
 #### Database Schema Organization
 
 - Users have role-based permissions (user, admin, super_admin)
-- Sessions track device/browser information
+- Sessions track device/browser information with parsed userAgent fields
 - Subscriptions and payments are linked for billing
 - Webhook events ensure idempotency
+- AI-related tables for artworks, styles, and credit management
+- File uploads tracked with metadata and security validation
 
 ### Directory Structure
 
@@ -113,12 +124,15 @@ This project uses Next.js App Router with a `src` directory structure for better
 - `lib/billing/` - Payment provider abstractions
 - `lib/config/` - Application constants and configuration
 - `lib/database/` - Database utilities and queries
+- `lib/ai/` - AI provider integration and utilities
+- `lib/admin/` - Admin panel functionality and table management
 
 #### Component Co-location (src/components/)
 
 - Page-specific components in `_components/` directories
 - Shared UI components in `components/ui/`
 - Form components in `components/forms/`
+- Feature-specific components (`auth/`, `admin/`, `homepage/`, `blog/`)
 
 #### Database (src/database/)
 
@@ -165,7 +179,7 @@ This project uses Next.js App Router with a `src` directory structure for better
 
 **Development**: Use `pnpm run db:push` for rapid schema iteration without migration files.
 
-**Production**: Always use `pnpm run db:generate` followed by `pnpm run db:migrate` to create traceable migration files.
+**Production**: Always use `pnpm run db:generate` followed by `pnpm run db:migrate:prod` to create traceable migration files.
 
 The schema is defined in `database/schema.ts` with separate connection configurations for different environments.
 
@@ -196,3 +210,42 @@ Jest with React Testing Library. Tests are co-located with source files. Coverag
 - CMS access is restricted to local development
 - Rate limiting capabilities are built-in
 - Never bypass established validation patterns
+
+### AI Integration Pattern
+
+The project uses FAL.AI for image generation:
+
+- AI provider abstraction in `lib/ai/provider.ts`
+- Style management system for consistent generation results
+- Credit-based usage tracking in database
+- Secure API key handling through environment variables
+- Generated artwork metadata stored with privacy controls
+
+### Admin Panel System
+
+Dynamic admin panel with automatic table management:
+
+- Generic table manager that adapts to any database table
+- Automatic form generation based on schema
+- Built-in CRUD operations with proper validation
+- Role-based access control (admin, super_admin)
+- Statistics and analytics dashboards
+- Access admin panel at `/dashboard/admin` (requires admin role)
+
+### File Upload Architecture
+
+Secure file upload system using Cloudflare R2:
+
+- Client-side direct upload with presigned URLs
+- Server-side validation before URL generation
+- File type and size restrictions in `lib/config/upload.ts`
+- Database tracking of all uploads with metadata
+- Image compression capabilities in the FileUploader component
+- CORS configuration required for direct browser uploads
+
+### Important Instruction Reminders
+
+- Do what has been asked; nothing more, nothing less
+- NEVER create files unless they're absolutely necessary for achieving your goal
+- ALWAYS prefer editing an existing file to creating a new one
+- NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User

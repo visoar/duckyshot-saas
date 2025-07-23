@@ -12,7 +12,7 @@ import { BackgroundPattern } from "@/components/ui/background-pattern";
 export const metadata = createMetadata({
   title: "About Us",
   description:
-    "Learn about our mission to help developers build and launch SaaS products faster than ever before.",
+    "Learn about DuckyShot's mission to help pet parents create magical AI artwork and custom merchandise of their beloved pets.",
 });
 
 const teamMembers = [
@@ -41,51 +41,51 @@ const teamMembers = [
 
 const values = [
   {
-    icon: Target,
-    title: "Mission-Driven",
-    description:
-      "We&apos;re committed to democratizing SaaS development and making it accessible to everyone.",
-  },
-  {
-    icon: Lightbulb,
-    title: "Innovation First",
-    description:
-      "We constantly push the boundaries of what&apos;s possible in developer tooling.",
-  },
-  {
     icon: Heart,
-    title: "Community Focused",
+    title: "Pet-Centered",
     description:
-      "Our success is measured by the success of the developers who use our platform.",
+      "Every decision we make puts pets and their well-being first, celebrating the unique bond between pets and their families.",
+  },
+  {
+    icon: Sparkles,
+    title: "Creative Innovation",
+    description:
+      "We harness cutting-edge AI technology to transform ordinary pet photos into extraordinary artistic masterpieces.",
+  },
+  {
+    icon: Target,
+    title: "Quality Focused",
+    description:
+      "We're committed to delivering high-quality artwork and merchandise that pet parents treasure for years to come.",
   },
   {
     icon: Globe,
-    title: "Global Impact",
+    title: "Community Driven",
     description:
-      "Building tools that empower developers worldwide to create amazing products.",
+      "Building a global community of pet lovers who celebrate their companions through beautiful, personalized art.",
   },
 ];
 
 const milestones = [
   {
     year: "2023",
-    title: "Company Founded",
-    description: "Started with a vision to simplify SaaS development",
+    title: "DuckyShot Born",
+    description: "Founded with a mission to celebrate pets through AI-powered artwork",
   },
   {
     year: "2024",
-    title: "10K+ Developers",
-    description: "Reached our first major milestone of active users",
+    title: "10K Pet Artworks",
+    description: "Reached our first milestone of beautiful pet art creations",
   },
   {
     year: "2024",
-    title: "Series A Funding",
-    description: "Secured funding to accelerate product development",
+    title: "25K Pet Parents",
+    description: "Built a thriving community of pet lovers worldwide",
   },
   {
     year: "2024",
-    title: "Enterprise Launch",
-    description: "Launched enterprise features for larger teams",
+    title: "Custom Merchandise",
+    description: "Launched personalized products to bring pet art into everyday life",
   },
 ];
 
@@ -99,9 +99,9 @@ export default function AboutPage() {
         <div className="container mx-auto px-6">
           <div className="mx-auto max-w-4xl text-center">
             <div className="border-border bg-background/50 mb-6 inline-flex items-center rounded-full border px-3 py-1 text-sm backdrop-blur-sm">
-              <Sparkles className="text-primary mr-2 h-3 w-3" />
+              <Heart className="text-pink-500 mr-2 h-3 w-3 fill-current" />
               <span className="text-muted-foreground">
-                Building the future of SaaS development
+                Celebrating the bond between pets and their families
               </span>
             </div>
 
@@ -110,10 +110,9 @@ export default function AboutPage() {
             </h1>
 
             <p className="text-muted-foreground mb-8 text-xl leading-relaxed">
-              We&apos;re on a mission to democratize SaaS development by
-              providing developers with the tools, templates, and infrastructure
-              they need to build and launch successful products faster than ever
-              before.
+              We&apos;re passionate about helping pet parents celebrate their furry, 
+              feathered, and scaly companions through beautiful AI-generated artwork 
+              and custom merchandise. Every pet deserves to be immortalized as art.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4">
@@ -136,7 +135,7 @@ export default function AboutPage() {
               Our Values
             </h2>
             <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-              The principles that guide everything we do
+              The principles that guide our mission to celebrate pets through art
             </p>
           </div>
 
@@ -204,7 +203,7 @@ export default function AboutPage() {
               Our Journey
             </h2>
             <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-              Key milestones in our mission to transform SaaS development
+              Key milestones in our journey to celebrate pets through AI artwork
             </p>
           </div>
 
@@ -241,18 +240,18 @@ export default function AboutPage() {
         <div className="container mx-auto px-6">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="mb-4 text-3xl font-bold tracking-tight">
-              Ready to Build Something Amazing?
+              Ready to Transform Your Pet Into Art?
             </h2>
             <p className="text-muted-foreground mb-8 text-lg">
-              Join thousands of developers who are already building the next
-              generation of SaaS products.
+              Join thousands of pet parents who are already creating beautiful 
+              AI artwork and custom merchandise of their beloved companions.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button asChild size="lg">
-                <Link href="/pricing">Get Started Today</Link>
+                <Link href="/dashboard">Start Creating Art</Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <Link href="/contact">Contact Sales</Link>
+                <Link href="/pricing">View Pricing</Link>
               </Button>
             </div>
           </div>
