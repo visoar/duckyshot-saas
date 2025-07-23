@@ -25,7 +25,7 @@ export function DashboardPageWrapper({
         <div>
           {/* Breadcrumb Navigation */}
           {parentTitle && parentUrl && (
-            <nav className="flex items-center space-x-1 text-sm text-muted-foreground mb-2">
+            <nav className="text-muted-foreground mb-2 flex items-center space-x-1 text-sm">
               <Link
                 href={parentUrl}
                 className="hover:text-foreground transition-colors"

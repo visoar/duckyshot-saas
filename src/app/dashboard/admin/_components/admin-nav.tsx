@@ -87,7 +87,7 @@ function NavItem({
   className?: string;
 }) {
   const isActive = pathname === item.url;
-  
+
   return (
     <Button
       variant={isActive ? "default" : "ghost"}
@@ -96,7 +96,7 @@ function NavItem({
       className={cn(
         "h-9 justify-start",
         isActive && "bg-primary text-primary-foreground",
-        className
+        className,
       )}
     >
       <Link href={item.url} className="flex items-center gap-2">
@@ -120,11 +120,7 @@ function DesktopNav({
     <div className="hidden lg:flex lg:items-center lg:gap-1">
       {/* Core navigation items */}
       {coreNavigation.map((item) => (
-        <NavItem
-          key={item.title}
-          item={item}
-          pathname={pathname}
-        />
+        <NavItem key={item.title} item={item} pathname={pathname} />
       ))}
 
       {/* Table management dropdown */}
@@ -138,7 +134,7 @@ function DesktopNav({
               </NavigationMenuTrigger>
               <NavigationMenuContent>
                 <div className="grid w-[400px] gap-1 p-2">
-                  <div className="text-sm font-medium text-muted-foreground mb-2 px-2">
+                  <div className="text-muted-foreground mb-2 px-2 text-sm font-medium">
                     Data Management
                   </div>
                   <div className="grid grid-cols-2 gap-1">
@@ -147,11 +143,12 @@ function DesktopNav({
                         <Link
                           href={item.url}
                           className={cn(
-                            "flex items-center gap-2 rounded-md p-2 text-sm hover:bg-accent hover:text-accent-foreground transition-colors",
-                            pathname === item.url && "bg-accent text-accent-foreground"
+                            "hover:bg-accent hover:text-accent-foreground flex items-center gap-2 rounded-md p-2 text-sm transition-colors",
+                            pathname === item.url &&
+                              "bg-accent text-accent-foreground",
                           )}
                         >
-                          <item.icon className="h-4 w-4 text-muted-foreground" />
+                          <item.icon className="text-muted-foreground h-4 w-4" />
                           <span>{item.title}</span>
                         </Link>
                       </NavigationMenuLink>
@@ -192,11 +189,11 @@ function MobileNav({
           <SheetHeader>
             <SheetTitle>Admin Navigation</SheetTitle>
           </SheetHeader>
-          <ScrollArea className="h-[calc(100vh-8rem)] mt-6">
+          <ScrollArea className="mt-6 h-[calc(100vh-8rem)]">
             <div className="space-y-4">
               {/* Core navigation */}
               <div className="space-y-1">
-                <div className="text-sm font-medium text-muted-foreground mb-2">
+                <div className="text-muted-foreground mb-2 text-sm font-medium">
                   Core Admin
                 </div>
                 {coreNavigation.map((item) => (
@@ -215,7 +212,7 @@ function MobileNav({
                   <Button
                     variant="ghost"
                     onClick={() => setTablesSectionOpen(!tablesSectionOpen)}
-                    className="w-full justify-between text-sm font-medium text-muted-foreground h-8 px-2"
+                    className="text-muted-foreground h-8 w-full justify-between px-2 text-sm font-medium"
                   >
                     <span className="flex items-center gap-2">
                       <Database className="h-4 w-4" />
@@ -224,7 +221,7 @@ function MobileNav({
                     <ChevronDown
                       className={cn(
                         "h-4 w-4 transition-transform",
-                        tablesSectionOpen && "rotate-180"
+                        tablesSectionOpen && "rotate-180",
                       )}
                     />
                   </Button>
@@ -271,11 +268,11 @@ export function AdminNav() {
   }));
 
   return (
-    <div className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 mb-6">
+    <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 mb-6 border-b backdrop-blur">
       <div className="mx-auto max-w-7xl">
         <div className="flex h-14 items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="text-sm font-semibold text-foreground">
+            <div className="text-foreground text-sm font-semibold">
               Admin Panel
             </div>
             <DesktopNav

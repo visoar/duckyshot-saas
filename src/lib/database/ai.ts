@@ -131,11 +131,13 @@ export class AIArtworkService {
     const [publicResult] = await db
       .select({ count: sql<number>`count(*)` })
       .from(aiArtworks)
-      .where(and(
-        eq(aiArtworks.userId, userId),
-        eq(aiArtworks.isPublic, true),
-        isNull(aiArtworks.deletedAt)
-      ));
+      .where(
+        and(
+          eq(aiArtworks.userId, userId),
+          eq(aiArtworks.isPublic, true),
+          isNull(aiArtworks.deletedAt),
+        ),
+      );
 
     const styleUsage = await db
       .select({
@@ -152,7 +154,7 @@ export class AIArtworkService {
     return {
       totalArtworks: totalResult.count,
       publicArtworks: publicResult.count,
-      favoriteStyles: styleUsage.map(s => s.styleName).filter(Boolean),
+      favoriteStyles: styleUsage.map((s) => s.styleName).filter(Boolean),
       totalLikes: 0, // TODO: Implement likes system
       recentLikes: 0, // TODO: Implement likes system
     };

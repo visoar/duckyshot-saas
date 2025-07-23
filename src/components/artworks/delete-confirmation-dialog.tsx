@@ -52,9 +52,9 @@ export function DeleteConfirmationDialog({
       variant="ghost"
       size="sm"
       disabled={disabled}
-      className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+      className="w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-700"
     >
-      <Trash2 className="h-4 w-4 mr-2" />
+      <Trash2 className="mr-2 h-4 w-4" />
       Delete
     </Button>
   );

@@ -25,7 +25,7 @@ const generateRequestSchema = z.object({
 
 export async function POST(request: NextRequest) {
   console.log("🚀 AI Generate API called");
-  
+
   try {
     // Authenticate user
     console.log("🔍 Checking authentication...");
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     console.log("📋 Parsing request body...");
     const body = await request.json();
     console.log("📋 Request body:", body);
-    
+
     const {
       uploadId,
       styleId,
@@ -52,8 +52,15 @@ export async function POST(request: NextRequest) {
       title,
       description,
     } = generateRequestSchema.parse(body);
-    
-    console.log("✅ Request validated - uploadId:", uploadId, "styleId:", styleId, "numImages:", numImages);
+
+    console.log(
+      "✅ Request validated - uploadId:",
+      uploadId,
+      "styleId:",
+      styleId,
+      "numImages:",
+      numImages,
+    );
 
     // Check if user has enough credits
     console.log("💳 Checking user credits...");

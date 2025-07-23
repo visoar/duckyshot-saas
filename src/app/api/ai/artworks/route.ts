@@ -137,15 +137,15 @@ export async function DELETE(request: NextRequest) {
     // Soft delete artworks that belong to the user
     const deletedArtworks = await db
       .update(aiArtworks)
-      .set({ 
+      .set({
         deletedAt: new Date(),
         updatedAt: new Date(),
       })
       .where(
         and(
-          eq(aiArtworks.userId, userId), 
+          eq(aiArtworks.userId, userId),
           inArray(aiArtworks.id, artworkIds),
-          isNull(aiArtworks.deletedAt) // Only delete non-deleted artworks
+          isNull(aiArtworks.deletedAt), // Only delete non-deleted artworks
         ),
       )
       .returning({ id: aiArtworks.id });

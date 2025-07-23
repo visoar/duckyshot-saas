@@ -131,7 +131,6 @@ const stats = [
   },
 ];
 
-
 function TestimonialCard({
   testimonial,
 }: {
@@ -139,10 +138,10 @@ function TestimonialCard({
 }) {
   return (
     <Card
-      className={`h-full transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+      className={`h-full transition-all duration-300 hover:scale-[1.02] hover:shadow-xl ${
         testimonial.featured
-          ? "border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-background shadow-lg ring-1 ring-primary/20"
-          : "border-border hover:border-primary/20 bg-gradient-to-br from-background to-muted/30 hover:shadow-lg"
+          ? "border-primary/30 from-primary/10 via-primary/5 to-background ring-primary/20 bg-gradient-to-br shadow-lg ring-1"
+          : "border-border hover:border-primary/20 from-background to-muted/30 bg-gradient-to-br hover:shadow-lg"
       }`}
     >
       <CardContent>
@@ -152,34 +151,37 @@ function TestimonialCard({
         </div>
 
         {/* Rating */}
-        <div className="mb-3 sm:mb-4 flex items-center gap-1">
+        <div className="mb-3 flex items-center gap-1 sm:mb-4">
           {Array.from({ length: testimonial.rating }).map((_, i) => (
-            <Star key={i} className="h-3 w-3 sm:h-4 sm:w-4 fill-primary text-primary" />
+            <Star
+              key={i}
+              className="fill-primary text-primary h-3 w-3 sm:h-4 sm:w-4"
+            />
           ))}
         </div>
 
         {/* Content */}
-        <blockquote className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base leading-relaxed">
+        <blockquote className="text-muted-foreground mb-4 text-sm leading-relaxed sm:mb-6 sm:text-base">
           &quot;{testimonial.content}&quot;
         </blockquote>
 
         {/* Author */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <Avatar className="h-8 w-8 sm:h-10 sm:w-10 shrink-0">
+          <Avatar className="h-8 w-8 shrink-0 sm:h-10 sm:w-10">
             <AvatarImage
               src={testimonial.author.avatar}
               alt={testimonial.author.name}
             />
-            <AvatarFallback className="bg-primary/10 text-primary font-medium text-xs sm:text-sm">
+            <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium sm:text-sm">
               {testimonial.author.initials}
             </AvatarFallback>
           </Avatar>
 
           <div className="min-w-0 flex-1">
-            <div className="text-foreground text-xs sm:text-sm font-medium truncate">
+            <div className="text-foreground truncate text-xs font-medium sm:text-sm">
               {testimonial.author.name}
             </div>
-            <div className="text-muted-foreground text-xs line-clamp-1">
+            <div className="text-muted-foreground line-clamp-1 text-xs">
               {testimonial.author.role} at {testimonial.author.company}
             </div>
           </div>
@@ -193,13 +195,19 @@ function StatCard({ stat }: { stat: (typeof stats)[0] }) {
   const IconComponent = stat.icon;
 
   return (
-    <div className="space-y-1 sm:space-y-2 text-center">
-      <div className="bg-primary/10 mx-auto flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-lg border border-primary/20">
+    <div className="space-y-1 text-center sm:space-y-2">
+      <div className="bg-primary/10 border-primary/20 mx-auto flex h-10 w-10 items-center justify-center rounded-lg border sm:h-12 sm:w-12">
         <IconComponent className="text-primary h-5 w-5 sm:h-6 sm:w-6" />
       </div>
-      <div className="text-foreground text-xl sm:text-2xl font-bold">{stat.value}</div>
-      <div className="text-foreground text-xs sm:text-sm font-medium">{stat.label}</div>
-      <div className="text-muted-foreground text-xs line-clamp-2">{stat.description}</div>
+      <div className="text-foreground text-xl font-bold sm:text-2xl">
+        {stat.value}
+      </div>
+      <div className="text-foreground text-xs font-medium sm:text-sm">
+        {stat.label}
+      </div>
+      <div className="text-muted-foreground line-clamp-2 text-xs">
+        {stat.description}
+      </div>
     </div>
   );
 }
@@ -210,7 +218,7 @@ export function SocialProofUnified() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Stats Section */}
         <div className="mb-12 sm:mb-16 lg:mb-20">
-          <div className="mb-8 sm:mb-12 text-center space-y-3 sm:space-y-4">
+          <div className="mb-8 space-y-3 text-center sm:mb-12 sm:space-y-4">
             <Badge variant="secondary" className="mb-2 sm:mb-4">
               <TrendingUp className="mr-2 h-3 w-3" />
               Trusted Worldwide
@@ -218,12 +226,12 @@ export function SocialProofUnified() {
             <h2 className="text-foreground text-2xl font-bold sm:text-3xl md:text-4xl">
               Join thousands of pet parents
             </h2>
-            <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+            <p className="text-muted-foreground mx-auto max-w-2xl text-base leading-relaxed sm:text-lg">
               Creating beautiful AI artwork of their beloved pets
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:gap-8 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6 lg:gap-8">
             {stats.map((stat, index) => (
               <StatCard key={index} stat={stat} />
             ))}
@@ -232,7 +240,7 @@ export function SocialProofUnified() {
 
         {/* Testimonials Section */}
         <div className="mb-12 sm:mb-16 lg:mb-20">
-          <div className="mx-auto mb-8 sm:mb-12 max-w-2xl text-center space-y-3 sm:space-y-4">
+          <div className="mx-auto mb-8 max-w-2xl space-y-3 text-center sm:mb-12 sm:space-y-4">
             <Badge variant="secondary" className="mb-2 sm:mb-4">
               <Users className="mr-2 h-3 w-3" />
               Customer Stories
@@ -242,7 +250,7 @@ export function SocialProofUnified() {
               Loved by pet parents worldwide
             </h3>
 
-            <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+            <p className="text-muted-foreground mx-auto max-w-xl text-base leading-relaxed sm:text-lg">
               See what our community has to say about their pet AI artwork
             </p>
           </div>
@@ -256,27 +264,28 @@ export function SocialProofUnified() {
 
         {/* Pet Parent Community Section */}
         <div className="text-center">
-          <p className="text-muted-foreground mb-6 sm:mb-8 text-base sm:text-lg max-w-3xl mx-auto leading-relaxed">
+          <p className="text-muted-foreground mx-auto mb-6 max-w-3xl text-base leading-relaxed sm:mb-8 sm:text-lg">
             Featured in pet communities, social media, and gift blogs worldwide
           </p>
-          <div className="bg-primary/5 border-primary/20 mx-auto max-w-2xl rounded-lg sm:rounded-xl border p-6 sm:p-8">
-            <p className="text-muted-foreground text-sm sm:text-base italic leading-relaxed">
-              &ldquo;DuckyShot has revolutionized how pet parents celebrate their furry friends. 
-              The AI quality and custom merchandise options make it the perfect gift for any pet lover.&rdquo;
+          <div className="bg-primary/5 border-primary/20 mx-auto max-w-2xl rounded-lg border p-6 sm:rounded-xl sm:p-8">
+            <p className="text-muted-foreground text-sm leading-relaxed italic sm:text-base">
+              &ldquo;DuckyShot has revolutionized how pet parents celebrate
+              their furry friends. The AI quality and custom merchandise options
+              make it the perfect gift for any pet lover.&rdquo;
             </p>
-            <p className="text-foreground mt-3 sm:mt-4 text-sm font-medium">
+            <p className="text-foreground mt-3 text-sm font-medium sm:mt-4">
               - Featured in Pet Parent Magazine
             </p>
           </div>
         </div>
 
         {/* Bottom CTA */}
-        <div className="mt-12 sm:mt-16 text-center">
+        <div className="mt-12 text-center sm:mt-16">
           <p className="text-muted-foreground text-sm sm:text-base">
             Want to share your pet&apos;s AI artwork story?
             <a
               href="mailto:hello@duckyshot.com"
-              className="text-primary ml-1 hover:underline font-medium"
+              className="text-primary ml-1 font-medium hover:underline"
             >
               Get in touch
             </a>

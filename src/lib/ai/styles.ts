@@ -78,7 +78,8 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     isActive: true,
     sortOrder: 4,
     metadata: {
-      prompt: "This character with cartoon style, animated, cute, colorful, Disney-like, adorable",
+      prompt:
+        "This character with cartoon style, animated, cute, colorful, Disney-like, adorable",
       guidance: 5.0,
       strength: 0.15,
     },
@@ -92,7 +93,8 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     isActive: true,
     sortOrder: 5,
     metadata: {
-      prompt: "This character with anime style, manga, kawaii, big eyes, Japanese animation style",
+      prompt:
+        "This character with anime style, manga, kawaii, big eyes, Japanese animation style",
       guidance: 5.5,
       strength: 0.15,
     },
@@ -106,7 +108,8 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     isActive: true,
     sortOrder: 6,
     metadata: {
-      prompt: "This character with pop art style, Andy Warhol, bright colors, high contrast, retro",
+      prompt:
+        "This character with pop art style, Andy Warhol, bright colors, high contrast, retro",
       guidance: 4.5,
       strength: 0.15,
     },
@@ -137,7 +140,8 @@ export const DEFAULT_AI_STYLES: Omit<AIStyle, "createdAt" | "updatedAt">[] = [
     isActive: true,
     sortOrder: 8,
     metadata: {
-      prompt: "This character with pixel art, 8-bit, retro gaming, pixelated, arcade style",
+      prompt:
+        "This character with pixel art, 8-bit, retro gaming, pixelated, arcade style",
       guidance: 7.0,
       strength: 0.15,
     },

@@ -30,7 +30,8 @@ import { AIArtworkService } from "@/lib/database/ai";
 
 export const metadata = createMetadata({
   title: "Dashboard",
-  description: "AI Pet Artwork Studio - Create amazing art from your pet photos",
+  description:
+    "AI Pet Artwork Studio - Create amazing art from your pet photos",
 });
 
 async function DashboardStats({ userId }: { userId: string }) {
@@ -43,11 +44,15 @@ async function DashboardStats({ userId }: { userId: string }) {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card className="relative overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Available Credits</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            Available Credits
+          </CardTitle>
           <Zap className="text-primary h-4 w-4" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{userCredits.remainingCredits}</div>
+          <div className="text-2xl font-bold">
+            {userCredits.remainingCredits}
+          </div>
           <p className="text-muted-foreground text-xs">
             {userCredits.usedCredits} credits used total
           </p>
@@ -56,7 +61,9 @@ async function DashboardStats({ userId }: { userId: string }) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Artworks Created</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            Artworks Created
+          </CardTitle>
           <ImageIcon className="text-muted-foreground h-4 w-4" />
         </CardHeader>
         <CardContent>
@@ -73,9 +80,11 @@ async function DashboardStats({ userId }: { userId: string }) {
           <Palette className="text-muted-foreground h-4 w-4" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{artworkStats.favoriteStyles.length}</div>
+          <div className="text-2xl font-bold">
+            {artworkStats.favoriteStyles.length}
+          </div>
           <p className="text-muted-foreground text-xs">
-            Most used: {artworkStats.favoriteStyles[0] || 'None yet'}
+            Most used: {artworkStats.favoriteStyles[0] || "None yet"}
           </p>
         </CardContent>
       </Card>
@@ -98,14 +107,14 @@ async function DashboardStats({ userId }: { userId: string }) {
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
-  
+
   if (!user) {
     return null;
   }
 
   return (
-    <DashboardPageWrapper 
-      title="AI Pet Studio" 
+    <DashboardPageWrapper
+      title="AI Pet Studio"
       description="Transform your pet photos into stunning artwork with AI-powered art generation"
     >
       {/* Welcome Section */}
@@ -122,8 +131,9 @@ export default async function DashboardPage() {
             Ready to create amazing pet art? 🎨
           </h1>
           <p className="text-muted-foreground mb-4">
-            Transform your pet photos into stunning artwork with AI. Choose from 15+ artistic styles
-            and bring your furry friends to life in ways you&apos;ve never imagined.
+            Transform your pet photos into stunning artwork with AI. Choose from
+            15+ artistic styles and bring your furry friends to life in ways
+            you&apos;ve never imagined.
           </p>
           <div className="flex gap-3">
             <Button asChild size="sm" className="gap-2">
@@ -143,21 +153,23 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <Suspense fallback={
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader className="space-y-0 pb-2">
-                <div className="h-4 bg-muted rounded w-24" />
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 bg-muted rounded w-16 mb-2" />
-                <div className="h-3 bg-muted rounded w-32" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader className="space-y-0 pb-2">
+                  <div className="bg-muted h-4 w-24 rounded" />
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-muted mb-2 h-8 w-16 rounded" />
+                  <div className="bg-muted h-3 w-32 rounded" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        }
+      >
         <DashboardStats userId={user.id} />
       </Suspense>
 
@@ -245,32 +257,38 @@ export default async function DashboardPage() {
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm">
-                <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-8 w-8 rounded-full flex items-center justify-center">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-pink-500">
                   🎨
                 </div>
                 <div className="flex-1">
                   <span className="font-medium">Oil Painting</span>
-                  <p className="text-muted-foreground text-xs">Classic artistic style</p>
+                  <p className="text-muted-foreground text-xs">
+                    Classic artistic style
+                  </p>
                 </div>
                 <Badge variant="secondary">Popular</Badge>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 h-8 w-8 rounded-full flex items-center justify-center">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-500 to-cyan-500">
                   🌸
                 </div>
                 <div className="flex-1">
                   <span className="font-medium">Anime Style</span>
-                  <p className="text-muted-foreground text-xs">Japanese animation inspired</p>
+                  <p className="text-muted-foreground text-xs">
+                    Japanese animation inspired
+                  </p>
                 </div>
                 <Badge variant="secondary">Trending</Badge>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <div className="bg-gradient-to-r from-green-500 to-emerald-500 h-8 w-8 rounded-full flex items-center justify-center">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-green-500 to-emerald-500">
                   🎭
                 </div>
                 <div className="flex-1">
                   <span className="font-medium">Van Gogh</span>
-                  <p className="text-muted-foreground text-xs">Post-impressionist masterpiece</p>
+                  <p className="text-muted-foreground text-xs">
+                    Post-impressionist masterpiece
+                  </p>
                 </div>
                 <Badge variant="secondary">Classic</Badge>
               </div>
