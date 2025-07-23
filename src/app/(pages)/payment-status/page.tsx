@@ -26,7 +26,7 @@ function PaymentStatusSkeleton() {
         </div>
 
         <Card className="text-center">
-          <CardContent className="pt-6">
+          <CardContent>
             <Skeleton className="mx-auto mb-6 h-16 w-16 rounded-full" />
             <Skeleton className="mx-auto mb-4 h-8 w-64" />
             <Skeleton className="mx-auto mb-8 h-4 w-80" />

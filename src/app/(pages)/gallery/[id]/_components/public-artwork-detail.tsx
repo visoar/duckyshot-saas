@@ -345,7 +345,7 @@ export function PublicArtworkDetail({ artworkId }: PublicArtworkDetailProps) {
             {/* Artist Info */}
             {artwork.user && (
               <Card>
-                <CardContent className="p-6">
+                <CardContent>
                   <h3 className="mb-4 text-lg font-semibold">Artist</h3>
                   <div className="flex items-center gap-3">
                     {artwork.user.image ? (
@@ -374,7 +374,7 @@ export function PublicArtworkDetail({ artworkId }: PublicArtworkDetailProps) {
 
             {/* Artwork Details */}
             <Card>
-              <CardContent className="space-y-4 p-6">
+              <CardContent className="space-y-4">
                 <h3 className="mb-4 text-lg font-semibold">Artwork Details</h3>
 
                 <div className="space-y-3">
@@ -451,7 +451,7 @@ export function PublicArtworkDetail({ artworkId }: PublicArtworkDetailProps) {
 
             {/* Call to Action */}
             <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
-              <CardContent className="p-6 text-center">
+              <CardContent className="text-center">
                 <h3 className="mb-2 text-lg font-semibold">
                   Create Your Own AI Art
                 </h3>

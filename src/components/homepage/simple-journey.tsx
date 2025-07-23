@@ -66,7 +66,7 @@ const journeySteps: JourneyStep[] = [
   },
   {
     step: 3,
-    title: "Download & Order Products",
+    title: "Get & Order Products",
     subtitle: "Digital art plus custom merchandise",
     description: "Download high-resolution files instantly. Order custom canvas prints, apparel, mugs, and more.",
     emotion: "Joy & Fulfillment",
@@ -175,7 +175,7 @@ export function SimpleJourney() {
             </span>
           </h2>
 
-          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto">
             Upload your pet's photo, choose an AI art style, then download digital files or order custom merchandise. 
             From canvas prints to mugs, we make it easy to celebrate your pet.
           </p>

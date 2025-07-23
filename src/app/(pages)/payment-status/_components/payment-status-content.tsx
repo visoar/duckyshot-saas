@@ -191,7 +191,7 @@ export function PaymentStatusContent() {
 
         <div className="relative mx-auto max-w-md px-6">
           <Card className="text-center">
-            <CardContent className="pt-6">
+            <CardContent>
               <div className="mb-6 flex justify-center">
                 <div className="relative">
                   <Loader2 className="text-primary h-16 w-16 animate-spin" />
@@ -244,7 +244,7 @@ export function PaymentStatusContent() {
 
         {/* Main Content Card */}
         <Card className="text-center">
-          <CardContent className="pt-8">
+          <CardContent>
             {/* Icon with animation */}
             <div className="mb-8 flex justify-center">
               <div className="relative">

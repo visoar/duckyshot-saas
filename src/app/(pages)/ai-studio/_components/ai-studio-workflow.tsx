@@ -11,6 +11,7 @@ import { StyleExplorerGrid } from "./style-explorer-grid";
 import { ImmersiveGenerationViewer } from "./immersive-generation-viewer";
 import { SpectacularResultsShowcase } from "./spectacular-results-showcase";
 import type { AIStyle } from "@/lib/ai/styles";
+import type { UploadedImageFile } from "@/lib/types/upload";
 
 export type WorkflowStep =
   | "upload"
@@ -32,17 +33,6 @@ export interface ArtworkResult {
   createdAt: Date;
 }
 
-interface UploadedImageFile {
-  uploadId: string; // UUID from database
-  url: string;
-  key: string;
-  file: File;
-  size: number;
-  contentType: string;
-  fileName: string;
-  qualityScore?: number;
-  suggestions?: string[];
-}
 
 interface WorkflowState {
   currentStep: WorkflowStep;
@@ -288,7 +278,6 @@ export function AIStudioWorkflow() {
           <EnhancedUploadZone
             onImagesUpload={handleImagesUpload}
             maxFiles={5}
-            showExamples={true}
           />
         );
 

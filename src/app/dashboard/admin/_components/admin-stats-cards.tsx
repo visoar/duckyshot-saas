@@ -45,7 +45,7 @@ export function AdminStatsCards({ initialStats }: AdminStatsCardsProps) {
   if (!initialStats) {
     return (
       <Card>
-        <CardContent className="p-6">
+        <CardContent>
           <div className="text-destructive flex items-center space-x-2">
             <AlertTriangle className="h-4 w-4" />
             <span>Failed to load statistics</span>

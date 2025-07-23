@@ -194,9 +194,6 @@ function ProcessStepCard({ step }: { step: ProcessStep }) {
         <div className={`w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full bg-gradient-to-br ${step.color} shadow-lg flex items-center justify-center`}>
           <IconComponent className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
         </div>
-        <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-          <span className="text-xs font-bold text-white">{step.step}</span>
-        </div>
       </div>
       
       <div className="space-y-2">
@@ -237,7 +234,7 @@ export function DigitalToPhysicalShowcase() {
             </span>
           </h2>
 
-          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto">
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed max-w-4xl mx-auto">
             Don't just admire your pet's AI artwork on screen. Transform it into beautiful physical products 
             you can touch, display, and gift. From canvas wall art to custom apparel and drinkware.
           </p>
@@ -259,7 +256,7 @@ export function DigitalToPhysicalShowcase() {
               <div key={step.step} className="relative">
                 <ProcessStepCard step={step} />
                 {index < processSteps.length - 1 && (
-                  <div className="hidden md:block absolute top-8 sm:top-10 left-full w-full">
+                  <div className="hidden md:block absolute top-8 sm:top-10 left-1/2 w-full">
                     <ArrowRight className="w-6 h-6 text-muted-foreground mx-auto" />
                   </div>
                 )}
@@ -332,7 +329,7 @@ export function DigitalToPhysicalShowcase() {
                   <Gift className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
                 </div>
                 <h4 className="font-semibold text-sm sm:text-base text-foreground mb-2">Gift Ready</h4>
-                <p className="text-xs sm:text-sm text-muted-foreground">Beautiful packaging perfect for gifting</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Beautiful packaging perfect for gifting, ready for a surprise</p>
               </div>
             </div>
           </div>

@@ -212,7 +212,7 @@ export function WaterfallGallery({
               {[...Array(3)].map((_, i) => (
                 <Card key={i} className="overflow-hidden">
                   <div className="bg-muted aspect-[4/5] animate-pulse" />
-                  <CardContent className="p-4">
+                  <CardContent>
                     <div className="space-y-2">
                       <div className="bg-muted h-4 animate-pulse rounded" />
                       <div className="bg-muted h-3 w-2/3 animate-pulse rounded" />
@@ -240,7 +240,7 @@ export function WaterfallGallery({
             {columnArtworks.map((artwork) => (
               <Card
                 key={artwork.id}
-                className="group -py-6 -gap-6 overflow-hidden transition-all duration-300 hover:shadow-lg"
+                className="group   overflow-hidden transition-all duration-300 hover:shadow-lg"
               >
                 {/* Image */}
                 <div
@@ -324,7 +324,7 @@ export function WaterfallGallery({
                 </div>
 
                 {/* Content */}
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="space-y-3">
                     {/* Title and description */}
                     <div>

@@ -144,7 +144,7 @@ export default function AboutPage() {
               const Icon = value.icon;
               return (
                 <Card key={index} className="text-center shadow-sm">
-                  <CardContent className="pt-6">
+                  <CardContent>
                     <div className="bg-primary/10 mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg">
                       <Icon className="text-primary h-6 w-6" />
                     </div>
@@ -175,7 +175,7 @@ export default function AboutPage() {
           <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-3">
             {teamMembers.map((member, index) => (
               <Card key={index} className="text-center">
-                <CardContent className="pt-6">
+                <CardContent>
                   <div className="bg-muted mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full">
                     <Image
                       src={member.image}

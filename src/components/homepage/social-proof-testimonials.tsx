@@ -145,7 +145,7 @@ function TestimonialCard({
           : "border-border hover:border-primary/20 bg-gradient-to-br from-background to-muted/30 hover:shadow-lg"
       }`}
     >
-      <CardContent className="p-6 sm:p-8">
+      <CardContent>
         {/* Quote Icon */}
         <div className="mb-3 sm:mb-4">
           <Quote className="text-primary/60 h-6 w-6 sm:h-8 sm:w-8" />

@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
-import { BowArrow, LucideIcon } from "lucide-react";
+import { PawPrint, LucideIcon } from "lucide-react";
 import React from "react";
 
 // Default logo icon - can be easily changed here
-const DEFAULT_LOGO_ICON = BowArrow;
+const DEFAULT_LOGO_ICON = PawPrint;
 
 type LogoVariant = "default" | "minimal" | "icon-only";
 

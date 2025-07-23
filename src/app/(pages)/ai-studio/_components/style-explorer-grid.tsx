@@ -149,18 +149,26 @@ export function StyleExplorerGrid({
   if (loading) {
     return (
       <div className="mx-auto max-w-7xl space-y-8 animate-in fade-in-50 duration-500">
-        <div className="flex items-center gap-6">
-          <Button variant="ghost" onClick={onBack} className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Upload
-          </Button>
-          <div className="flex items-center gap-4">
-            <div className="h-20 w-20 rounded-xl bg-muted animate-pulse" />
-            <div className="space-y-2">
-              <div className="h-8 w-64 bg-muted animate-pulse rounded" />
-              <div className="h-4 w-48 bg-muted animate-pulse rounded" />
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 mb-4">
+            <Palette className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">Loading Styles...</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between gap-4 md:gap-6">
+          <div className="flex items-center gap-4 md:gap-6 min-w-0 flex-1">
+            <Button variant="ghost" onClick={onBack} className="gap-2 shrink-0">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Change Photos</span>
+            </Button>
+            <div className="h-16 w-16 md:h-20 md:w-20 rounded-xl bg-muted animate-pulse" />
+            <div className="space-y-2 min-w-0 flex-1">
+              <div className="h-6 md:h-8 w-48 md:w-64 bg-muted animate-pulse rounded" />
+              <div className="h-3 md:h-4 w-32 md:w-48 bg-muted animate-pulse rounded" />
             </div>
           </div>
+          <div className="h-12 w-16 bg-muted animate-pulse rounded" />
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -181,14 +189,22 @@ export function StyleExplorerGrid({
   if (error) {
     return (
       <div className="mx-auto max-w-7xl space-y-8">
-        <div className="flex items-center gap-6">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 rounded-full bg-destructive/10 px-4 py-2 mb-4">
+            <Palette className="h-4 w-4 text-destructive" />
+            <span className="text-sm font-medium text-destructive">Error Loading Styles</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between gap-4 md:gap-6 mb-6">
           <Button variant="ghost" onClick={onBack} className="gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Back to Upload
+            <span className="hidden sm:inline">Change Photos</span>
           </Button>
         </div>
+        
         <Card className="p-8 text-center">
-          <div className="text-destructive mb-4">Failed to load AI styles</div>
+          <div className="text-destructive mb-4 font-medium">Failed to load AI styles</div>
           <div className="text-muted-foreground text-sm mb-4">{error}</div>
           <Button onClick={() => window.location.reload()}>Try Again</Button>
         </Card>
@@ -198,7 +214,7 @@ export function StyleExplorerGrid({
 
   if (!stylesData) return null;
 
-  // Enhanced category mapping with emoji and gradients
+  // Category emoji mapping
   const getCategoryEmoji = (categoryId: string) => {
     const emojiMap: Record<string, string> = {
       classic: "🎨",
@@ -209,97 +225,60 @@ export function StyleExplorerGrid({
     return emojiMap[categoryId] || "🎨";
   };
 
-  const getCategoryGradient = (categoryId: string) => {
-    const gradientMap: Record<string, string> = {
-      classic: "from-amber-500 to-orange-500",
-      modern: "from-purple-500 to-pink-500",
-      special: "from-blue-500 to-cyan-500", 
-      seasonal: "from-green-500 to-red-500",
-    };
-    return gradientMap[categoryId] || "from-primary to-primary/70";
-  };
-
   const categories = stylesData?.categories || [];
   const currentStyles = getStylesByCategory(activeCategory);
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 animate-in fade-in-50 duration-500">
+      {/* Step Header */}
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 mb-4">
+          <Palette className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium">Choose Your Style</span>
+        </div>
+      </div>
+
       {/* Header with uploaded image */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-        <Button variant="ghost" onClick={onBack} className="gap-2 self-start">
+      <div className="flex items-center justify-between gap-4 md:gap-6">
+
+        <Button variant="ghost" onClick={onBack} className="gap-2 shrink-0">
           <ArrowLeft className="h-4 w-4" />
-          Change Photos
         </Button>
 
-        <div className="flex items-center gap-6 flex-1">
-          <div className="relative group">
-            <div className="h-20 w-20 rounded-xl overflow-hidden border-2 border-muted shadow-lg">
-              <Image
-                src={primaryImage.url}
-                alt="Your pet"
-                width={80}
-                height={80}
-                className="h-full w-full object-cover"
-              />
-            </div>
-            {uploadedImages.length > 1 && (
-              <Badge className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs">
-                +{uploadedImages.length - 1}
-              </Badge>
-            )}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-primary truncate">Choose Your Art Style
+            </h2>
           </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                Choose Your Art Style
-              </h2>
-              <Sparkles className="h-6 w-6 text-primary animate-pulse" />
-            </div>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              Click any style to see a preview, then generate your masterpiece
-            </p>
-          </div>
+          <p className="text-muted-foreground text-xs sm:text-sm md:text-base">
+            Click any style to see a preview, then generate your masterpiece
+          </p>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <div className="text-sm text-muted-foreground">Credits</div>
-            <div className="font-bold text-lg">{userCredits.remaining}</div>
-          </div>
+        <div className="text-right shrink-0">
+          <Badge variant="outline">
+            <div className="flex gap-2 text-sm"><Coins className="size-5" /> {userCredits.remaining}</div>
+          </Badge>
         </div>
       </div>
 
       {/* Category Tabs */}
       <Tabs value={activeCategory} onValueChange={setActiveCategory} className="w-full">
-        <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 h-16">
+        <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 h-14 md:h-16">
           {categories.map((category) => (
             <TabsTrigger
               key={category.id}
               value={category.id}
-              className="flex flex-col gap-1 h-14"
+              className="flex flex-col gap-0.5 md:gap-1 h-12 md:h-14 px-2"
             >
-              <span className="text-lg">{getCategoryEmoji(category.id)}</span>
-              <span className="text-xs font-medium">{category.name}</span>
+              <span className="text-base md:text-lg">{getCategoryEmoji(category.id)}</span>
+              <span className="text-[10px] md:text-xs font-medium leading-tight">{category.name}</span>
             </TabsTrigger>
           ))}
         </TabsList>
 
         {categories.map((category) => (
           <TabsContent key={category.id} value={category.id} className="mt-8">
-            {/* Category Header */}
-            {/* <div className="text-center mb-8">
-              <div className={cn(
-                "inline-flex items-center gap-3 rounded-full px-6 py-3 mb-4 bg-gradient-to-r text-white shadow-lg",
-                getCategoryGradient(category.id)
-              )}>
-                <span className="text-2xl">{getCategoryEmoji(category.id)}</span>
-                <div className="text-left">
-                  <div className="font-semibold text-lg">{category.name}</div>
-                  <div className="text-sm opacity-90">{category.description}</div>
-                </div>
-              </div>
-            </div> */}
 
             {/* Styles Grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -326,7 +305,7 @@ export function StyleExplorerGrid({
                             alt={style.name}
                             width={300}
                             height={300}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
@@ -341,17 +320,17 @@ export function StyleExplorerGrid({
                       </div>
 
                       {/* Badges */}
-                      <div className="absolute top-3 right-3 flex flex-col gap-2">
+                      <div className="absolute top-2 md:top-3 right-2 md:right-3 flex flex-col gap-1 md:gap-2">
                         {isStylePopular(style) && (
-                          <Badge className="bg-orange-500 text-white text-xs px-2 py-1 shadow-lg">
-                            <Star className="mr-1 h-3 w-3" />
-                            Popular
+                          <Badge className="bg-orange-500 text-white text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 shadow-lg">
+                            <Star className="mr-0.5 md:mr-1 h-2.5 w-2.5 md:h-3 md:w-3" />
+                            <span className="hidden sm:inline">Popular</span>
                           </Badge>
                         )}
                         {isStylePremium(style) && (
-                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-1 shadow-lg">
-                            <Crown className="mr-1 h-3 w-3" />
-                            Premium
+                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 md:py-1 shadow-lg">
+                            <Crown className="mr-0.5 md:mr-1 h-2.5 w-2.5 md:h-3 md:w-3" />
+                            <span className="hidden sm:inline">Premium</span>
                           </Badge>
                         )}
                       </div>
@@ -395,13 +374,9 @@ export function StyleExplorerGrid({
                     </div>
 
                     {/* Style Info */}
-                    <CardContent className="p-4">
+                    <CardContent>
                       <div className="flex items-center justify-between mb-2">
                         <h3 className="font-semibold text-base leading-tight">{style.name}</h3>
-                        <Badge variant="outline" className="text-xs">
-                          <Coins className="w-3 h-3 mr-1" />
-                          {getStyleCredits()}
-                        </Badge>
                       </div>
                       <p className="text-muted-foreground text-xs line-clamp-2 mb-3">
                         {style.description}
@@ -413,10 +388,10 @@ export function StyleExplorerGrid({
                           <Clock className="w-3 h-3" />
                           ~30s
                         </div>
-                        <div className="flex items-center gap-1">
-                          <Zap className="w-3 h-3" />
-                          Generate
-                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          <Coins className="w-3 h-3" />
+                          {getStyleCredits()}
+                        </Badge>
                       </div>
                     </CardContent>
                   </Card>
@@ -430,7 +405,7 @@ export function StyleExplorerGrid({
       {/* Generation Settings & Action */}
       {selectedStyle && (
         <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
-          <CardContent className="p-6">
+          <CardContent>
             <div className="flex flex-col lg:flex-row items-center gap-6">
               {/* Selected style preview */}
               <div className="flex items-center gap-4">
@@ -497,7 +472,7 @@ export function StyleExplorerGrid({
             <div className="space-y-6">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-xl">
-                  {previewStyle.name}
+                {previewStyle.name} <Badge variant="outline">Style Preview</Badge>
                   {isStylePremium(previewStyle) && (
                     <Crown className="h-5 w-5 text-yellow-500" />
                   )}
@@ -509,7 +484,6 @@ export function StyleExplorerGrid({
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                  <h4 className="font-medium">Style Preview</h4>
                   <div className="aspect-square rounded-lg overflow-hidden">
                     {previewStyle.previewImageUrl ? (
                       <Image
@@ -530,20 +504,26 @@ export function StyleExplorerGrid({
                 <div className="space-y-4">
                   <div className="space-y-3">
                     <h4 className="font-medium">Style Details</h4>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="flex flex-col gap-2 text-xs">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Category:</span>
                         <Badge variant="outline">{previewStyle.category}</Badge>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Credits:</span>
-                        <span className="font-medium">{getStyleCredits()}</span>
+                        <Badge variant="outline" className="text-xs">
+                          <Coins className="w-3 h-3 mr-1" />
+                          {getStyleCredits()}
+                        </Badge>
                       </div>
                       <div className="flex justify-between col-span-2">
                         <span className="text-muted-foreground">Generation time:</span>
                         <span className="flex items-center gap-1">
+                        <Badge variant="outline" className="text-xs">
+
                           <Clock className="h-3 w-3" />
                           ~30s
+                        </Badge>
                         </span>
                       </div>
                     </div>

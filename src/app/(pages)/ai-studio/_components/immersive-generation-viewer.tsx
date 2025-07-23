@@ -231,7 +231,7 @@ export function ImmersiveGenerationViewer({
 
       {/* Current Stage */}
       <Card>
-        <CardContent className="p-6">
+        <CardContent>
           <div className="flex items-center gap-4">
             <div className="bg-primary/10 flex h-12 w-12 items-center justify-center rounded-lg">
               <currentStage.icon className="text-primary h-6 w-6" />

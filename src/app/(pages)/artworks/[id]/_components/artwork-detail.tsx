@@ -531,7 +531,7 @@ export function ArtworkDetail({ artworkId }: ArtworkDetailProps) {
             {/* Original Image */}
             {/* {artwork.originalImage && (
               <Card>
-                <CardContent className="p-6">
+                <CardContent>
                   <h3 className="mb-4 text-lg font-semibold">Original Image</h3>
                   <div className="bg-muted relative aspect-video overflow-hidden rounded-lg">
                     <img
